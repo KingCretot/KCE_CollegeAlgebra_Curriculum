@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Lesson 1.7: Inequalities</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations &amp; Inequalities</div></div></div><div class="lesson-tag">Lesson 1.7 &middot; Inequalities</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 10</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Let's Begin</p><h1 class="slide-title">Answers that are whole ranges</h1>
+<div class="card warm"><p style="margin-bottom:0;">An equation usually has a few solutions; an inequality usually has infinitely many. Interval notation is how College Algebra writes those ranges compactly, and a number line is how you check them.</p></div>
+<p>Today you'll solve linear, three-part, quadratic, and rational inequalities and write the answers in interval notation.</p>
+<h2 class="sub-title" style="margin-top:22px;">By the end of today, you will be able to:</h2>
+<ul class="obj-list"><li><span class="num">1</span><span>Solve linear and three-part inequalities and write interval notation</span></li><li><span class="num">2</span><span>Solve quadratic inequalities by testing intervals</span></li><li><span class="num">3</span><span>Solve rational inequalities</span></li></ul>
+  <div class="name-field-wrap">
+        <label for="studentName">Your name (so your tutor can see your progress)</label>
+        <input type="text" id="studentName" placeholder="Type your first and last name">
+      </div>
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Vocabulary</p><h1 class="slide-title">Interval notation and the one rule</h1>
+<div class="vocab-grid">
+<div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Interval Notation</span></div><div class="vocab-body"><p class="vocab-def">Parentheses ( ) exclude an endpoint; brackets [ ] include it. ∞ and −∞ always get parentheses. ∪ joins two intervals.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> x ≥ −4 is [−4, ∞); x &lt; 2 or x ≥ 5 is (−∞, 2) ∪ [5, ∞).</span></div></div></div>
+<div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Flip Rule</span></div><div class="vocab-body"><p class="vocab-def">When you multiply or divide both sides by a negative number, reverse the inequality symbol.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> −3x ≤ 12 → x ≥ −4.</span></div></div></div>
+</div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">How It Works</p><h1 class="slide-title">Solving by type</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Linear</div>Solve like an equation; flip the symbol when multiplying or dividing by a negative.</div></div>
+<div class="step"><div class="badge">2</div><div class="content"><div class="label">Three-part</div>Do each step to all three parts at once.</div></div>
+<div class="step"><div class="badge">3</div><div class="content"><div class="label">Quadratic</div>Write it as (expression) compared to 0, find the zeros, split the number line, test one value in each interval.</div></div>
+<div class="step"><div class="badge">4</div><div class="content"><div class="label">Rational</div>Find zeros of the numerator AND denominator, test intervals, and never include a value that makes the denominator 0.</div></div>
+<div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> Rational example: (x − 1)/(x + 4) ≥ 0. Critical values −4 and 1. Testing gives (−∞, −4) ∪ [1, ∞); −4 gets a parenthesis because it makes the denominator 0.</p></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Real-World Context</p><h1 class="slide-title">Ranges in real decisions</h1>
+<p>Businesses use inequalities to find how many units they must sell to make a profit; engineers use them for safe operating ranges.</p>
+<div class="card warm"><p style="margin-bottom:0;"><strong>Example:</strong> Revenue R = 24x and cost C = 15x + 1,800. Profit requires 24x &gt; 15x + 1,800, so x &gt; 200 units.</p></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Worked Example &middot; Linear</p><h1 class="slide-title">−3x + 5 ≤ 17</h1>
+<div class="card blue"><p style="margin-bottom:0;"><strong>Goal:</strong> Solve and graph.</p></div>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Subtract 5</div>−3x ≤ 12</div></div>
+<div class="step"><div class="badge">2</div><div class="content"><div class="label">Divide by −3 and flip</div>x ≥ −4</div></div>
+<div class="step"><div class="badge">3</div><div class="content"><div class="label">Interval notation</div>[−4, ∞)</div></div>
+<div class="diagram-row"><div class="diagram-panel"><div class="diagram-cap">[−4, ∞): closed circle at −4</div><svg width="360" height="64" viewBox="0 0 360 64" style="max-width:100%;height:auto"><line x1="10" y1="30" x2="350" y2="30" stroke="#7a869a" stroke-width="1.8"/><polygon points="354,30 346,25 346,35" fill="#7a869a"/><polygon points="6,30 14,25 14,35" fill="#7a869a"/><line x1="22.0" y1="25" x2="22.0" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="22.0" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−6</text><line x1="57.1" y1="25" x2="57.1" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="57.1" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−5</text><line x1="92.2" y1="25" x2="92.2" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="92.2" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−4</text><line x1="127.3" y1="25" x2="127.3" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="127.3" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−3</text><line x1="162.4" y1="25" x2="162.4" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="162.4" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−2</text><line x1="197.6" y1="25" x2="197.6" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="197.6" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−1</text><line x1="232.7" y1="25" x2="232.7" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="232.7" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">0</text><line x1="267.8" y1="25" x2="267.8" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="267.8" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">1</text><line x1="302.9" y1="25" x2="302.9" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="302.9" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">2</text><line x1="338.0" y1="25" x2="338.0" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="338.0" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">3</text><line x1="92.2" y1="30" x2="352" y2="30" stroke="#0047BA" stroke-width="5"/><polygon points="356,30 346,23 346,37" fill="#0047BA"/><circle cx="92.2" cy="30" r="6" fill="#0047BA" stroke="#0047BA" stroke-width="2.5"/></svg></div></div>
+</section>
+<section class="slide" data-slide="6"><p class="eyebrow">Worked Example &middot; Quadratic</p><h1 class="slide-title">x² − x − 6 &lt; 0</h1>
+<div class="card blue"><p style="margin-bottom:0;"><strong>Goal:</strong> Solve by testing intervals.</p></div>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Zeros</div>(x − 3)(x + 2) = 0 → x = −2, 3</div></div>
+<div class="step"><div class="badge">2</div><div class="content"><div class="label">Test intervals</div>x = −3: 6 &gt; 0 ✗; x = 0: −6 &lt; 0 ✓; x = 4: 6 &gt; 0 ✗</div></div>
+<div class="step"><div class="badge">3</div><div class="content"><div class="label">Endpoints</div>Strict &lt;, so exclude −2 and 3</div></div>
+<div class="step"><div class="badge">4</div><div class="content"><div class="label">Answer</div>(−2, 3)</div></div>
+<div class="diagram-row"><div class="diagram-panel"><div class="diagram-cap">(−2, 3): open circles</div><svg width="360" height="64" viewBox="0 0 360 64" style="max-width:100%;height:auto"><line x1="10" y1="30" x2="350" y2="30" stroke="#7a869a" stroke-width="1.8"/><polygon points="354,30 346,25 346,35" fill="#7a869a"/><polygon points="6,30 14,25 14,35" fill="#7a869a"/><line x1="22.0" y1="25" x2="22.0" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="22.0" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−4</text><line x1="57.1" y1="25" x2="57.1" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="57.1" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−3</text><line x1="92.2" y1="25" x2="92.2" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="92.2" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−2</text><line x1="127.3" y1="25" x2="127.3" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="127.3" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">−1</text><line x1="162.4" y1="25" x2="162.4" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="162.4" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">0</text><line x1="197.6" y1="25" x2="197.6" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="197.6" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">1</text><line x1="232.7" y1="25" x2="232.7" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="232.7" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">2</text><line x1="267.8" y1="25" x2="267.8" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="267.8" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">3</text><line x1="302.9" y1="25" x2="302.9" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="302.9" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">4</text><line x1="338.0" y1="25" x2="338.0" y2="35" stroke="#7a869a" stroke-width="1.3"/><text x="338.0" y="50" font-size="10.5" fill="#7a869a" text-anchor="middle">5</text><line x1="92.2" y1="30" x2="267.8" y2="30" stroke="#0047BA" stroke-width="5"/><circle cx="92.2" cy="30" r="6" fill="#fff" stroke="#0047BA" stroke-width="2.5"/><circle cx="267.8" cy="30" r="6" fill="#fff" stroke="#0047BA" stroke-width="2.5"/></svg></div></div>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
+<div class="gp-box"><p class="gp-prompt"><strong>Solve.</strong></p>
+<p style="font-weight:600;font-size:15px;">Question 1 &mdash; −2 &lt; 3x + 1 ≤ 10</p>
+<div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="true">(−1, 3]</button><button class="choice-btn" data-correct="false">[−1, 3)</button></div><p class="feedback" id="fb-gp1"></p>
+<div class="explain-box" id="ex-gp1"><b>Here's why:</b> Subtract 1 from all three parts: −3 &lt; 3x ≤ 9. Divide by 3: −1 &lt; x ≤ 3. The &lt; side gets a parenthesis and the ≤ side a bracket.</div>
+<p style="font-weight:600;font-size:15px;margin-top:18px;">Question 2 &mdash; x² ≥ 9</p>
+<div class="choice-row" data-q="gp2"><button class="choice-btn" data-correct="true">(−∞, −3] ∪ [3, ∞)</button><button class="choice-btn" data-correct="false">[−3, 3]</button></div><p class="feedback" id="fb-gp2"></p>
+<div class="explain-box" id="ex-gp2"><b>Here's why:</b> x² − 9 ≥ 0 → (x − 3)(x + 3) ≥ 0. Testing shows the outer intervals work; [−3, 3] is the answer to x² ≤ 9.</div>
+</div></section>
+<section class="slide" data-slide="8"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">Every function chapter uses this</h1>
+<p>Domains, where a function is positive or negative, and where a graph lies above another all come down to solving inequalities.</p>
+<h2 class="sub-title" style="margin-top:20px;">This shows up everywhere</h2>
+<ul><li>Domains of functions (Chapter 2).</li><li>Polynomial and rational inequalities (Chapter 3).</li><li>Profit and break-even problems.</li></ul>
+<p style="font-size:14px;color:#555;">Next lesson: absolute value equations and inequalities.</p>
+</section>
+<section class="slide" data-slide="9"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know &mdash; 5 quick questions</h1>
+<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Solve 4 − 2x &gt; 10.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">(−∞, 3)</button><button class="quiz-opt" data-correct="false">[−3, ∞)</button><button class="quiz-opt" data-correct="false">(−3, ∞)</button><button class="quiz-opt" data-correct="true">(−∞, −3)</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> Subtract 4: −2x &gt; 6. Divide by −2 and flip: x &lt; −3. Forgetting the flip gives (−3, ∞).</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Solve −5 ≤ 2x − 1 &lt; 7.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">[−3, 3)</button><button class="quiz-opt" data-correct="false">(−2, 4]</button><button class="quiz-opt" data-correct="false">[−2, 4]</button><button class="quiz-opt" data-correct="true">[−2, 4)</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Add 1 to all parts: −4 ≤ 2x &lt; 8. Divide by 2: −2 ≤ x &lt; 4, so [−2, 4).</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">Solve x² + 2x − 8 ≥ 0.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">[−4, 2]</button><button class="quiz-opt" data-correct="false">(−4, 2)</button><button class="quiz-opt" data-correct="false">(−∞, −2] ∪ [4, ∞)</button><button class="quiz-opt" data-correct="true">(−∞, −4] ∪ [2, ∞)</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> (x + 4)(x − 2) ≥ 0. Testing x = 0 gives −8 &lt; 0, so the middle fails and the outer intervals work, endpoints included.</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">Solve (x + 3)/(x − 1) ≤ 0.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">[−3, 1]</button><button class="quiz-opt" data-correct="true">[−3, 1)</button><button class="quiz-opt" data-correct="false">(−∞, −3] ∪ (1, ∞)</button><button class="quiz-opt" data-correct="false">(−3, 1)</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> Critical values −3 and 1. Testing x = 0: 3/(−1) &lt; 0 ✓, so the middle interval works. Include −3 (numerator zero) but not 1 (denominator zero).</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Revenue is R = 24x and cost is C = 15x + 1,800. For which numbers of units is there a profit?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">More than 75 units</button><button class="quiz-opt" data-correct="false">At least 120 units</button><button class="quiz-opt" data-correct="false">More than 1,800 units</button><button class="quiz-opt" data-correct="true">More than 200 units</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> Profit means R &gt; C: 24x &gt; 15x + 1,800 → 9x &gt; 1,800 → x &gt; 200.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 5</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+</section>
+<section class="slide" data-slide="10"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve linear and three-part inequalities in interval notation.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve quadratic inequalities by testing intervals.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve rational inequalities, excluding denominator zeros.</div>
+<h2 class="sub-title" style="margin-top:22px;">Vocabulary from today</h2>
+<div><span class="term-pill">Interval Notation</span><span class="term-pill">Three-Part Inequality</span><span class="term-pill">Critical Value</span><span class="term-pill">Test Interval</span><span class="term-pill">Union ∪</span></div>
+<div class="next-box"><strong>Next &mdash; Lesson 1.8: Absolute Value Equations and Inequalities.</strong></div>
+<div class="end-actions"><a class="end-btn primary next-lesson-link" href="1-8-absolute-value.html">Next Lesson: 1.8 &rarr;</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Lesson</button></div>
+</section></div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-1-7',
+        lesson: '1.7: Inequalities',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>
