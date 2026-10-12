@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Lesson 3.2: Synthetic Division</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 3: Polynomial &amp; Rational Functions</div></div></div><div class="lesson-tag">Lesson 3.2 &middot; Synthetic Division</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 11</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Let's Begin</p><h1 class="slide-title">Divide a polynomial with just the numbers</h1>
+<div class="card warm"><p style="margin-bottom:0;">Long division of polynomials works, but it is slow and full of chances to drop a sign. When the divisor is x &minus; k, there is a shortcut that keeps only the coefficients: <strong>synthetic division</strong>. Your calculator uses the same idea to evaluate polynomials, because it takes fewer steps than plugging in.</p></div><p>Today you'll divide by x &minus; k with synthetic division, use the remainder to evaluate a polynomial, and test whether a number is a zero.</p><h2 class="sub-title" style="margin-top:22px;">By the end of today, you will be able to:</h2><ul class="obj-list"><li><span class="num">1</span><span>Divide a polynomial by x &minus; k using synthetic division</span></li><li><span class="num">2</span><span>Use the remainder theorem to find f(k)</span></li><li><span class="num">3</span><span>Decide whether a number k is a zero of a polynomial</span></li></ul>
+  <div class="name-field-wrap">
+        <label for="studentName">Your name (so your tutor can see your progress)</label>
+        <input type="text" id="studentName" placeholder="Type your first and last name">
+      </div>
+
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Vocabulary</p><h1 class="slide-title">The words for this lesson</h1>
+<div class="vocab-grid"><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Synthetic Division</span></div><div class="vocab-body"><p class="vocab-def">A shortcut for dividing a polynomial by x &minus; k using only k and the coefficients: bring down, multiply by k, add, repeat.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Memory hook:</b> &ldquo;multiply, add&rdquo; over and over. You add, never subtract.</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Division Algorithm</span></div><div class="vocab-body"><p class="vocab-def">f(x) = (x &minus; k) &middot; q(x) + r, where q(x) is the quotient and r is the remainder. The quotient has degree one less than f.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> x&sup2; + 5x + 7 = (x + 2)(x + 3) + 1.</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Remainder Theorem</span></div><div class="vocab-body"><p class="vocab-def">When f(x) is divided by x &minus; k, the remainder is f(k).</p><div class="vocab-hook"><span>&#128161;</span><span><b>Watch the sign:</b> dividing by x + 3 means k = &minus;3, so the remainder is f(&minus;3).</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Zero of a Polynomial</span></div><div class="vocab-body"><p class="vocab-def">A number k with f(k) = 0. With synthetic division, k is a zero exactly when the remainder is 0.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> 2 is a zero of x&sup2; &minus; 4 because 2&sup2; &minus; 4 = 0.</span></div></div></div></div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">How It Works</p><h1 class="slide-title">Synthetic division, step by step</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Set it up</div>Write k in the box. For x &minus; 4, k = 4; for x + 4, k = &minus;4. Next to it, list the coefficients in order of descending powers. <strong>Write 0 for any missing power.</strong></div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Bring down</div>Bring the first coefficient straight down below the line.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Multiply, add, repeat</div>Multiply the number you just brought down by k, write the product under the next coefficient, and add the column. Repeat until you reach the last column.</div></div><div class="step"><div class="badge">4</div><div class="content"><div class="label">Read the bottom row</div>The last number is the remainder. The other numbers are the coefficients of the quotient, which starts one degree lower than f.</div></div><div class="card"><p style="margin-bottom:4px;"><strong>(x&sup3; + 4x&sup2; &minus; 5x + 8) &divide; (x + 2):</strong> k = &minus;2</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;"><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;">&minus;2</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">4</td><td style="padding:3px 12px;text-align:right;">&minus;5</td><td style="padding:3px 12px;text-align:right;">8</td></tr><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;"></td><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;">&minus;2</td><td style="padding:3px 12px;text-align:right;">&minus;4</td><td style="padding:3px 12px;text-align:right;">18</td></tr><tr><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">1</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">2</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">&minus;9</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;background:#f6efd9;outline:2px solid #C9A84C;outline-offset:-2px;">26</td></tr></table></div><p style="margin-bottom:0;">Bottom row 1, 2, &minus;9 and remainder 26: the quotient is x&sup2; + 2x &minus; 9, remainder 26.</p></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> Each multiply-and-add step is exactly what long division does, but with the signs pre-flipped. That is why you add instead of subtract.</p></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Real-World Context</p><h1 class="slide-title">How a calculator evaluates a polynomial</h1>
+<p>A coach models a sprinter's distance (in meters) after t seconds of a training run with d(t) = &minus;t&sup3; + 6t&sup2; + 4t. To find d(4), you could cube, square, and multiply. Or you could run synthetic division with k = 4 and read the remainder. Computers use this second way (called Horner's method) because it needs fewer multiplications.</p><div class="card"><p style="margin-bottom:4px;"><strong>Coefficients &minus;1, 6, 4, 0</strong> (no constant term, so the last coefficient is 0)</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;"><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;">4</td><td style="padding:3px 12px;text-align:right;">&minus;1</td><td style="padding:3px 12px;text-align:right;">6</td><td style="padding:3px 12px;text-align:right;">4</td><td style="padding:3px 12px;text-align:right;">0</td></tr><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;"></td><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;">&minus;4</td><td style="padding:3px 12px;text-align:right;">8</td><td style="padding:3px 12px;text-align:right;">48</td></tr><tr><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">&minus;1</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">2</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">12</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;background:#f6efd9;outline:2px solid #C9A84C;outline-offset:-2px;">48</td></tr></table></div></div><div class="card warm"><p style="margin-bottom:0;"><strong>Example:</strong> The remainder is 48, so by the remainder theorem d(4) = 48. Check: &minus;64 + 96 + 16 = 48. After 4 seconds the sprinter has covered <strong>48 meters</strong>.</p></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Worked Example &middot; Basic Synthetic Division</p><h1 class="slide-title">Divide (x&sup3; + 4x&sup2; &minus; 5x + 8) by (x + 2)</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Find k and set up</div>x + 2 = x &minus; (&minus;2), so k = &minus;2. Coefficients: 1, 4, &minus;5, 8.<div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;"><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;">&minus;2</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">4</td><td style="padding:3px 12px;text-align:right;">&minus;5</td><td style="padding:3px 12px;text-align:right;">8</td></tr><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;"></td><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;">&minus;2</td><td style="padding:3px 12px;text-align:right;">&minus;4</td><td style="padding:3px 12px;text-align:right;">18</td></tr><tr><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">1</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">2</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">&minus;9</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;background:#f6efd9;outline:2px solid #C9A84C;outline-offset:-2px;">26</td></tr></table></div></div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Multiply and add</div>Bring down 1. Then 1 &middot; (&minus;2) = &minus;2, and 4 + (&minus;2) = 2. Then 2 &middot; (&minus;2) = &minus;4, and &minus;5 + (&minus;4) = &minus;9. Then &minus;9 &middot; (&minus;2) = 18, and 8 + 18 = 26.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Read the answer</div>Quotient x&sup2; + 2x &minus; 9, remainder 26. Answer: <strong>x&sup2; + 2x &minus; 9 + 26/(x + 2)</strong>.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Using k = 2 for the divisor x + 2. The number in the box is the value that makes the divisor 0.</p></div>
+</section>
+<section class="slide" data-slide="6"><p class="eyebrow">Worked Example &middot; Missing Terms</p><h1 class="slide-title">Divide (3x&#8308; &minus; 5x&sup2; + 2x &minus; 7) by (x &minus; 2)</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Fill in the gap</div>There is no x&sup3; term, so its coefficient is 0. Coefficients: 3, 0, &minus;5, 2, &minus;7, and k = 2.<div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;"><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;">2</td><td style="padding:3px 12px;text-align:right;">3</td><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">&minus;5</td><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;">&minus;7</td></tr><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;"></td><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;">6</td><td style="padding:3px 12px;text-align:right;">12</td><td style="padding:3px 12px;text-align:right;">14</td><td style="padding:3px 12px;text-align:right;">32</td></tr><tr><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">3</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">6</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">7</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">16</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;background:#f6efd9;outline:2px solid #C9A84C;outline-offset:-2px;">25</td></tr></table></div></div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Multiply and add</div>3 down. 3 &middot; 2 = 6, 0 + 6 = 6. 6 &middot; 2 = 12, &minus;5 + 12 = 7. 7 &middot; 2 = 14, 2 + 14 = 16. 16 &middot; 2 = 32, &minus;7 + 32 = 25.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Read the answer</div>The dividend has degree 4, so the quotient starts at x&sup3;. Answer: <strong>3x&sup3; + 6x&sup2; + 7x + 16 + 25/(x &minus; 2)</strong>.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Leaving out the 0 placeholder. Every power from the highest down to the constant needs a column, or every number after the gap lands in the wrong place.</p></div>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Worked Example &middot; Remainder Theorem</p><h1 class="slide-title">Is &minus;3 a zero of f(x) = 2x&sup3; + 5x&sup2; &minus; 4x &minus; 3?</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Divide by x + 3</div>Testing k = &minus;3 means dividing by x &minus; (&minus;3) = x + 3. Coefficients: 2, 5, &minus;4, &minus;3.<div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;"><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;">&minus;3</td><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;">5</td><td style="padding:3px 12px;text-align:right;">&minus;4</td><td style="padding:3px 12px;text-align:right;">&minus;3</td></tr><tr><td style="padding:3px 12px;text-align:right;border-right:2px solid #0A1F3D;"></td><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;">&minus;6</td><td style="padding:3px 12px;text-align:right;">3</td><td style="padding:3px 12px;text-align:right;">3</td></tr><tr><td style="padding:3px 12px;text-align:right;"></td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">2</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">&minus;1</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;">&minus;1</td><td style="padding:3px 12px;text-align:right;border-top:2px solid #0A1F3D;font-weight:700;background:#f6efd9;outline:2px solid #C9A84C;outline-offset:-2px;">0</td></tr></table></div></div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Read the remainder</div>The remainder is 0, so by the remainder theorem f(&minus;3) = 0. Check: 2(&minus;27) + 5(9) + 12 &minus; 3 = &minus;54 + 45 + 12 &minus; 3 = 0.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Conclusion</div><strong>Yes, &minus;3 is a zero</strong>, and the bottom row gives the rest: f(x) = (x + 3)(2x&sup2; &minus; x &minus; 1).</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> A remainder of 0 does double duty. It says k is a zero, and the bottom row hands you a smaller polynomial to factor. Lesson 3.3 builds on exactly this.</p></div>
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
+<div class="gp-box"><p class="gp-prompt"><strong>Work each one, then tap your answer.</strong></p><p style="font-weight:600;font-size:15px;">Question 1 &mdash; What is the remainder when x&sup3; &minus; 2x&sup2; + 4 is divided by x &minus; 3?</p><div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="false">&minus;41</button><button class="choice-btn" data-correct="true">13</button></div><p class="feedback" id="fb-gp1"></p>
+<div class="explain-box" id="ex-gp1"><b>Here's why:</b> By the remainder theorem the remainder is f(3) = 27 &minus; 18 + 4 = 13. (Synthetic division with coefficients 1, &minus;2, 0, 4 and k = 3 agrees.) &minus;41 is f(&minus;3): it uses k = &minus;3, but x &minus; 3 means k = 3.</div>
+<p style="font-weight:600;font-size:15px; margin-top:18px;">Question 2 &mdash; What is the quotient when x&sup3; &minus; 7x + 6 is divided by x &minus; 2?</p><div class="choice-row" data-q="gp2"><button class="choice-btn" data-correct="true">x&sup2; + 2x &minus; 3</button><button class="choice-btn" data-correct="false">x &minus; 5</button></div><p class="feedback" id="fb-gp2"></p>
+<div class="explain-box" id="ex-gp2"><b>Here's why:</b> Use coefficients 1, 0, &minus;7, 6 with k = 2: the bottom row is 1, 2, &minus;3 with remainder 0, so the quotient is x&sup2; + 2x &minus; 3. x &minus; 5 comes from leaving out the 0 for the missing x&sup2; term (1, &minus;7, 6), which also gives a false remainder of &minus;4.</div>
+</div>
+</section>
+<section class="slide" data-slide="9"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">The remainder is a shortcut to f(k)</h1>
+<p>Synthetic division turns a messy division into a short row of arithmetic, and the remainder theorem turns that row into a function value. Together they are the main tool for hunting down the zeros of a polynomial, which is the rest of this chapter.</p><h2 class="sub-title" style="margin-top:20px;">This shows up everywhere</h2><ul><li>Lesson 3.3 uses synthetic division to test possible zeros and to factor polynomials of degree 3 and higher.</li><li>Lesson 3.4 uses those zeros to sketch polynomial graphs.</li><li>Calculators and computer programs evaluate polynomials with this same multiply-add routine (Horner's method).</li></ul>
+</section>
+<section class="slide" data-slide="10"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know &mdash; 5 quick questions</h1>
+<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Which is the correct setup for (4x&sup3; &minus; x + 9) &divide; (x + 3)?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">3 &nbsp;|&nbsp; 4 &nbsp; 0 &nbsp; &minus;1 &nbsp; 9</button><button class="quiz-opt" data-correct="true">&minus;3 &nbsp;|&nbsp; 4 &nbsp; 0 &nbsp; &minus;1 &nbsp; 9</button><button class="quiz-opt" data-correct="false">&minus;3 &nbsp;|&nbsp; 4 &nbsp; &minus;1 &nbsp; 9</button><button class="quiz-opt" data-correct="false">3 &nbsp;|&nbsp; 4 &nbsp; &minus;1 &nbsp; 9</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> x + 3 = x &minus; (&minus;3), so k = &minus;3. There is no x&sup2; term, so a 0 goes in its place: 4, 0, &minus;1, 9. Using 3 flips the sign of k; dropping the 0 shifts every column.</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Divide: (x&sup3; + 2x&sup2; &minus; 5x &minus; 1) &divide; (x &minus; 2)</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">x&sup2; + 4x + 3 + 5/(x &minus; 2)</button><button class="quiz-opt" data-correct="false">x&sup2; + 4x + 3 + 5/(x + 2)</button><button class="quiz-opt" data-correct="false">x&sup2; &minus; 5 + 9/(x &minus; 2)</button><button class="quiz-opt" data-correct="false">x&sup3; + 4x&sup2; + 3x + 5</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> k = 2 with coefficients 1, 2, &minus;5, &minus;1 gives bottom row 1, 4, 3 and remainder 5. The quotient is one degree lower than the dividend, and the remainder goes over the divisor x &minus; 2. x&sup2; &minus; 5 comes from using k = &minus;2; x&sup3; + 4x&sup2; + 3x + 5 forgets to lower the degree.</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">Use the remainder theorem: if f(x) = x&#8308; &minus; 3x&sup3; + 2x &minus; 5, what is f(2)?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">31</button><button class="quiz-opt" data-correct="false">&minus;5</button><button class="quiz-opt" data-correct="false">&minus;2</button><button class="quiz-opt" data-correct="true">&minus;9</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> Coefficients 1, &minus;3, 0, 2, &minus;5 with k = 2 give bottom row 1, &minus;1, &minus;2, &minus;2 and remainder &minus;9, so f(2) = &minus;9. Check: 16 &minus; 24 + 4 &minus; 5 = &minus;9. 31 is f(&minus;2); &minus;5 comes from skipping the 0 for x&sup2;; &minus;2 is the last quotient number, not the remainder.</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">Synthetic division of f(x) = x&sup3; &minus; 4x&sup2; + x + 6 by x &minus; 3 leaves remainder 0. Which statement is true?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">3 is a zero, and x &minus; 3 is a factor</button><button class="quiz-opt" data-correct="false">&minus;3 is a zero, and x + 3 is a factor</button><button class="quiz-opt" data-correct="false">3 is a zero, and x + 3 is a factor</button><button class="quiz-opt" data-correct="false">6 is a zero, since 6 is the constant term</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> Remainder 0 when dividing by x &minus; 3 means f(3) = 0: 27 &minus; 36 + 3 + 6 = 0. So 3 is a zero and x &minus; 3 is a factor. The zero k and the factor x &minus; k always have opposite-looking signs.</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">The bottom row of synthetic division by x + 4 is 2 &nbsp; &minus;1 &nbsp; 0 &nbsp; 5 &nbsp; | &nbsp;&minus;3 (the last number is the remainder). What is the result?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">2x&#8308; &minus; x&sup3; + 5x &minus; 3</button><button class="quiz-opt" data-correct="false">2x&sup3; &minus; x&sup2; + 5 &minus; 3/(x &minus; 4)</button><button class="quiz-opt" data-correct="true">2x&sup3; &minus; x&sup2; + 5 &minus; 3/(x + 4)</button><button class="quiz-opt" data-correct="false">2x&sup3; &minus; x&sup2; + 5x &minus; 3/(x + 4)</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> Four quotient numbers mean a degree-3 quotient: 2x&sup3; &minus; x&sup2; + 0x + 5. The remainder &minus;3 goes over the divisor, x + 4. Ignoring the 0 and sliding the 5 into the x-slot gives 5x, and forgetting the degree drop gives 2x&#8308; &minus; x&sup3; + 5x &minus; 3.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 5</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+
+</section>
+<section class="slide" data-slide="11"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can divide a polynomial by x &minus; k with synthetic division, including placeholder zeros.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can use the remainder theorem to find f(k) from the remainder.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can decide whether k is a zero by checking for a remainder of 0.</div>
+<h2 class="sub-title" style="margin-top:22px;">Vocabulary from today</h2>
+<div><span class="term-pill">Synthetic Division</span><span class="term-pill">Quotient</span><span class="term-pill">Remainder</span><span class="term-pill">Division Algorithm</span><span class="term-pill">Remainder Theorem</span><span class="term-pill">Zero of a Polynomial</span></div>
+<div class="next-box"><strong>Next &mdash; Lesson 3.3: Zeros of Polynomial Functions.</strong> Find every zero of a polynomial, real and complex.</div>
+<div class="end-actions"><a class="end-btn primary next-lesson-link" href="3-3-zeros-of-polynomial-functions.html">Lesson 3.3 &rarr;</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Lesson</button></div>
+
+</section>
+</div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-3-2',
+        lesson: '3.2: Synthetic Division',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>

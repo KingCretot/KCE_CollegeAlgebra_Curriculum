@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Chapter 4 Review: Inverse, Exponential &amp; Logarithmic Functions</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+
+.card.think{background:#f3f6fb;border-left:5px solid var(--blue);}
+.diagram-row{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 14px;}
+.diagram-row .diagram-panel{flex:1 1 220px;padding:14px;}
+.diagram-cap{display:table;margin:0 auto 8px;background:var(--navy);color:var(--gold);font-weight:700;font-size:12px;letter-spacing:.5px;padding:4px 10px;border-radius:20px;}
+.rc{background:#fff;border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:10px;padding:14px 16px;margin:12px 0;}
+.rc .tagl{font-size:11px;letter-spacing:1.5px;color:var(--blue);font-weight:700;text-transform:uppercase;}
+.rc h3{margin:3px 0 6px;font-size:16.5px;color:var(--navy);}
+.rc p{margin:0;}
+.rc .ex{margin-top:9px;background:var(--cream);border-radius:6px;padding:8px 12px;font-size:14px;}
+.mist{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;background:#fff;}
+.mist th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-size:13px;letter-spacing:.5px;}
+.mist td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top;}
+.mist td:first-child{color:var(--red);font-weight:600;width:42%;}
+.cheat{background:#fff;border:2px solid var(--navy);border-radius:10px;padding:16px 18px;}
+.cheat h2{margin:0 0 4px;font-size:18px;color:var(--navy);}
+.cheat .csub{font-size:12px;color:#666;margin-bottom:10px;}
+.cheat table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.cheat th{background:#efe9da;color:var(--navy);text-align:left;padding:6px 9px;font-size:12px;}
+.cheat td{border-bottom:1px solid var(--line);padding:6px 9px;vertical-align:top;}
+.cheat td:first-child{font-weight:700;color:var(--navy);width:24%;}
+.print-btn{margin-top:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;font-size:14px;}
+@page{margin:0.6in;}@media print{body{background:#fff;}.masthead,.tricolor,.progress-wrap,.nav,.footer-brand,.toast,.print-btn{display:none!important;}
+.slide{display:none!important;}.slide.cheat-slide{display:block!important;animation:none!important;opacity:1!important;transform:none!important;}.app{min-height:0!important;}.slide.cheat-slide>.eyebrow,.slide.cheat-slide>.slide-title,.slide.cheat-slide>p{display:none!important;}
+.app{box-shadow:none;background:#fff;}.stage{padding:0;}.cheat{border:none;padding:0;}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 4: Inverse, Exponential &amp; Logarithmic Functions</div></div></div><div class="lesson-tag">Chapter 4 Review</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 8</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Chapter Review</p><h1 class="slide-title">Chapter 4: Inverse, Exponential &amp; Logarithmic Functions — the whole chapter in one session</h1>
+<div class="card warm"><p style="margin-bottom:0;">Chapter 4 built the exponential function and its inverse, the logarithm. You undid functions, graphed a<sup>x</sup> and log<sub>a</sub> x, used log properties and change of base, solved equations with the variable in the exponent, and modeled growth and decay.</p></div><h2 class="sub-title" style="margin-top:22px;">This review covers:</h2><ul class="obj-list"><li><span class="num">4.1</span><span>Inverse Functions</span></li><li><span class="num">4.2</span><span>Exponential Functions</span></li><li><span class="num">4.3</span><span>Logarithmic Functions</span></li><li><span class="num">4.4</span><span>Evaluating Logarithms and the Change-of-Base Theorem</span></li><li><span class="num">4.5</span><span>Exponential and Logarithmic Equations</span></li><li><span class="num">4.6</span><span>Applications and Models of Exponential Growth and Decay</span></li></ul><p>The plan: the key ideas from every lesson, the mistakes that cost the most points, a one-page cheat sheet you can print, and a practice test that mixes every lesson together &mdash; the way a real chapter test does.</p><div class="name-field-wrap"><label for="studentName">Your name (so your tutor can see your progress)</label><input type="text" id="studentName" placeholder="Type your first and last name"></div>
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Key Ideas &middot; Lessons 4.1&ndash;4.2</p><h1 class="slide-title">Inverses and exponential functions</h1>
+<div class="rc"><div class="tagl">Lesson 4.1</div><h3>Inverse functions</h3><p>A function has an inverse only if it is one-to-one (passes the horizontal line test). To find f<sup>&minus;1</sup>, swap x and y and solve for y; restrict the domain if needed. Check with f(f<sup>&minus;1</sup>(x)) = x. The graphs reflect over y = x.</p><div class="ex"><strong>Example:</strong> f(x) = 2x + 6 &rarr; f<sup>&minus;1</sup>(x) = (x &minus; 6)/2</div></div><div class="rc"><div class="tagl">Lesson 4.2</div><h3>Exponential functions</h3><p>f(x) = a<sup>x</sup> grows if a &gt; 1 and decays if 0 &lt; a &lt; 1, with asymptote y = 0 and range (0, &infin;). Solve by matching bases. Compound interest A = P(1 + r/n)<sup>nt</sup>; continuous A = Pe<sup>rt</sup>.</p><div class="ex"><strong>Example:</strong> 9<sup>x</sup> = 27 &rarr; 3<sup>2x</sup> = 3<sup>3</sup> &rarr; x = 3/2</div></div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">Key Ideas &middot; Lessons 4.3&ndash;4.4</p><h1 class="slide-title">Logarithms and how to evaluate them</h1>
+<div class="rc"><div class="tagl">Lesson 4.3</div><h3>Logarithmic functions</h3><p>y = log<sub>a</sub> x means a<sup>y</sup> = x. The graph reflects a<sup>x</sup> over y = x: domain (0, &infin;), asymptote x = 0. Product, quotient, and power rules expand and condense logs.</p><div class="ex"><strong>Example:</strong> log<sub>2</sub>(8x&sup3;) = 3 + 3 log<sub>2</sub> x</div></div><div class="rc"><div class="tagl">Lesson 4.4</div><h3>Common logs, natural logs, change of base</h3><p>log x is base 10 and ln x is base e. log<sub>a</sub> x = ln x / ln a. pH = &minus;log[H<sub>3</sub>O<sup>+</sup>]. For a log function&rsquo;s domain, set the argument &gt; 0.</p><div class="ex"><strong>Example:</strong> log<sub>5</sub> 80 = ln 80 / ln 5 &asymp; 2.72</div></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Key Ideas &middot; Lessons 4.5&ndash;4.6</p><h1 class="slide-title">Solving equations and building models</h1>
+<div class="rc"><div class="tagl">Lesson 4.5</div><h3>Exponential and logarithmic equations</h3><p>Exponential: isolate, take ln of both sides, bring the exponent down. Log: condense to one log, convert to exponential form, and reject extraneous answers that make an argument &le; 0.</p><div class="ex"><strong>Example:</strong> log<sub>2</sub> x + log<sub>2</sub>(x &minus; 6) = 4 &rarr; x = 8 (reject &minus;2)</div></div><div class="rc"><div class="tagl">Lesson 4.6</div><h3>Growth and decay</h3><p>A(t) = A<sub>0</sub>e<sup>kt</sup>. Find k from data with k = ln(A/A<sub>0</sub>)/t. Half-life h: k = &minus;ln 2 / h. Doubling time: t = ln 2 / k.</p><div class="ex"><strong>Example:</strong> 5.2% continuous: doubles in ln 2 / 0.052 &asymp; 13.33 years</div></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Watch Out</p><h1 class="slide-title">The mistakes that cost the most points</h1>
+<table class="mist"><tr><th>The mistake</th><th>The fix</th></tr><tr><td>Reading f<sup>&minus;1</sup>(x) as 1/f(x)</td><td>The &minus;1 means inverse, not reciprocal. Swap x and y and solve.</td></tr><tr><td>Finding an inverse for a function that is not one-to-one</td><td>Use the horizontal line test first. For y = x&sup2;, restrict to x &ge; 0.</td></tr><tr><td>Using simple interest in a compound interest problem</td><td>Compound: A = P(1 + r/n)<sup>nt</sup>. Continuous: A = Pe<sup>rt</sup>.</td></tr><tr><td>Writing log(x + y) = log x + log y</td><td>The product rule is log(xy) = log x + log y. There is no rule for log of a sum.</td></tr><tr><td>Mixing up log<sub>a</sub> x = y with x<sup>y</sup> = a</td><td>The base stays the base: log<sub>a</sub> x = y means a<sup>y</sup> = x.</td></tr><tr><td>Dividing upside down in change of base</td><td>The base goes in the denominator: log<sub>3</sub> 40 = ln 40 / ln 3.</td></tr><tr><td>Including the endpoint in a log domain</td><td>The argument must be &gt; 0, never = 0. log(x &minus; 7) has domain (7, &infin;).</td></tr><tr><td>Keeping extraneous solutions</td><td>Check every answer in the original log equation; reject any that makes an argument &le; 0.</td></tr><tr><td>Using log instead of ln with base e</td><td>e<sup>0.3x</sup> = 12 needs ln: x = ln 12 / 0.3.</td></tr><tr><td>Rounding k too early</td><td>Keep k unrounded in the calculator and round only the final answer.</td></tr></table><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Before any test:</strong> read this list once more. Most lost points on a chapter test come from a small handful of repeat mistakes, not from not knowing the material.</p></div>
+</section>
+<section class="slide cheat-slide" data-slide="6"><p class="eyebrow">Cheat Sheet</p><h1 class="slide-title">Everything from this chapter on one page</h1>
+<p>Print this page or take a screenshot. It's your last look before the test.</p><div class="cheat"><h2>College Algebra &middot; Chapter 4: Inverse, Exponential &amp; Logarithmic Functions</h2><div class="csub">KingCretot Experience &middot; Chapter 4 cheat sheet</div><table><tr><th>Topic</th><th>Rule</th><th>Example</th></tr><tr><td>One-to-one</td><td>Horizontal line test; each y from one x</td><td>x&sup3; yes &middot; x&sup2; no</td></tr><tr><td>Inverse</td><td>Swap x and y, solve; f(f<sup>&minus;1</sup>(x)) = x</td><td>3x &minus; 5 &rarr; (x + 5)/3</td></tr><tr><td>Exponential graph</td><td>a<sup>x</sup>: asymptote y = 0, range (0, &infin;)</td><td>(&frac12;)<sup>x</sup> decays</td></tr><tr><td>Matching bases</td><td>a<sup>m</sup> = a<sup>n</sup> &rarr; m = n</td><td>8<sup>x</sup> = 32 &rarr; x = 5/3</td></tr><tr><td>Compound interest</td><td>A = P(1 + r/n)<sup>nt</sup> &middot; A = Pe<sup>rt</sup></td><td>$4,000, 3% monthly, 5 yr &rarr; $4,646.47</td></tr><tr><td>Log definition</td><td>log<sub>a</sub> x = y &hArr; a<sup>y</sup> = x</td><td>log<sub>4</sub> 64 = 3</td></tr><tr><td>Log graph</td><td>Domain (0, &infin;), asymptote x = 0</td><td>log<sub>2</sub> x passes (1, 0), (2, 1)</td></tr><tr><td>Log properties</td><td>log xy = log x + log y &middot; log x/y = log x &minus; log y &middot; log x<sup>r</sup> = r log x</td><td>log 50 + log 2 = 2</td></tr><tr><td>Common / natural log</td><td>log = base 10 &middot; ln = base e</td><td>ln e<sup>5</sup> = 5</td></tr><tr><td>Change of base</td><td>log<sub>a</sub> x = ln x / ln a</td><td>log<sub>6</sub> 100 &asymp; 2.57</td></tr><tr><td>pH</td><td>pH = &minus;log[H<sub>3</sub>O<sup>+</sup>]</td><td>1.0 &times; 10<sup>&minus;4</sup> &rarr; pH 4</td></tr><tr><td>Exp / log equations</td><td>Take ln of both sides &middot; condense, convert, check domain</td><td>2<sup>x</sup> = 10 &rarr; x &asymp; 3.32</td></tr><tr><td>Growth and decay</td><td>A = A<sub>0</sub>e<sup>kt</sup> &middot; k = &minus;ln 2 / h &middot; t<sub>double</sub> = ln 2 / k</td><td>h = 30 yr &rarr; k &asymp; &minus;0.0231</td></tr></table></div><button class="print-btn" onclick="window.print()">&#128424; Print the cheat sheet</button>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Practice Test</p><h1 class="slide-title">10 questions, every lesson mixed together</h1>
+<p>Just like a unit test, these jump between lessons. You get two tries on each question, and every question explains itself after you answer.</p><div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Find the pH of a solution with [H<sub>3</sub>O<sup>+</sup>] = 8.1 &times; 10<sup>&minus;6</sup>, to the nearest tenth.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">&minus;5.1</button><button class="quiz-opt" data-correct="false">0.9</button><button class="quiz-opt" data-correct="true">5.1</button><button class="quiz-opt" data-correct="false">11.7</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> pH = &minus;log(8.1 &times; 10<sup>&minus;6</sup>) &asymp; 5.09, or 5.1. &minus;5.1 forgets the negative in the formula, 0.9 is log 8.1 alone, and 11.7 uses ln. (Lesson 4.4)</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Find f<sup>&minus;1</sup>(x) for f(x) = 3x &minus; 5.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">f<sup>&minus;1</sup>(x) = (x + 5)/3</button><button class="quiz-opt" data-correct="false">f<sup>&minus;1</sup>(x) = (x &minus; 5)/3</button><button class="quiz-opt" data-correct="false">f<sup>&minus;1</sup>(x) = 1/(3x &minus; 5)</button><button class="quiz-opt" data-correct="false">f<sup>&minus;1</sup>(x) = x/3 + 5</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Swap: x = 3y &minus; 5. Add 5: x + 5 = 3y. Divide: y = (x + 5)/3. 1/(3x &minus; 5) is the reciprocal, not the inverse, and x/3 + 5 undoes the steps in the wrong order. (Lesson 4.1)</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">Solve log x + log(x &minus; 15) = 2.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">x = 20</button><button class="quiz-opt" data-correct="false">x = 20 or x = &minus;5</button><button class="quiz-opt" data-correct="false">x = &minus;5</button><button class="quiz-opt" data-correct="false">x &asymp; 15.13</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> log[x(x &minus; 15)] = 2, so x&sup2; &minus; 15x = 100 and (x &minus; 20)(x + 5) = 0. x = &minus;5 makes log x undefined, so only x = 20 works. 15.13 comes from setting x(x &minus; 15) = 2 instead of 10&sup2;. (Lesson 4.5)</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">Solve 8<sup>x</sup> = 32.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">x = 4</button><button class="quiz-opt" data-correct="true">x = 5/3</button><button class="quiz-opt" data-correct="false">x = 3/5</button><button class="quiz-opt" data-correct="false">x = 5/2</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> Write both as powers of 2: 2<sup>3x</sup> = 2<sup>5</sup>, so 3x = 5 and x = 5/3. 4 is 32 &divide; 8, 3/5 is upside down, and 5/2 writes 8 as 2&sup2;. (Lesson 4.2)</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">A drug has a half-life of 6 hours. A patient takes 80 mg. How much remains after 15 hours, to the nearest tenth?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">60.6 mg</button><button class="quiz-opt" data-correct="false">20.0 mg</button><button class="quiz-opt" data-correct="false">40.0 mg</button><button class="quiz-opt" data-correct="true">14.1 mg</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> k = &minus;ln 2 / 6, so A(15) = 80e<sup>15k</sup> = 80(&frac12;)<sup>2.5</sup> &asymp; 14.1 mg. 60.6 flips the ratio to 6/15, 20.0 counts only two full half-lives, and 40.0 halves just once. (Lesson 4.6)</div>
+      </div>
+<div class="quiz-q" data-quiz="q6"><div class="qnum">Question 6</div><div class="qtext">Write log<sub>3</sub>(x&sup2;&radic;y / z) as a sum and difference of logs. Assume x, y, z &gt; 0.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">2 log<sub>3</sub> x + &frac12; log<sub>3</sub> y + log<sub>3</sub> z</button><button class="quiz-opt" data-correct="true">2 log<sub>3</sub> x + &frac12; log<sub>3</sub> y &minus; log<sub>3</sub> z</button><button class="quiz-opt" data-correct="false">(log<sub>3</sub> x)&sup2; + &frac12; log<sub>3</sub> y &minus; log<sub>3</sub> z</button><button class="quiz-opt" data-correct="false">2 log<sub>3</sub> x &middot; &frac12; log<sub>3</sub> y &minus; log<sub>3</sub> z</button></div>
+        <div class="explain-box" id="ex-q6"><b>Here's why:</b> Product rule for the top, quotient rule for z, power rule for x&sup2; and &radic;y = y<sup>1/2</sup>. Dividing by z subtracts its log; the power rule puts 2 in front, not as an exponent on the log; and a product inside becomes a sum, not a product of logs. (Lesson 4.3)</div>
+      </div>
+<div class="quiz-q" data-quiz="q7"><div class="qnum">Question 7</div><div class="qtext">Solve 7<sup>x + 1</sup> = 30 to the nearest hundredth.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">x &asymp; 2.75</button><button class="quiz-opt" data-correct="true">x &asymp; 0.75</button><button class="quiz-opt" data-correct="false">x &asymp; 3.29</button><button class="quiz-opt" data-correct="false">x &asymp; 0.48</button></div>
+        <div class="explain-box" id="ex-q7"><b>Here's why:</b> (x + 1) ln 7 = ln 30, so x = ln 30 / ln 7 &minus; 1 &asymp; 1.7479 &minus; 1 = 0.75. 2.75 adds 1 instead of subtracting, 3.29 is 30/7 &minus; 1, and 0.48 is log 30 &minus; 1, which skips dividing by log 7. (Lesson 4.5)</div>
+      </div>
+<div class="quiz-q" data-quiz="q8"><div class="qnum">Question 8</div><div class="qtext">$4,000 is invested at 3% compounded monthly. Find the amount after 5 years.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">$4,600.00</button><button class="quiz-opt" data-correct="false">$4,637.10</button><button class="quiz-opt" data-correct="false">$4,647.34</button><button class="quiz-opt" data-correct="true">$4,646.47</button></div>
+        <div class="explain-box" id="ex-q8"><b>Here's why:</b> A = 4000(1 + 0.03/12)<sup>60</sup> &asymp; $4,646.47. $4,600.00 is simple interest, $4,637.10 compounds annually, and $4,647.34 compounds continuously. (Lesson 4.2)</div>
+      </div>
+<div class="quiz-q" data-quiz="q9"><div class="qnum">Question 9</div><div class="qtext">Evaluate log<sub>6</sub> 100 to the nearest hundredth.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">0.39</button><button class="quiz-opt" data-correct="false">16.67</button><button class="quiz-opt" data-correct="true">2.57</button><button class="quiz-opt" data-correct="false">1.22</button></div>
+        <div class="explain-box" id="ex-q9"><b>Here's why:</b> log<sub>6</sub> 100 = ln 100 / ln 6 &asymp; 4.6052 / 1.7918 &asymp; 2.57. 0.39 divides upside down, 16.67 is 100 &divide; 6, and 1.22 is log(100/6). (Lesson 4.4)</div>
+      </div>
+<div class="quiz-q" data-quiz="q10"><div class="qnum">Question 10</div><div class="qtext">Solve log<sub>4</sub> x = 3/2.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">x = 8</button><button class="quiz-opt" data-correct="false">x = 6</button><button class="quiz-opt" data-correct="false">x = 81/16</button><button class="quiz-opt" data-correct="false">x &asymp; 2.52</button></div>
+        <div class="explain-box" id="ex-q10"><b>Here's why:</b> Convert: x = 4<sup>3/2</sup> = (&radic;4)&sup3; = 8. 6 multiplies 4 by 3/2, 81/16 is (3/2)<sup>4</sup> with base and exponent swapped, and 2.52 is 4<sup>2/3</sup>. (Lesson 4.3)</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 10</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Debrief</p><h1 class="slide-title">Chapter 4, reviewed</h1>
+<p>You can now find inverses, graph and solve exponential and logarithmic equations, evaluate any log with change of base, and model growth and decay. Chapter 5 turns to systems of equations and matrices, where several equations have to be true at once.</p><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Missed a question?</strong> Each one lines up with a lesson. Go back to that lesson's worked examples before the test &mdash; it's faster than re-reading the whole chapter.</p></div><div class="end-actions"><a class="end-btn primary next-lesson-link" href="../index.html">Back to Course Home &rarr;</a><a class="end-btn secondary" href="../index.html">Course Home</a><a class="end-btn secondary" href="../KCE_CollegeAlgebra_Chapter4.html">Back to Chapter 4</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Review</button></div>
+</section>
+</div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83d\udd01 Review restarted \u2014 go for a higher score!');
+      goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-chapter-4-review',
+        lesson: 'Chapter 4 Review: Inverse, Exponential & Logarithmic Functions',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>

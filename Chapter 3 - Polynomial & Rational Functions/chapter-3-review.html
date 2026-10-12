@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Chapter 3 Review: Polynomial &amp; Rational Functions</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+
+.card.think{background:#f3f6fb;border-left:5px solid var(--blue);}
+.diagram-row{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 14px;}
+.diagram-row .diagram-panel{flex:1 1 220px;padding:14px;}
+.diagram-cap{display:table;margin:0 auto 8px;background:var(--navy);color:var(--gold);font-weight:700;font-size:12px;letter-spacing:.5px;padding:4px 10px;border-radius:20px;}
+.rc{background:#fff;border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:10px;padding:14px 16px;margin:12px 0;}
+.rc .tagl{font-size:11px;letter-spacing:1.5px;color:var(--blue);font-weight:700;text-transform:uppercase;}
+.rc h3{margin:3px 0 6px;font-size:16.5px;color:var(--navy);}
+.rc p{margin:0;}
+.rc .ex{margin-top:9px;background:var(--cream);border-radius:6px;padding:8px 12px;font-size:14px;}
+.mist{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;background:#fff;}
+.mist th{background:var(--navy);color:#fff;text-align:left;padding:9px 12px;font-size:13px;letter-spacing:.5px;}
+.mist td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top;}
+.mist td:first-child{color:var(--red);font-weight:600;width:42%;}
+.cheat{background:#fff;border:2px solid var(--navy);border-radius:10px;padding:16px 18px;}
+.cheat h2{margin:0 0 4px;font-size:18px;color:var(--navy);}
+.cheat .csub{font-size:12px;color:#666;margin-bottom:10px;}
+.cheat table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.cheat th{background:#efe9da;color:var(--navy);text-align:left;padding:6px 9px;font-size:12px;}
+.cheat td{border-bottom:1px solid var(--line);padding:6px 9px;vertical-align:top;}
+.cheat td:first-child{font-weight:700;color:var(--navy);width:24%;}
+.print-btn{margin-top:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;font-size:14px;}
+@page{margin:0.6in;}@media print{body{background:#fff;}.masthead,.tricolor,.progress-wrap,.nav,.footer-brand,.toast,.print-btn{display:none!important;}
+.slide{display:none!important;}.slide.cheat-slide{display:block!important;animation:none!important;opacity:1!important;transform:none!important;}.app{min-height:0!important;}.slide.cheat-slide>.eyebrow,.slide.cheat-slide>.slide-title,.slide.cheat-slide>p{display:none!important;}
+.app{box-shadow:none;background:#fff;}.stage{padding:0;}.cheat{border:none;padding:0;}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 3: Polynomial &amp; Rational Functions</div></div></div><div class="lesson-tag">Chapter 3 Review</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 8</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Chapter Review</p><h1 class="slide-title">Chapter 3: Polynomial &amp; Rational Functions — the whole chapter in one session</h1>
+<div class="card warm"><p style="margin-bottom:0;">Chapter 3 moved from lines to curves: parabolas and their vertices, dividing polynomials quickly, finding every zero, sketching polynomial graphs, rational functions and their asymptotes, and variation models built on a single constant k.</p></div><h2 class="sub-title" style="margin-top:22px;">This review covers:</h2><ul class="obj-list"><li><span class="num">3.1</span><span>Quadratic Functions and Models</span></li><li><span class="num">3.2</span><span>Synthetic Division</span></li><li><span class="num">3.3</span><span>Zeros of Polynomial Functions</span></li><li><span class="num">3.4</span><span>Polynomial Functions: Graphs, Applications, and Models</span></li><li><span class="num">3.5</span><span>Rational Functions: Graphs, Applications, and Models</span></li><li><span class="num">3.6</span><span>Variation</span></li></ul><p>The plan: the key ideas from every lesson, the mistakes that cost the most points, a one-page cheat sheet you can print, and a practice test that mixes every lesson together &mdash; the way a real chapter test does.</p><div class="name-field-wrap"><label for="studentName">Your name (so your tutor can see your progress)</label><input type="text" id="studentName" placeholder="Type your first and last name"></div>
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Key Ideas &middot; Lessons 3.1&ndash;3.2</p><h1 class="slide-title">Parabolas and dividing polynomials</h1>
+<div class="rc"><div class="tagl">Lesson 3.1</div><h3>Quadratic functions</h3><p>Vertex form f(x) = a(x &minus; h)&sup2; + k has vertex (h, k); the sign inside flips. For ax&sup2; + bx + c, the vertex is at x = &minus;b/(2a); plug in for y. a &gt; 0 opens up (minimum), a &lt; 0 opens down (maximum).</p><div class="ex"><strong>Example:</strong> f(x) = 3x&sup2; + 12x + 7 &rarr; x = &minus;2, vertex (&minus;2, &minus;5)</div></div><div class="rc"><div class="tagl">Lesson 3.2</div><h3>Synthetic division and the remainder theorem</h3><p>To divide by x &minus; k, use k and write 0 for every missing power. The last number is the remainder, and the remainder equals P(k). If P(k) = 0, k is a zero.</p><div class="ex"><strong>Example:</strong> x&sup3; &minus; 4x&sup2; + 5 &divide; (x &minus; 3) &rarr; x&sup2; &minus; x &minus; 3, remainder &minus;4 = P(3)</div></div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">Key Ideas &middot; Lessons 3.3&ndash;3.4</p><h1 class="slide-title">Zeros and polynomial graphs</h1>
+<div class="rc"><div class="tagl">Lesson 3.3</div><h3>Zeros of polynomial functions</h3><p>Factor theorem: x &minus; k is a factor exactly when P(k) = 0. Rational zero candidates are &plusmn;p/q (p from the constant, q from the leading coefficient). A degree-n polynomial has n zeros counting multiplicity; nonreal zeros come in conjugate pairs. Descartes' rule counts sign changes.</p><div class="ex"><strong>Example:</strong> zeros 2 and 3 &minus; i (real coefficients) &rarr; 3 + i is also a zero</div></div><div class="rc"><div class="tagl">Lesson 3.4</div><h3>Polynomial graphs</h3><p>The leading term sets the end behavior. At a zero of odd multiplicity the graph crosses; at even multiplicity it touches and turns. Degree n means at most n &minus; 1 turning points. A sign change between a and b means a zero between them (intermediate value theorem).</p><div class="ex"><strong>Example:</strong> f(x) = &minus;3x&#8309; + &hellip; rises on the left and falls on the right</div></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Key Ideas &middot; Lessons 3.5&ndash;3.6</p><h1 class="slide-title">Rational functions and variation</h1>
+<div class="rc"><div class="tagl">Lesson 3.5</div><h3>Rational functions</h3><p>Factor and cancel first: a canceled factor is a hole. Zeros of the simplified denominator are vertical asymptotes. Compare degrees: bottom bigger, y = 0; equal, ratio of leading coefficients; top bigger by one, divide for the oblique asymptote.</p><div class="ex"><strong>Example:</strong> (x &minus; 3)/(x&sup2; &minus; x &minus; 6) &rarr; hole (3, 1/5), VA x = &minus;2, HA y = 0</div></div><div class="rc"><div class="tagl">Lesson 3.6</div><h3>Variation</h3><p>Direct y = kx, inverse y = k/x, joint y = kxz, combined y = kx/z. Translate, find k from the given values, rewrite, then answer.</p><div class="ex"><strong>Example:</strong> y varies inversely as x, y = 8 at x = 3 &rarr; k = 24, so y = 2 at x = 12</div></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Watch Out</p><h1 class="slide-title">The mistakes that cost the most points</h1>
+<table class="mist"><tr><th>The mistake</th><th>The fix</th></tr><tr><td>Reading (x + 3)&sup2; as h = 3</td><td>The sign inside flips: (x + 3)&sup2; means h = &minus;3.</td></tr><tr><td>Stopping at x = &minus;b/(2a)</td><td>That is only the x-coordinate. Plug it in to get the maximum or minimum value.</td></tr><tr><td>Skipping a missing term in synthetic division</td><td>Write 0 for every missing power: x&sup3; &minus; 4x&sup2; + 5 is 1, &minus;4, 0, 5.</td></tr><tr><td>Dividing by x + 2 with k = 2</td><td>x + 2 = x &minus; (&minus;2), so k = &minus;2.</td></tr><tr><td>Flipping p/q in the rational zeros theorem</td><td>p comes from the constant term, q from the leading coefficient.</td></tr><tr><td>Forgetting the conjugate partner</td><td>With real coefficients, a zero a + bi always brings a &minus; bi with it.</td></tr><tr><td>Assuming every zero crosses the x-axis</td><td>Even multiplicity touches and turns; odd multiplicity crosses.</td></tr><tr><td>Calling every zero of the denominator a vertical asymptote</td><td>Cancel common factors first. A factor that cancels makes a hole.</td></tr><tr><td>Using y = 0 when the degrees are equal</td><td>Equal degrees: y = ratio of the leading coefficients. y = 0 is only for a bigger bottom.</td></tr><tr><td>Skipping k in a variation problem</td><td>Always find k from the given values before answering the question.</td></tr></table><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Before any test:</strong> read this list once more. Most lost points on a chapter test come from a small handful of repeat mistakes, not from not knowing the material.</p></div>
+</section>
+<section class="slide cheat-slide" data-slide="6"><p class="eyebrow">Cheat Sheet</p><h1 class="slide-title">Everything from this chapter on one page</h1>
+<p>Print this page or take a screenshot. It's your last look before the test.</p><div class="cheat"><h2>College Algebra &middot; Chapter 3: Polynomial &amp; Rational Functions</h2><div class="csub">KingCretot Experience &middot; Chapter 3 cheat sheet</div><table><tr><th>Topic</th><th>Rule</th><th>Example</th></tr><tr><td>Vertex form</td><td>f(x) = a(x &minus; h)&sup2; + k &rarr; vertex (h, k)</td><td>(x + 2)&sup2; &minus; 5 &rarr; (&minus;2, &minus;5)</td></tr><tr><td>Vertex formula</td><td>x = &minus;b/(2a), then y = f(x)</td><td>x&sup2; &minus; 6x + 5 &rarr; (3, &minus;4)</td></tr><tr><td>Synthetic division</td><td>divide by x &minus; k using k; 0 for missing terms</td><td>x&sup3; &minus; 4x&sup2; + 5 by x &minus; 3 &rarr; x&sup2; &minus; x &minus; 3, R &minus;4</td></tr><tr><td>Remainder theorem</td><td>remainder of P(x) &divide; (x &minus; k) is P(k)</td><td>x&sup2; + 3x &minus; 1, k = 2 &rarr; 9</td></tr><tr><td>Factor theorem</td><td>x &minus; k is a factor &hArr; P(k) = 0</td><td>x&sup3; &minus; 1: P(1) = 0 &rarr; x &minus; 1 is a factor</td></tr><tr><td>Rational zeros</td><td>&plusmn;(factors of constant)/(factors of leading coef.)</td><td>2x&sup3; &minus; x + 3 &rarr; &plusmn;1, &plusmn;3, &plusmn;&frac12;, &plusmn;3/2</td></tr><tr><td>Number of zeros, conjugates</td><td>degree n &rarr; n zeros (with multiplicity); a + bi &rarr; a &minus; bi</td><td>zero 2 &minus; i &rarr; 2 + i</td></tr><tr><td>Descartes' rule</td><td>sign changes in P(x): positive zeros, or fewer by an even number</td><td>x&sup3; &minus; x&sup2; + x &minus; 1 &rarr; 3 or 1 positive</td></tr><tr><td>End behavior</td><td>follow the leading term ax&#8319;</td><td>&minus;2x&sup3;: rises left, falls right</td></tr><tr><td>Multiplicity, turning points</td><td>odd crosses, even touches; at most n &minus; 1 turns</td><td>(x &minus; 1)&sup2;(x + 4): touches at 1, crosses at &minus;4</td></tr><tr><td>Intermediate value theorem</td><td>P(a), P(b) opposite signs &rarr; a zero between a and b</td><td>x&sup3; &minus; 3: P(1) = &minus;2, P(2) = 5</td></tr><tr><td>Vertical asymptotes, holes</td><td>cancel first: canceled factor = hole; leftover denominator zeros = VA</td><td>(x &minus; 3)/(x&sup2; &minus; x &minus; 6): hole x = 3, VA x = &minus;2</td></tr><tr><td>Horizontal, oblique</td><td>bottom bigger y = 0; equal: coefficient ratio; top bigger by 1: divide</td><td>(4x&sup2; + 1)/(2x&sup2; &minus; x) &rarr; y = 2</td></tr><tr><td>Variation</td><td>y = kx, y = k/x, y = kxz, y = kx/z; find k first</td><td>y = 12 at x = 4, direct &rarr; k = 3</td></tr></table></div><button class="print-btn" onclick="window.print()">&#128424; Print the cheat sheet</button>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Practice Test</p><h1 class="slide-title">10 questions, every lesson mixed together</h1>
+<p>Just like a unit test, these jump between lessons. You get two tries on each question, and every question explains itself after you answer.</p><div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Find the vertex of f(x) = &minus;2x&sup2; + 12x &minus; 5.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">(&minus;3, &minus;59)</button><button class="quiz-opt" data-correct="false">(6, &minus;5)</button><button class="quiz-opt" data-correct="false">(3, 49)</button><button class="quiz-opt" data-correct="true">(3, 13)</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> x = &minus;b/(2a) = &minus;12/(2 &middot; &minus;2) = 3. f(3) = &minus;18 + 36 &minus; 5 = 13. (&minus;3, &minus;59) drops the negative in &minus;b/(2a), (6, &minus;5) forgets the 2 in 2a, and (3, 49) treats &minus;2(3)&sup2; as +18.</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Use synthetic division to find the remainder when P(x) = x&sup3; &minus; 4x&sup2; + 5 is divided by x &minus; 3.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">2</button><button class="quiz-opt" data-correct="true">&minus;4</button><button class="quiz-opt" data-correct="false">&minus;58</button><button class="quiz-opt" data-correct="false">4</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Use 1, &minus;4, 0, 5 with k = 3: 1, &minus;1, &minus;3, remainder &minus;4. Check: P(3) = 27 &minus; 36 + 5 = &minus;4. Leaving out the 0 gives 2, and using k = &minus;3 gives &minus;58.</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">What is the horizontal asymptote of f(x) = (6x&sup2; &minus; 1)/(2x&sup2; + 5x &minus; 3)?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">y = 6</button><button class="quiz-opt" data-correct="false">y = 0</button><button class="quiz-opt" data-correct="true">y = 3</button><button class="quiz-opt" data-correct="false">y = 1/3</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> Equal degrees (2 and 2), so y = 6/2 = 3. y = 1/3 divides upside down, and y = 0 is only for a bigger bottom degree.</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">List the possible rational zeros of P(x) = 2x&sup3; &minus; x + 3.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">&plusmn;1, &plusmn;2, &plusmn;&frac13;, &plusmn;2/3</button><button class="quiz-opt" data-correct="true">&plusmn;1, &plusmn;3, &plusmn;&frac12;, &plusmn;3/2</button><button class="quiz-opt" data-correct="false">&plusmn;1, &plusmn;3</button><button class="quiz-opt" data-correct="false">&plusmn;1, &plusmn;2, &plusmn;3, &plusmn;6</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> p divides the constant 3: &plusmn;1, &plusmn;3. q divides the leading coefficient 2: &plusmn;1, &plusmn;2. So p/q gives &plusmn;1, &plusmn;3, &plusmn;&frac12;, &plusmn;3/2. The first distractor flips p/q; the second forgets to divide by q.</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Which describes the end behavior of f(x) = &minus;3x&#8309; + 2x&sup2; &minus; 1?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">Falls on the left, rises on the right</button><button class="quiz-opt" data-correct="false">Falls on both ends</button><button class="quiz-opt" data-correct="true">Rises on the left, falls on the right</button><button class="quiz-opt" data-correct="false">Rises on both ends</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> The leading term &minus;3x&#8309; has odd degree and a negative coefficient, so the ends go in opposite directions: up on the left, down on the right.</div>
+      </div>
+<div class="quiz-q" data-quiz="q6"><div class="qnum">Question 6</div><div class="qtext">The time to fill a pool varies inversely as the number of pumps. It takes 10 hours to fill with 3 pumps. How long does it take with 5 pumps?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">6 hours</button><button class="quiz-opt" data-correct="false">16&#8532; hours</button><button class="quiz-opt" data-correct="false">8 hours</button><button class="quiz-opt" data-correct="false">3&#8531; hours</button></div>
+        <div class="explain-box" id="ex-q6"><b>Here's why:</b> Time varies inversely as pumps: t = k/n, so k = 10 &middot; 3 = 30 and t = 30/5 = 6 hours. 16&#8532; treats it as direct variation, 8 just subtracts 2, and 3&#8531; is 10 &divide; 3.</div>
+      </div>
+<div class="quiz-q" data-quiz="q7"><div class="qnum">Question 7</div><div class="qtext">A polynomial with real coefficients has zeros 2 and 3 &minus; i. Which other number must be a zero?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">3 + i</button><button class="quiz-opt" data-correct="false">&minus;3 + i</button><button class="quiz-opt" data-correct="false">&minus;2</button><button class="quiz-opt" data-correct="false">&minus;3 &minus; i</button></div>
+        <div class="explain-box" id="ex-q7"><b>Here's why:</b> Nonreal zeros of a polynomial with real coefficients come in conjugate pairs: 3 &minus; i brings 3 + i. Only the sign of the imaginary part changes, and the real zero 2 needs no partner.</div>
+      </div>
+<div class="quiz-q" data-quiz="q8"><div class="qnum">Question 8</div><div class="qtext">A ball's height is s(t) = &minus;16t&sup2; + 96t + 4 feet. What is its maximum height?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">3 ft</button><button class="quiz-opt" data-correct="true">148 ft</button><button class="quiz-opt" data-correct="false">292 ft</button><button class="quiz-opt" data-correct="false">4 ft</button></div>
+        <div class="explain-box" id="ex-q8"><b>Here's why:</b> t = &minus;96/(2 &middot; &minus;16) = 3 seconds, and s(3) = &minus;144 + 288 + 4 = 148 ft. 3 is the time, not the height; 292 adds 144 instead of subtracting; 4 is the starting height.</div>
+      </div>
+<div class="quiz-q" data-quiz="q9"><div class="qnum">Question 9</div><div class="qtext">For f(x) = (x &minus; 2)&sup2;(x + 1)&sup3;, at which zero does the graph touch the x-axis and turn around?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">x = 2</button><button class="quiz-opt" data-correct="false">x = &minus;1</button><button class="quiz-opt" data-correct="false">x = &minus;2</button><button class="quiz-opt" data-correct="false">x = 1</button></div>
+        <div class="explain-box" id="ex-q9"><b>Here's why:</b> x = 2 has multiplicity 2 (even), so the graph touches and turns there. x = &minus;1 has multiplicity 3 (odd), so it crosses. &minus;2 and 1 flip the signs; they are not zeros at all.</div>
+      </div>
+<div class="quiz-q" data-quiz="q10"><div class="qnum">Question 10</div><div class="qtext">Describe the graph of f(x) = (x&sup2; &minus; x &minus; 6)/(x&sup2; &minus; 9) at x = 3 and x = &minus;3.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">Vertical asymptotes at x = 3 and x = &minus;3</button><button class="quiz-opt" data-correct="false">Hole at x = &minus;3, vertical asymptote x = 3</button><button class="quiz-opt" data-correct="false">Holes at x = 3 and x = &minus;3</button><button class="quiz-opt" data-correct="true">Hole at x = 3, vertical asymptote x = &minus;3</button></div>
+        <div class="explain-box" id="ex-q10"><b>Here's why:</b> (x &minus; 3)(x + 2)/[(x &minus; 3)(x + 3)]: x &minus; 3 cancels, so x = 3 is a hole (at y = 5/6). x + 3 stays in the denominator, so x = &minus;3 is a vertical asymptote.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 10</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Debrief</p><h1 class="slide-title">Chapter 3, reviewed</h1>
+<p>You can now find the vertex of a parabola, divide and factor polynomials, locate every zero, sketch polynomial and rational graphs, and solve variation problems. Chapter 4 turns to inverse, exponential, and logarithmic functions, the models behind growth, decay, and compound interest.</p><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Missed a question?</strong> Each one lines up with a lesson. Go back to that lesson's worked examples before the test &mdash; it's faster than re-reading the whole chapter.</p></div><div class="end-actions"><a class="end-btn primary next-lesson-link" href="../Chapter%204%20-%20Inverse%2C%20Exponential%20%26%20Logarithmic%20Functions/4-1-inverse-functions.html">Start Chapter 4 &rarr;</a><a class="end-btn secondary" href="../index.html">Course Home</a><a class="end-btn secondary" href="../KCE_CollegeAlgebra_Chapter3.html">Back to Chapter 3</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Review</button></div>
+</section>
+</div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83d\udd01 Review restarted \u2014 go for a higher score!');
+      goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-chapter-3-review',
+        lesson: 'Chapter 3 Review: Polynomial & Rational Functions',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>
