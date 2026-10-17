@@ -36,7 +36,7 @@
   }
   function rpow(r, e) { r = R(r); var out = R(1); for (var i = 0; i < Math.abs(e); i++) out = out.mul(r); return e < 0 ? R(1).div(out) : out; }
   function pw(b, e) { return b + '<sup>' + e + '</sup>'; }
-  function ex(e) { return 'e<sup>' + e + '</sup>'; }
+  function ex(e) { return String(e) === '1' ? 'e' : 'e<sup>' + e + '</sup>'; }   // e¹ is written e
   function lg(b, a, par) { var L = b === 10 ? 'log' : b === 'e' ? 'ln' : 'log<sub>' + b + '</sub>'; return L + (par ? '(' + a + ')' : ' ' + a); }
   function bh(r) { r = R(r); if (r.d === 1) return n(r.n); if (r.n === 1 && r.d === 2) return '(½)'; if (r.n === 1 && r.d === 3) return '(⅓)'; if (r.n === 1 && r.d === 4) return '(¼)'; return '(' + r.n + '/' + r.d + ')'; }
   function rs(r) { r = R(r); return r.d === 1 ? n(r.n) : (r.n < 0 ? M : '') + Math.abs(r.n) + '/' + r.d; } // inline rational (for exponents)
@@ -55,6 +55,21 @@
   function sciSafe(v) { var e = Math.floor(lg10(v)), mt = v / Math.pow(10, e); return safe(mt, 1) && mt < 9.95; }
   function expF(a, b, h, k, neg) { return (neg ? M : '') + (a === 1 ? '' : n(a) + ' · ') + pw(bh(b), K.minusH(xi, h)) + K.plusK(k); }
   function graphGrid(o) { o.lab = o.lab || 2; return K.plane(o); }
+  // true when no marked point (dot) of a K.plane spec covers an axis tick label; mirrors the label layout in core.js
+  function ptsClear(o) {
+    var x0 = o.x[0], x1 = o.x[1], y0 = o.y[0], y1 = o.y[1], W = o.w || 320, H = o.h || 320, pad = o.pad || 30, padB = o.xlab ? 40 : pad, padL = o.ylab ? 44 : pad;
+    var gx = o.stepX || o.step || 1, gy = o.stepY || o.step || 1, lx = o.labX || o.lab || (gx * ((x1 - x0) / gx > 12 ? 2 : 1)), ly = o.labY || o.lab || (gy * ((y1 - y0) / gy > 12 ? 2 : 1));
+    var pw = W - padL - pad, ph = H - pad - padB;
+    var X = function (x) { return padL + (x - x0) / (x1 - x0) * pw; }, Y = function (y) { return pad + (y1 - y) / (y1 - y0) * ph; };
+    var ax = (y0 <= 0 && y1 >= 0) ? Y(0) : (y0 > 0 ? pad + ph : pad), ay = (x0 <= 0 && x1 >= 0) ? X(0) : (x0 > 0 ? padL : padL + pw);
+    var boxes = [], v, w;
+    for (v = Math.ceil(x0 / lx) * lx; v <= x1 + 1e-9; v += lx) { if (Math.abs(v) < 1e-9 && (x0 < 0 || y0 >= 0)) continue; w = 6.4 * n(K.round(v, 6)).length; boxes.push([X(v) - w / 2, ax + 5, X(v) + w / 2, ax + 17]); }
+    for (v = Math.ceil(y0 / ly) * ly; v <= y1 + 1e-9; v += ly) { if (Math.abs(v) < 1e-9) continue; w = 6.4 * n(K.round(v, 6)).length; boxes.push([ay - 6 - w, Y(v) - 6, ay - 5, Y(v) + 6]); }
+    return (o.pts || []).every(function (P) {
+      var cx = X(K.R(P.x).val()), cy = Y(K.R(P.y).val()), r = 6.5;
+      return boxes.every(function (b) { var dx = Math.max(b[0] - cx, 0, cx - b[2]), dy = Math.max(b[1] - cy, 0, cy - b[3]); return dx * dx + dy * dy > r * r; });
+    });
+  }
 
   /* ---------- 4.1 Inverse Functions ---------- */
   var c41 = [
@@ -104,13 +119,15 @@
           f = function (x) { return s * x + b; };
           for (var x = -4; x <= 4; x++) { if (Math.abs(f(x)) <= 7) pts.push([x, f(x)]); }
         } else {
-          a = ri(1, 6); c = ri(-4, 3); from = -a;
+          do { a = ri(1, 6); c = ri(-4, 3); } while (!ptsClear({ x: [-8, 8], y: [-8, 8], lab: 2, pts: [{ x: -a, y: c }] }));   // keep the curve's start off the tick labels
+          from = -a;
           f = function (x) { return Math.sqrt(x + a) + c; };
           for (var t = 0; t <= 3; t++) pts.push([-a + t * t, c + t]);
         }
-        var cand = pts.filter(function (p) { return p[0] !== p[1]; });
-        var tp = pick(cand), x1 = tp[0], y1 = tp[1];
-        var others = K.sample(pts.filter(function (p) { return p !== tp; }), 2), shown = [tp].concat(others);
+        var cand = pts.filter(function (p) { return p[0] !== p[1]; }), tp, others, shown, tries = 0;
+        do { tp = pick(cand); others = K.sample(pts.filter(function (p) { return p !== tp; }), 2); shown = [tp].concat(others); }
+        while (!ptsClear({ x: [-8, 8], y: [-8, 8], lab: 2, pts: shown.concat(type === 'sqrt' ? [[-a, c]] : []).map(function (p) { return { x: p[0], y: p[1] }; }) }) && tries++ < 60);   // the curve's starting point counts too
+        var x1 = tp[0], y1 = tp[1];
         var wr = [-x1, y1];
         if (type === 'line' || y1 + a >= 0) { var fy = f(y1); if (Math.abs(fy - Math.round(fy)) < 1e-9 && Math.abs(fy) <= 30) wr.splice(0, 0, Math.round(fy)); }
         others.forEach(function (p) { wr.push(p[0]); });
@@ -138,7 +155,7 @@
         do { a = rnz(-4, 4); b = rnz(-6, 6); c = rnz(-5, 5); } while (c === a || -a * c - b === 0);
         var pre = FI + '(<i>x</i>) = ';
         var right = m(pre + fr(P([[c, xi], [b, '']]), K.minusH(xi, a)));
-        var w = K.shuffle([m(pre + fr(K.minusH(xi, c), P([[a, xi], [b, '']]))), m(pre + fr(P([[c, xi], [-b, '']]), K.minusH(xi, a))), m(pre + fr(P([[c, xi], [b, '']]), K.minusH(xi, -a))), m(pre + fr(P([[a, xi], [b, '']]), K.minusH(xi, c)))]);
+        var w = K.shuffle([m(pre + (a < 0 ? fr(P([[-1, xi], [c, '']]), P([[-a, xi], [-b, '']])) : fr(K.minusH(xi, c), P([[a, xi], [b, '']]))))   /* never a denominator with a leading minus */, m(pre + fr(P([[c, xi], [-b, '']]), K.minusH(xi, a))), m(pre + fr(P([[c, xi], [b, '']]), K.minusH(xi, -a))), m(pre + fr(P([[a, xi], [b, '']]), K.minusH(xi, c)))]);
         return QP({ q: 'Find the inverse of the one-to-one function ' + m(fx(fr(P([[a, xi], [b, '']]), K.minusH(xi, c)))) + '.', mc: mc(right, w),
           why: ['Swap ' + xi + ' and ' + yi + ': ' + m('<i>x</i> = ' + fr(P([[a, yi], [b, '']]), K.minusH(yi, c))) + '.', 'Clear the fraction: ' + m(P([[1, '<i>xy</i>'], [-c, xi]]) + ' = ' + P([[a, yi], [b, '']])) + '. Collect the ' + yi + '-terms: ' + m(P([[1, '<i>xy</i>'], [-a, yi]]) + ' = ' + P([[c, xi], [b, '']])) + '.', 'Factor: ' + m('<i>y</i>(' + K.minusH(xi, a) + ') = ' + P([[c, xi], [b, '']])) + ', so ' + m(FI + '(<i>x</i>) = ' + fr(P([[c, xi], [b, '']]), K.minusH(xi, a))) + ', ' + m('<i>x</i> ≠ ' + n(a)) + '.'] },
           { t: 'ratinv', a: a, b: b, c: c });
@@ -158,8 +175,9 @@
     [
       function () {   // domain and range of f^-1 from a graph
         var h, k;
-        do { h = ri(-4, 3); k = ri(-4, 4); } while (h === k);
-        var x0 = Math.min(-2, h - 2), y0 = Math.min(-2, k - 2), L = Math.max(h + 10 - x0, k + 5 - y0, 12);
+        var x0, y0, L;
+        do { h = ri(-4, 3); k = ri(-4, 4); x0 = Math.min(-2, h - 2); y0 = Math.min(-2, k - 2); L = Math.max(h + 10 - x0, k + 5 - y0, 12); }
+        while (h === k || !ptsClear({ x: [x0, x0 + L], y: [y0, y0 + L], lab: 2, pts: [{ x: h, y: k }, { x: h + 4, y: k + 2 }] }));
         var f = function (x) { return Math.sqrt(x - h) + k; };
         var g = graphGrid({ x: [x0, x0 + L], y: [y0, y0 + L], fns: [{ f: f, from: h }], lines: [{ m: 1, b: 0, dash: true, color: C.gray }], pts: [{ x: h, y: k }, { x: h + 4, y: k + 2 }] });
         function ch(d, r, op) { return 'Domain ' + m((op ? '(' : '[') + n(d) + ', ' + INF + ')') + '; range ' + m((op ? '(' : '[') + n(r) + ', ' + INF + ')'); }
@@ -171,8 +189,9 @@
       function () {   // taxi fare inverse
         var r = pick([2, 2.5, 4, 1.25]), b = ri(2, 6), mi = ri(4, 20), F = r * mi + b;
         var CI = '<i>C</i><sup>' + M + '1</sup>';
-        function rideCh(v) { return m(CI + '(' + n(F) + ') = ' + n(v)) + ': a fare of ' + money(F) + ' pays for a ride of ' + n(v) + ' miles'; }
-        var w = [m(CI + '(' + n(F) + ') = ' + n(r * F + b)) + ': a ride of ' + n(F) + ' miles costs ' + money(r * F + b), rideCh((F + b) / r)];
+        function miles(v) { return n(v) + (v === 1 ? ' mile' : ' miles'); }
+        function rideCh(v) { return m(CI + '(' + n(F) + ') = ' + n(v)) + ': a fare of ' + money(F) + ' pays for a ride of ' + miles(v); }
+        var w = [m(CI + '(' + n(F) + ') = ' + n(r * F + b)) + ': a ride of ' + miles(F) + ' costs ' + money(r * F + b), rideCh((F + b) / r)];
         if (F / r - b > 0) w.push(rideCh(F / r - b));
         return QP({ q: 'A taxi charges a ' + money(b) + ' pickup fee plus ' + money(r) + ' per mile, so ' + m('<i>C</i>(<i>m</i>) = ' + n(r) + '<i>m</i> + ' + n(b)) + ' is the fare in dollars for an ' + m('<i>m</i>') + '-mile ride. Find ' + m(CI + '(' + n(F) + ')') + ' and interpret it.', mc: mc(rideCh(mi), w, function (i) { return rideCh(mi + rnz(-4, 4) * (1 + Math.floor(i / 10))); }),
           why: ['Solve ' + m('<i>F</i> = ' + n(r) + '<i>m</i> + ' + n(b)) + ' for ' + m('<i>m</i>') + ': ' + m(CI + '(<i>F</i>) = ' + fr('<i>F</i> ' + M + ' ' + n(b), n(r))) + '.', m(CI + '(' + n(F) + ') = ' + fr(n(F) + ' ' + M + ' ' + n(b), n(r)) + ' = ' + n(mi)) + '.', 'The inverse takes a fare and returns the miles: a ' + money(F) + ' fare pays for a ' + n(mi) + '-mile ride. (Check: ' + m(n(r) + '(' + n(mi) + ') + ' + n(b) + ' = ' + n(F)) + '.)'] },
@@ -212,7 +231,7 @@
     ws.push(xv.neg());
     if (recip && p * A - q * Cc !== 0) ws.push(R(q * D - p * B, p * A - q * Cc));
     return QP({ q: 'Solve: ' + m(pw(lb, lexp) + ' = ' + pw(rb, rexp)) + (recip ? '. Give an exact answer.' : ''), mc: mcR(xv, ws, function (h) { return xeq(h); }),
-      why: ['Write both sides with base ' + b + ': ' + m(lb + ' = ' + pw(b, n(sp))) + ' and ' + m(rb + ' = ' + pw(b, n(q))) + '.', 'Multiply the exponents (distribute to every term): ' + m(pw(b, P([[sp * A, xi], [sp * B, '']])) + ' = ' + pw(b, P([[q * Cc, xi], [q * D, '']]))) + '.', 'Same base, so the exponents are equal: ' + m(P([[sp * A, xi], [sp * B, '']]) + ' = ' + P([[q * Cc, xi], [q * D, '']])) + ', which gives ' + xeq(xv.html()) + '.'] },
+      why: [(function () { var cv = []; if (sp !== 1) cv.push(m(lb + ' = ' + pw(b, n(sp)))); if (q !== 1) cv.push(m(rb + ' = ' + pw(b, n(q)))); return 'Write both sides with base ' + b + ': ' + cv.join(' and ') + (cv.length < 2 ? ' (the other side already has base ' + b + ')' : '') + '.'; })(), 'Multiply the exponents (distribute to every term): ' + m(pw(b, P([[sp * A, xi], [sp * B, '']])) + ' = ' + pw(b, P([[q * Cc, xi], [q * D, '']]))) + '.', 'Same base, so the exponents are equal: ' + m(P([[sp * A, xi], [sp * B, '']]) + ' = ' + P([[q * Cc, xi], [q * D, '']])) + ', which gives ' + xeq(xv.html()) + '.'] },
       { t: 'mbase', b: b, sp: sp, q: q, A: A, B: B, C: Cc, D: D });
   }
   var c42 = [
@@ -226,7 +245,8 @@
         var ws = [val.neg(), R(B.n * p, B.d * q), R(1).div(val)];
         var steps = [m('<i>f</i>(' + x0.html() + ') = ' + pw(bh(B), rs(x0))) + '.'];
         if (q > 1) steps.push('The denominator ' + q + ' means a ' + (q === 2 ? 'square' : 'cube') + ' root: the ' + (q === 2 ? 'square' : 'cube') + ' root of ' + B.html() + ' is ' + br.html() + '.');
-        steps.push('Raise to the power ' + n(p) + ': ' + m('(' + br.html() + ')' + K.sup(n(p)) + ' = ' + val.html()) + '.');
+        if (p !== 1) steps.push('Raise to the power ' + n(p) + ': ' + m('(' + br.html() + ')' + K.sup(n(p)) + ' = ' + val.html()) + '.');
+        else steps.push('So ' + m('<i>f</i>(' + x0.html() + ') = ' + val.html()) + '.');
         if (p < 0) steps.push('A negative exponent gives a reciprocal, never a negative number.');
         return QP({ q: 'For ' + m(fx(pw(bh(B), xi))) + ', find ' + m('<i>f</i>(' + x0.html() + ')') + '. Give an exact answer.', mc: mcR(val, ws), why: steps }, { t: 'evalexp', B: [B.n, B.d], x: [p, q] });
       },
@@ -249,9 +269,9 @@
     [
       function () { return mbGen(false); },
       function () {   // identify the exponential graph
-        var b = pick([R(2), R(3), R(1, 2)]), h = rnz(-3, 3), k = rnz(-4, 3), bv = b.val();
-        var y0 = Math.min(-2, k - 2), y1 = Math.max(2, k + 7);
-        var p2 = bv > 1 ? [h + 1, k + bv] : [h - 1, k + 2];
+        var b, h, k, bv, y0, y1, p2;
+        do { b = pick([R(2), R(3), R(1, 2)]); h = rnz(-3, 3); k = rnz(-4, 3); bv = b.val(); y0 = Math.min(-2, k - 2); y1 = Math.max(2, k + 7); p2 = bv > 1 ? [h + 1, k + bv] : [h - 1, k + 2]; }
+        while (!ptsClear({ x: [-7, 7], y: [y0, y1], lab: 2, pts: [{ x: h, y: k + 1 }, { x: p2[0], y: p2[1] }] }));
         var g = graphGrid({ x: [-7, 7], y: [y0, y1], lab: 2, fns: [{ f: function (x) { return Math.pow(bv, x - h) + k; } }], lines: [{ m: 0, b: k, dash: true, color: C.red }], pts: [{ x: h, y: k + 1 }, { x: p2[0], y: p2[1] }] });
         function ch(hh, kk) { return m('<i>y</i> = ' + pw(bh(b), K.minusH(xi, hh)) + K.plusK(kk)); }
         var ws = [ch(-h, k), ch(h, -k)]; if (h !== k) ws.push(ch(k, h)); ws.push(ch(-h, -k));
@@ -287,13 +307,13 @@
         var a = pick([1, 2, 3]), b = pick([2, 3]), h = ri(-2, 2), k = rnz(-5, 6);
         var pwr = h <= 0 ? R(Math.pow(b, -h)) : R(1, Math.pow(b, h));
         var f0 = pwr.mul(-a).add(k);
-        function ch(rk, down, y) { return 'Range ' + m(down ? '(' + NINF + ', ' + n(rk) + ')' : '(' + n(rk) + ', ' + INF + ')') + '; ' + m('<i>y</i>') + '-intercept ' + K.pt(0, y); }
+        function ch(rk, down, y) { return 'Range ' + m(down ? '(' + NINF + ', ' + n(rk) + ')' : '(' + n(rk) + ', ' + INF + ')') + '; ' + m('<i>y</i>') + '-intercept ' + m(K.pt(0, y)); }
         var cands = [[k, false, f0], [k, true, pwr.mul(a).add(k)], [-k, true, f0]];
         if (h !== 0) cands.push([k, true, R(1).div(pwr).mul(-a).add(k)]);
         cands.push([k, true, pwr.mul(-a).add(-k)]);
         var ws = cands.filter(function (c) { return !(c[0] === k && c[1] === true && R(c[2]).eq(f0)); }).map(function (c) { return ch(c[0], c[1], c[2]); });
         return QP({ q: 'For ' + m(fx(expF(a, R(b), h, k, true))) + ', what are the range and the ' + m('<i>y</i>') + '-intercept?', mc: mc(ch(k, true, f0), ws),
-          why: ['The asymptote is ' + m('<i>y</i> = ' + n(k)) + '. The negative sign in front reflects the graph so it lies below the asymptote: range ' + m('(' + NINF + ', ' + n(k) + ')') + '.', m('<i>f</i>(0) = ' + M + (a === 1 ? '' : n(a) + ' · ') + pw(b, n(-h)) + K.plusK(k) + ' = ' + M + (a === 1 ? '' : n(a) + ' · ') + pwr.html() + K.plusK(k) + ' = ' + f0.html()) + '.', 'Range ' + m('(' + NINF + ', ' + n(k) + ')') + '; ' + m('<i>y</i>') + '-intercept ' + K.pt(0, f0) + '.'] },
+          why: ['The asymptote is ' + m('<i>y</i> = ' + n(k)) + '. The negative sign in front reflects the graph so it lies below the asymptote: range ' + m('(' + NINF + ', ' + n(k) + ')') + '.', m('<i>f</i>(0) = ' + M + (a === 1 ? '' : n(a) + ' · ') + (h === -1 ? n(b) : pw(b, n(-h))) + K.plusK(k)) + ' ' + m('= ' + (h === -1 ? '' : M + (a === 1 ? '' : n(a) + ' · ') + pwr.html() + K.plusK(k) + ' = ') + f0.html()) + '.', 'Range ' + m('(' + NINF + ', ' + n(k) + ')') + '; ' + m('<i>y</i>') + '-intercept ' + m(K.pt(0, f0)) + '.'] },
           { t: 'reflexp', a: a, b: b, h: h, k: k });
       },
       function () {   // exponential function through two points
@@ -337,7 +357,7 @@
         do { e = ri(1, 3); } while (Math.pow(b, e) > 125);
         var V = Math.pow(b, e), a = V - c;
         return QP({ q: 'Solve: ' + m(lg(b, K.minusH(xi, -c), true) + ' = ' + e), mc: mcR(a, [V, V + c, b * e - c], function (h) { return xeq(h); }),
-          why: ['Exponential form: ' + m(pw(b, e) + ' = ' + K.minusH(xi, -c)) + '.', m(pw(b, e) + ' = ' + V) + ', so ' + m(K.minusH(xi, -c) + ' = ' + V) + ' and ' + xeq(n(a)) + '.', 'Check: ' + m(lg(b, n(a) + K.plusK(c), true) + ' = ' + lg(b, V) + ' = ' + e) + ' ✔ (the argument is positive).'] },
+          why: ['Exponential form: ' + m(pw(b, e) + ' = ' + K.minusH(xi, -c)) + '.', (e === 1 ? 'So ' : m(pw(b, e) + ' = ' + V) + ', so ') + m(K.minusH(xi, -c) + ' = ' + V) + ' and ' + xeq(n(a)) + '.', 'Check: ' + m(lg(b, n(a) + K.plusK(c), true) + ' = ' + lg(b, V) + ' = ' + e) + ' ✔ (the argument is positive).'] },
           { t: 'logeq1', b: b, c: c, e: e });
       },
       function () {   // domain of log
@@ -350,13 +370,14 @@
     ],
     [
       function () {   // identify the log graph
-        var b = pick([2, 3]), h = rnz(-4, 2), k = rnz(-3, 3);
-        var x0 = Math.min(-2, h - 2), x1 = Math.max(4, h + 10), y0 = Math.min(-2, k - 4), y1 = Math.max(2, k + 4);
+        var b, h, k, x0, x1, y0, y1;
+        do { b = pick([2, 3]); h = rnz(-4, 2); k = rnz(-3, 3); x0 = Math.min(-2, h - 2); x1 = Math.max(4, h + 10); y0 = Math.min(-2, k - 4); y1 = Math.max(2, k + 4); }
+        while (!ptsClear({ x: [x0, x1], y: [y0, y1], lab: 2, pts: [{ x: h + 1, y: k }, { x: h + b, y: k + 1 }] }));
         var g = graphGrid({ x: [x0, x1], y: [y0, y1], lab: 2, fns: [{ f: function (x) { return Math.log(x - h) / Math.log(b) + k; }, from: h + 0.0005 }], lines: [{ vx: h, dash: true, color: C.red }], pts: [{ x: h + 1, y: k }, { x: h + b, y: k + 1 }] });
         function ch(hh, kk) { return m('<i>y</i> = ' + lg(b, K.minusH(xi, hh), true) + K.plusK(kk)); }
         var ws = [ch(-h, k), ch(h, -k)]; if (h !== k) ws.push(ch(k, h)); ws.push(ch(-h, -k));
         return QP({ q: 'Which equation matches the graph? The dashed line is the vertical asymptote, and two points on the curve are marked.', graph: g, mc: mc(ch(h, k), ws),
-          why: ['The vertical asymptote is ' + m('<i>x</i> = ' + n(h)) + ', so the argument is ' + m(K.minusH(xi, h)) + ' (it is 0 at the asymptote).', 'The parent ' + m(lg(b, xi)) + ' passes through ' + K.pt(1, 0) + '; here that point is ' + K.pt(h + 1, k) + ', so the graph was shifted ' + (k > 0 ? 'up ' + k : 'down ' + (-k)) + ': the equation ends in ' + m(K.plusK(k)) + '.', 'Check the other point: ' + m(lg(b, '(' + n(h + b) + ' ' + M + ' ' + sub(h) + ')') + K.plusK(k) + ' = ' + lg(b, b) + K.plusK(k) + ' = ' + n(k + 1)) + ' ✔'] },
+          why: ['The vertical asymptote is ' + m('<i>x</i> = ' + n(h)) + ', so the argument is ' + m(K.minusH(xi, h)) + ' (it is 0 at the asymptote).', 'The parent ' + m(lg(b, xi)) + ' passes through ' + K.pt(1, 0) + '; here that point is ' + K.pt(h + 1, k) + ', so the graph was shifted ' + (k > 0 ? 'up ' + k : 'down ' + (-k)) + ': the equation ends in ' + m(K.plusK(k)) + '.', 'Check the other point: ' + m(lg(b, n(h + b) + ' ' + M + ' ' + sub(h), true) + K.plusK(k) + ' = ' + lg(b, b) + K.plusK(k) + ' = ' + n(k + 1)) + ' ✔'] },
           { t: 'loggraph', b: b, h: h, k: k, pts: [[h + 1, k], [h + b, k + 1]], asy: h });
       },
       function () {   // expand
@@ -391,8 +412,8 @@
           N = pick(ds); Mv = tot / N;
         }
         var expr = sum ? lg(b, n(Mv)) + ' + ' + lg(b, n(N)) : lg(b, n(Mv)) + ' ' + M + ' ' + lg(b, n(N));
-        return QP({ q: 'Evaluate without a calculator: ' + m(expr), mc: mcN(k, [Math.pow(b, k), -k, k + 1, 2 * k], n),
-          why: [sum ? 'Product property: ' + m(expr) + ' ' + m('= ' + lg(b, n(Mv) + ' · ' + n(N), true)) + ' ' + m('= ' + lg(b, n(Mv * N))) + '.' : 'Quotient property: ' + m(expr) + ' ' + m('= ' + lg(b, fr(n(Mv), n(N)), true)) + ' ' + m('= ' + lg(b, n(Mv / N))) + '.', m(n(sum ? Mv * N : Mv / N) + ' = ' + pw(b, k)) + ', so the value is ' + k + '.', 'Neither log is a whole number by itself; the properties make the problem easy.'] },
+        return QP({ q: 'Evaluate without a calculator: ' + m(expr), mc: mcN(k, [Math.pow(b, k), -k, k + 1, 2 * k], n, function (i) { return n(k + (i % 2 ? -1 : 1) * (2 + Math.floor(i / 2))); }),   // exact (integer) distractors only
+          why: [sum ? 'Product property: ' + m(expr) + ' ' + m('= ' + lg(b, n(Mv) + ' · ' + n(N), true)) + ' ' + m('= ' + lg(b, n(Mv * N))) + '.' : 'Quotient property: ' + m(expr) + ' ' + m('= ' + lg(b, fr(n(Mv), n(N)), true)) + ' ' + m('= ' + lg(b, n(Mv / N))) + '.', (k === 1 ? 'The argument equals the base, and ' + m(lg(b, n(b)) + ' = 1') + ', so the value is 1.' : m(n(sum ? Mv * N : Mv / N) + ' = ' + pw(b, k)) + ', so the value is ' + k + '.'), 'Neither log is a whole number by itself; the properties make the problem easy.'] },
           { t: 'lognum', b: b, M: Mv, N: N, sum: sum });
       }
     ],
@@ -415,6 +436,7 @@
       },
       function () {   // log_b 2 = A, log_b 3 = B
         var i = ri(1, 4), j = ri(1, 3), mode = pick(['prod', 'prod', 'q23', 'q32']), ci, cj, Nh, N;
+        if (mode !== 'prod' && i === 1 && j === 1) j = 2;   // 2/3 would already be factored
         if (mode === 'prod') { ci = i; cj = j; N = Math.pow(2, i) * Math.pow(3, j); Nh = n(N); if (N > 500) { i = 2; ci = 2; N = 4 * Math.pow(3, j); Nh = n(N); } }
         else if (mode === 'q23') { ci = i; cj = -j; Nh = K.f(Math.pow(2, i), Math.pow(3, j)); }
         else { ci = -i; cj = j; Nh = K.f(Math.pow(3, j), Math.pow(2, i)); }
@@ -422,9 +444,9 @@
         var cands = [[cj, ci], [ci, -cj], [-ci, cj], [Math.abs(ci), Math.abs(cj)], [ci + cj, 0]];
         var ws = cands.filter(function (c) { return !(c[0] === ci && c[1] === cj); }).map(function (c) { return lin(c[0], c[1]); });
         ws.splice(1, 0, m(n(Math.abs(ci * cj)) + '<i>AB</i>'));
-        var bi = '<i>b</i>';
+        var bi = '<i>b</i>', p1 = function (bb, e) { return e === 1 ? String(bb) : pw(bb, e); };
         return QP({ q: 'Given ' + m(lg(bi, '2') + ' = <i>A</i>') + ' and ' + m(lg(bi, '3') + ' = <i>B</i>') + ', write ' + m(lg(bi, Nh, mode !== 'prod')) + ' in terms of ' + m('<i>A</i>') + ' and ' + m('<i>B</i>') + '.', mc: mc(lin(ci, cj), ws),
-          why: ['Factor into 2s and 3s: ' + m(Nh + ' = ' + (mode === 'prod' ? pw(2, i) + ' · ' + pw(3, j) : mode === 'q23' ? fr(pw(2, i), pw(3, j)) : fr(pw(3, j), pw(2, i)))) + '.', (mode === 'prod' ? 'Product property: ' + m(lg(bi, pw(2, i)) + ' + ' + lg(bi, pw(3, j))) : 'Quotient property: ' + m(mode === 'q23' ? lg(bi, pw(2, i)) + ' ' + M + ' ' + lg(bi, pw(3, j)) : lg(bi, pw(3, j)) + ' ' + M + ' ' + lg(bi, pw(2, i)))) + '.', 'Power property: ' + lin(ci, cj) + '.'] },
+          why: ['Factor into 2s and 3s: ' + m(Nh + ' = ' + (mode === 'prod' ? p1(2, i) + ' · ' + p1(3, j) : mode === 'q23' ? fr(p1(2, i), p1(3, j)) : fr(p1(3, j), p1(2, i)))) + '.', (mode === 'prod' ? 'Product property: ' + m(lg(bi, p1(2, i)) + ' + ' + lg(bi, p1(3, j))) : 'Quotient property: ' + m(mode === 'q23' ? lg(bi, p1(2, i)) + ' ' + M + ' ' + lg(bi, p1(3, j)) : lg(bi, p1(3, j)) + ' ' + M + ' ' + lg(bi, p1(2, i)))) + '.', 'Power property: ' + lin(ci, cj) + '.'] },
           { t: 'logAB', ci: ci, cj: cj, N: mode === 'prod' ? [N, 1] : mode === 'q23' ? [Math.pow(2, i), Math.pow(3, j)] : [Math.pow(3, j), Math.pow(2, i)] });
       },
       function () {   // expand a radical quotient
@@ -464,7 +486,7 @@
         var a, x, v;
         do { a = pick([2, 3, 4, 5, 6, 7, 8, 9, 12, 15]); x = ri(2, 500); v = ln(x) / ln(a); } while (Math.abs(v - Math.round(v)) < 0.011 || !safe(v, 2) || x === a);
         return QP({ q: 'Use the change-of-base theorem to evaluate ' + m(lg(a, n(x))) + ' to the nearest hundredth.', mc: mcN(v, [ln(a) / ln(x), x / a, lg10(x / a), ln(x)], function (w) { return dec(w, 2); }),
-          why: ['Change of base: ' + m(lg(a, n(x)) + ' = ' + fr('ln ' + n(x), 'ln ' + n(a))) + '. The number goes on top; the base goes in the denominator.', m('ln ' + n(x) + ' ≈ ' + d4(ln(x))) + ' and ' + m('ln ' + n(a) + ' ≈ ' + d4(ln(a))) + '.', 'Divide, then round: ' + m(fr(d4(ln(x)), d4(ln(a))) + ' ≈ ' + dec(v, 2)) + '. Check: ' + m(pw(a, dec(v, 2)) + ' ≈ ' + n(x)) + '.'] },
+          why: ['Change of base: ' + m(lg(a, n(x)) + ' = ' + fr('ln ' + n(x), 'ln ' + n(a))) + '. The number goes on top; the base goes in the denominator.', m('ln ' + n(x) + ' ≈ ' + d4(ln(x))) + ' and ' + m('ln ' + n(a) + ' ≈ ' + d4(ln(a))) + '.', 'Divide, then round: ' + m(fr(d4(ln(x)), d4(ln(a))) + ' ≈ ' + d4(v) + ' ≈ ' + dec(v, 2)) + '. Check, using four decimal places: ' + m(pw(a, d4(v)) + ' ≈ ' + n(x)) + '.'] },
           { t: 'cob', a: a, x: x });
       },
       function () {   // domain of a log with a linear argument
@@ -607,7 +629,7 @@
         var d = N / p - p, q = -N / p;
         var lhs = lg(b, xi) + ' + ' + lg(b, K.minusH(xi, -d), true);
         return QP({ q: 'Solve: ' + m(lhs + ' = ' + nn), mc: mc(xeq(n(p)), [setStr([p, q]), xeq(n(q)), 'No solution']),
-          why: ['Product property: ' + m(lg(b, xi + '(' + K.minusH(xi, -d) + ')', true) + ' = ' + nn) + ', so ' + m(P([[1, K.xp(2)], [d, xi]]) + ' = ' + pw(b, nn) + ' = ' + N) + '.', 'Then ' + m(P([[1, K.xp(2)], [d, xi], [-N, '']]) + ' = 0') + ', so ' + m('(' + K.minusH(xi, p) + ')(' + K.minusH(xi, q) + ') = 0') + ': candidates ' + n(p) + ' and ' + n(q) + '.', 'Check: ' + xeq(n(q)) + ' gives ' + m(lg(b, n(q), true)) + ', which is not defined, so it is extraneous. The solution is ' + xeq(n(p)) + '.'] },
+          why: ['Product property: ' + m(lg(b, xi + '(' + K.minusH(xi, -d) + ')', true) + ' = ' + nn) + ', so ' + m(P([[1, K.xp(2)], [d, xi]]) + ' = ' + (nn === 1 ? '' : pw(b, nn) + ' = ') + N) + '.', 'Then ' + m(P([[1, K.xp(2)], [d, xi], [-N, '']]) + ' = 0') + ', so ' + m('(' + K.minusH(xi, p) + ')(' + K.minusH(xi, q) + ') = 0') + ': candidates ' + n(p) + ' and ' + n(q) + '.', 'Check: ' + xeq(n(q)) + ' gives ' + m(lg(b, n(q), true)) + ', which is not defined, so it is extraneous. The solution is ' + xeq(n(p)) + '.'] },
           { t: 'logext', b: b, d: d, nn: nn });
       },
       function () {   // quadratic in form with e^x
@@ -637,7 +659,7 @@
         do { a = pick([2, 3, 4, 5, 6, 7]); b = pick([2, 3, 4, 5, 6, 7]); c = rnz(-3, 3); v = c * ln(b) / (ln(a) - ln(b)); } while (a === b || (a === 2 && b === 4) || (a === 4 && b === 2) || !safe(v, 2));
         var ws = [-v, c / (ln(a) - ln(b)), c * ln(a) / (ln(a) - ln(b))];
         return QP({ q: 'Solve ' + m(pw(a, xi) + ' = ' + pw(b, K.minusH(xi, -c))) + '. Round to the nearest hundredth.', mc: mcN(v, ws, h2),
-          why: ['Take ln of both sides: ' + m('<i>x</i> ln ' + a + ' = (' + K.minusH(xi, -c) + ') ln ' + b) + '.', 'Distribute and collect the ' + xi + '-terms: ' + m('<i>x</i> ln ' + a + ' ' + M + ' <i>x</i> ln ' + b + ' = ' + (c === 1 ? '' : c === -1 ? M : n(c)) + 'ln ' + b) + ', so ' + m('<i>x</i> = ' + fr((c === 1 ? '' : c === -1 ? M : n(c)) + 'ln ' + b, 'ln ' + a + ' ' + M + ' ln ' + b)) + '.', m('<i>x</i> ≈ ' + fr(d4(c * ln(b)), d4(ln(a) - ln(b))) + ' ≈ ' + dec(v, 2)) + '.'] },
+          why: ['Take ln of both sides: ' + m('<i>x</i> ln ' + a + ' = (' + K.minusH(xi, -c) + ') ln ' + b) + '.', 'Distribute and collect the ' + xi + '-terms: ' + m('<i>x</i> ln ' + a + ' ' + M + ' <i>x</i> ln ' + b + ' = ' + (c === 1 ? '' : c === -1 ? M : n(c) + ' ') + 'ln ' + b) + ', so ' + m('<i>x</i> = ' + fr((c === 1 ? '' : c === -1 ? M : n(c) + ' ') + 'ln ' + b, 'ln ' + a + ' ' + M + ' ln ' + b)) + '.', m('<i>x</i> ≈ ' + (v < 0 ? M : '') + fr(dec(Math.abs(c * ln(b)), 4), dec(Math.abs(ln(a) - ln(b)), 4)) + ' ≈ ' + dec(v, 2)) + '.'] },
           { t: 'axbx', a: a, b: b, c: c });
       },
       function () {   // log(x + a) + log(x − c) = log K with an extraneous root
@@ -653,7 +675,7 @@
         var S = Math.pow(B, i) + Math.pow(B, j), Pr = Math.pow(B, i + j);
         var ws = [setStr([Math.pow(B, i), Math.pow(B, j)]), setStr([-i, -j].map(function (v) { return v === 0 ? 0 : v; })), xeq(n(j)) + ' only', 'No real solution'];
         return QP({ q: 'Solve: ' + m(pw(B * B, xi) + ' ' + M + ' ' + S + ' · ' + pw(B, xi) + ' + ' + Pr + ' = 0') + '. Give exact answers.', mc: mc(setStr([i, j]), ws),
-          why: ['Since ' + m(pw(B * B, xi) + ' = (' + pw(B, xi) + ')' + K.sup(2)) + ', let ' + m('<i>u</i> = ' + pw(B, xi)) + ': ' + m('<i>u</i>' + K.sup(2) + ' ' + M + ' ' + S + '<i>u</i> + ' + Pr + ' = 0') + '.', 'Factor: ' + m('(<i>u</i> ' + M + ' ' + Math.pow(B, i) + ')(<i>u</i> ' + M + ' ' + Math.pow(B, j) + ') = 0') + ', so ' + m(pw(B, xi) + ' = ' + Math.pow(B, i)) + ' or ' + m(pw(B, xi) + ' = ' + Math.pow(B, j)) + '.', 'Write each as a power of ' + B + ': ' + m(Math.pow(B, i) + ' = ' + pw(B, i)) + ' and ' + m(Math.pow(B, j) + ' = ' + pw(B, j)) + ', so ' + setStr([i, j]) + '.'] },
+          why: ['Since ' + m(pw(B * B, xi) + ' = (' + pw(B, xi) + ')' + K.sup(2)) + ', let ' + m('<i>u</i> = ' + pw(B, xi)) + ': ' + m('<i>u</i>' + K.sup(2) + ' ' + M + ' ' + S + '<i>u</i> + ' + Pr + ' = 0') + '.', 'Factor: ' + m('(<i>u</i> ' + M + ' ' + Math.pow(B, i) + ')(<i>u</i> ' + M + ' ' + Math.pow(B, j) + ') = 0') + ', so ' + m(pw(B, xi) + ' = ' + Math.pow(B, i)) + ' or ' + m(pw(B, xi) + ' = ' + Math.pow(B, j)) + '.', 'Match the exponents: ' + [i, j].map(function (e) { return m(pw(B, xi) + ' = ' + Math.pow(B, e) + (e === 1 ? '' : ' = ' + pw(B, e))) + ' gives ' + xeq(n(e)); }).join(', and ') + '. So ' + setStr([i, j]) + '.'] },
           { t: 'qform2', B: B, S: S, Pr: Pr });
       }
     ]
@@ -692,11 +714,11 @@
     [
       function () {   // find k from data, predict
         var P0, g, P1, t1, t2, Y0, k, v;
-        do { P0 = 1000 * ri(10, 60); g = ri(3, 25) / 100; P1 = Math.round(P0 * (1 + g) / 100) * 100; t1 = ri(3, 8); t2 = t1 + ri(3, 10); k = ln(P1 / P0) / t1; v = P0 * Math.exp(k * t2); } while (P1 === P0 || !safe(v / 100, 0));
+        do { P0 = 1000 * ri(10, 60); g = ri(3, 25) / 100; P1 = Math.round(P0 * (1 + g) / 100) * 100; t1 = ri(3, 8); t2 = t1 + ri(3, 10); k = ln(P1 / P0) / t1; v = P0 * Math.exp(k * t2); } while (P1 === P0 || !safe(v / 100, 0) || Math.round(P0 * Math.exp(K.round(k, 4) * t2) / 100) !== Math.round(v / 100));   // same answer if k is rounded to 4 places
         Y0 = ri(2010, 2018);
         var k10 = lg10(P1 / P0) / t1;
         var fmt = function (w) { return comma(dec(Math.round(w / 100) * 100, 0)) + ' people'; };
-        return QP({ q: 'A town had ' + comma(String(P0)) + ' people in ' + Y0 + ' and ' + comma(String(P1)) + ' in ' + (Y0 + t1) + '. Assuming the model ' + m('<i>P</i>(<i>t</i>) = <i>P</i><sub>0</sub>' + ex('<i>kt</i>')) + ', predict the population in ' + (Y0 + t2) + ' to the nearest hundred.', mc: mcN(v, [P0 + (P1 - P0) / t1 * t2, P1 * Math.exp(k * t2), P0 * Math.exp(k10 * t2)], fmt, function (i) { return fmt(v + 100 * rnz(2, 9) * (1 + i)); }),
+        return QP({ q: 'A town had ' + comma(String(P0)) + ' people in ' + Y0 + ' and ' + comma(String(P1)) + ' in ' + (Y0 + t1) + '. Assuming the model ' + m('<i>P</i>(<i>t</i>) = <i>P</i><sub>0</sub>' + ex('<i>kt</i>')) + ', predict the population in ' + (Y0 + t2) + ' to the nearest hundred.' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(v, [P0 + (P1 - P0) / t1 * t2, P1 * Math.exp(k * t2), P0 * Math.exp(k10 * t2)], fmt, function (i) { return fmt(v + 100 * rnz(2, 9) * (1 + i)); }),
           why: ['Let ' + m('<i>t</i> = 0') + ' be ' + Y0 + ': ' + m('<i>P</i>(<i>t</i>) = ' + comma(String(P0)) + ex('<i>kt</i>')) + '. In ' + (Y0 + t1) + ', ' + m('<i>t</i> = ' + t1) + ': ' + m(comma(String(P1)) + ' = ' + comma(String(P0)) + ex(t1 + '<i>k</i>')) + '.', m('<i>k</i> = ' + fr('ln(' + comma(String(P1)) + '/' + comma(String(P0)) + ')', t1) + ' ≈ ' + dec(k, 6)) + '. Keep it unrounded.', (Y0 + t2) + ' is ' + m('<i>t</i> = ' + t2) + ': ' + m('<i>P</i>(' + t2 + ') = ' + comma(String(P0)) + ex(t2 + '<i>k</i>') + ' ≈ ' + decc(v, 0)) + ', about ' + fmt(v) + '.'] },
           { t: 'predict', P0: P0, P1: P1, t1: t1, t2: t2 });
       },
@@ -704,17 +726,17 @@
         var f, t;
         do { f = pick([5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 60, 65, 70, 75, 80, 85, 90]) / 100; t = -5730 * ln(f) / ln(2); } while (!safe(t / 100, 0));
         var fmt = function (w) { return comma(dec(Math.round(w / 100) * 100, 0)) + ' years'; };
-        return QP({ q: 'A bone has ' + Math.round(f * 100) + '% of its original carbon‑14. Carbon‑14 has a half-life of 5730 years. How old is the bone, to the nearest hundred years?', mc: mcN(t, [-5730 * ln(1 - f) / ln(2), 2 * (1 - f) * 5730, -5730 * ln(f)], fmt, function (i) { return fmt(t + 100 * rnz(3, 12) * (1 + i)); }),
+        return QP({ q: 'A bone has ' + Math.round(f * 100) + '% of its original carbon‑14. Carbon‑14 has a half-life of 5730 years. How old is the bone, to the nearest hundred years?' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(t, [-5730 * ln(1 - f) / ln(2), 2 * (1 - f) * 5730, -5730 * ln(f)], fmt, function (i) { return fmt(t + 100 * rnz(3, 12) * (1 + i)); }),
           why: ['Half-life 5730: ' + m('<i>k</i> = ' + M + fr('ln 2', '5730') + ' ≈ ' + dec(-ln(2) / 5730, 7)) + '.', n(Math.round(f * 100)) + '% remains: ' + m(n(f) + '<i>A</i><sub>0</sub> = <i>A</i><sub>0</sub>' + ex('<i>kt</i>')) + ', so ' + m('ln ' + n(f) + ' = <i>kt</i>') + '. The starting amount cancels.', m('<i>t</i> = ' + fr('ln ' + n(f), '<i>k</i>') + ' ≈ ' + decc(t, 0)) + ', about ' + fmt(t) + '.'] },
           { t: 'carbon', f: f });
       },
       function () {   // amount left after t, from half-life
         var A0, h, t, v;
-        do { A0 = pick([40, 60, 80, 100, 120, 150, 200, 250, 300, 400]); h = ri(3, 30); t = ri(2, 60); v = A0 * Math.pow(0.5, t / h); } while (t % h === 0 || !safe(v, 1) || v < 0.5);
+        do { A0 = pick([40, 60, 80, 100, 120, 150, 200, 250, 300, 400]); h = ri(3, 30); t = ri(2, 60); v = A0 * Math.pow(0.5, t / h); } while (t % h === 0 || !safe(v, 1) || v < 0.5 || dec(A0 * Math.exp(K.round(-ln(2) / h, 4) * t), 1) !== dec(v, 1));   // same answer if k is rounded to 4 places
         var lin = A0 * (1 - t / (2 * h));
         var fmt = function (w) { return m(dec(w, 1)) + ' mg'; };
         var ws = [A0 * Math.pow(0.5, h / t), A0 * Math.exp(-t / h)]; if (lin > 0) ws.unshift(lin);
-        return QP({ q: 'A hospital isotope has a half-life of ' + h + ' days. A patient receives a ' + A0 + ' mg dose. How much remains after ' + t + ' days, to the nearest tenth of a milligram?', mc: mcN(v, ws, fmt),
+        return QP({ q: 'A hospital isotope has a half-life of ' + h + ' days. A patient receives a ' + A0 + ' mg dose. How much remains after ' + t + ' days, to the nearest tenth of a milligram?' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(v, ws, fmt),
           why: ['Half-life ' + h + ': ' + m('<i>k</i> = ' + M + fr('ln 2', h)) + ', so ' + m('<i>A</i>(<i>t</i>) = ' + A0 + ex('(' + M + 'ln 2/' + h + ')<i>t</i>')) + ', which is the same as ' + m(A0 + '(' + fr('1', '2') + ')' + K.sup('<i>t</i>/' + h)) + '.', m('<i>A</i>(' + t + ') = ' + A0 + '(0.5)' + K.sup(t + '/' + h) + ' ≈ ' + A0 + '(' + dec(Math.pow(0.5, t / h), 6) + ')') + '.', m('<i>A</i>(' + t + ') ≈ ' + dec(v, 1)) + ' mg.'] },
           { t: 'halfleft', A0: A0, h: h, tt: t });
       }
@@ -722,31 +744,31 @@
     [
       function () {   // time to reach a target from two data points
         var P0, P1, t1, T, t;
-        do { P0 = 100 * ri(2, 20); P1 = Math.round(P0 * (1 + ri(30, 200) / 100) / 10) * 10; t1 = ri(2, 6); T = Math.round(P1 * ri(3, 12) / 100) * 100; t = t1 * ln(T / P0) / ln(P1 / P0); } while (T <= P1 || !safe(t, 1) || !safe(t - t1, 1));
+        do { P0 = 100 * ri(2, 20); P1 = Math.round(P0 * (1 + ri(30, 200) / 100) / 10) * 10; t1 = ri(2, 6); T = Math.round(P1 * ri(3, 12) / 100) * 100; t = t1 * ln(T / P0) / ln(P1 / P0); } while (T <= P1 || !safe(t, 1) || !safe(t - t1, 1) || dec(ln(T / P0) / K.round(ln(P1 / P0) / t1, 4), 1) !== dec(t, 1));   // same answer if k is rounded to 4 places
         var fmt = function (w) { return m(dec(w, 1)) + ' hours'; };
         var ws = [t1 * (T - P0) / (P1 - P0), t - t1, t1 * ln(T / P0) / lg10(P1 / P0)];
         var k = ln(P1 / P0) / t1;
-        return QP({ q: 'A bacteria culture starts with ' + comma(String(P0)) + ' bacteria and has ' + comma(String(P1)) + ' after ' + t1 + ' hours. Assuming exponential growth ' + m('<i>P</i>(<i>t</i>) = <i>P</i><sub>0</sub>' + ex('<i>kt</i>')) + ', how many hours after the start will it reach ' + comma(String(T)) + ' bacteria? Round to the nearest tenth.', mc: mcN(t, ws, fmt),
+        return QP({ q: 'A bacteria culture starts with ' + comma(String(P0)) + ' bacteria and has ' + comma(String(P1)) + ' after ' + t1 + ' hours. Assuming exponential growth ' + m('<i>P</i>(<i>t</i>) = <i>P</i><sub>0</sub>' + ex('<i>kt</i>')) + ', how many hours after the start will it reach ' + comma(String(T)) + ' bacteria? Round to the nearest tenth.' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(t, ws, fmt),
           why: ['Find ' + m('<i>k</i>') + ': ' + m(comma(String(P1)) + ' = ' + comma(String(P0)) + ex(t1 + '<i>k</i>')) + ', so ' + m('<i>k</i> = ' + fr('ln(' + comma(String(P1)) + '/' + comma(String(P0)) + ')', t1) + ' ≈ ' + dec(k, 6)) + '.', 'Set ' + m(comma(String(T)) + ' = ' + comma(String(P0)) + ex('<i>kt</i>')) + ': ' + m('<i>t</i> = ' + fr('ln(' + comma(String(T)) + '/' + comma(String(P0)) + ')', '<i>k</i>') + ' ≈ ' + d4(t)) + '.', 'Measured from the start, about ' + fmt(t) + '.'] },
           { t: 'reach', P0: P0, P1: P1, t1: t1, T: T });
       },
       function () {   // Newton's law of cooling
         var Ts, T0, T1, t1, t2, k, v, Dd;
-        do { Ts = ri(65, 75); T0 = ri(160, 200); T1 = T0 - ri(15, 40); t1 = ri(4, 10); t2 = t1 + ri(5, 25); Dd = T0 - Ts; k = ln((T1 - Ts) / Dd) / t1; v = Ts + Dd * Math.exp(k * t2); } while (!safe(v, 0));
+        do { Ts = ri(65, 75); T0 = ri(160, 200); T1 = T0 - ri(15, 40); t1 = ri(4, 10); t2 = t1 + ri(5, 25); Dd = T0 - Ts; k = ln((T1 - Ts) / Dd) / t1; v = Ts + Dd * Math.exp(k * t2); } while (!safe(v, 0) || dec(Ts + Dd * Math.exp(K.round(k, 4) * t2), 0) !== dec(v, 0));   // same answer if k is rounded to 4 places
         var kb = ln(T1 / T0) / t1, lin = T0 - (T0 - T1) / t1 * t2;
         var fmt = function (w) { return dec(w, 0) + '°F'; };
         var ws = [T0 * Math.exp(kb * t2), Dd * Math.exp(k * t2)]; if (lin > 0) ws.push(lin);
-        return QP({ q: 'A cup of coffee at ' + T0 + '°F is placed in a ' + Ts + '°F room. After ' + t1 + ' minutes it is ' + T1 + '°F. Using Newton’s law of cooling, ' + m('<i>T</i>(<i>t</i>) = <i>T</i><sub>s</sub> + (<i>T</i><sub>0</sub> ' + M + ' <i>T</i><sub>s</sub>)' + ex('<i>kt</i>')) + ', find its temperature after ' + t2 + ' minutes, to the nearest degree.', mc: mcN(v, ws, fmt, function (i) { return fmt(v + rnz(-9, 9) * (1 + Math.floor(i / 10))); }),
+        return QP({ q: 'A cup of coffee at ' + T0 + '°F is placed in a ' + Ts + '°F room. After ' + t1 + ' minutes it is ' + T1 + '°F. Using Newton’s law of cooling, ' + m('<i>T</i>(<i>t</i>) = <i>T</i><sub>s</sub> + (<i>T</i><sub>0</sub> ' + M + ' <i>T</i><sub>s</sub>)' + ex('<i>kt</i>')) + ', find its temperature after ' + t2 + ' minutes, to the nearest degree.' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(v, ws, fmt, function (i) { return fmt(v + rnz(-9, 9) * (1 + Math.floor(i / 10))); }),
           why: [m('<i>T</i>(<i>t</i>) = ' + Ts + ' + ' + Dd + ex('<i>kt</i>')) + '. At ' + m('<i>t</i> = ' + t1) + ': ' + m(T1 + ' = ' + Ts + ' + ' + Dd + ex(t1 + '<i>k</i>')) + ', so ' + m(ex(t1 + '<i>k</i>') + ' = ' + fr(T1 - Ts, Dd)) + '.', m('<i>k</i> = ' + fr('ln(' + (T1 - Ts) + '/' + Dd + ')', t1) + ' ≈ ' + dec(k, 6)) + '.', m('<i>T</i>(' + t2 + ') = ' + Ts + ' + ' + Dd + ex(t2 + '<i>k</i>') + ' ≈ ' + dec(v, 2)) + ', about ' + fmt(v) + '. Do not forget to add the room temperature back.'] },
           { t: 'cool', Ts: Ts, T0: T0, T1: T1, t1: t1, t2: t2 });
       },
       function () {   // half-life from data
         var A0, A1, t1, h;
-        do { A0 = 50 * ri(2, 16); A1 = Math.round(A0 * ri(30, 90) / 100); t1 = ri(2, 20); h = t1 * ln(2) / ln(A0 / A1); } while (A1 * 2 === A0 || !safe(h, 1));
+        do { A0 = 50 * ri(2, 16); A1 = Math.round(A0 * ri(30, 90) / 100); t1 = ri(2, 20); h = t1 * ln(2) / ln(A0 / A1); } while (A1 * 2 === A0 || !safe(h, 1) || dec(-ln(2) / K.round(ln(A1 / A0) / t1, 4), 1) !== dec(h, 1));   // same answer if k is rounded to 4 places
         var fmt = function (w) { return m(dec(w, 1)) + ' days'; };
         var ws = [t1 * ln(A0 / A1) / ln(2), t1 * (A0 / 2) / (A0 - A1), t1 * lg10(2) / ln(A0 / A1)];
-        return QP({ q: 'A sample of a radioactive substance decays from ' + A0 + ' grams to ' + A1 + ' grams in ' + t1 + ' days. Assuming ' + m('<i>A</i>(<i>t</i>) = <i>A</i><sub>0</sub>' + ex('<i>kt</i>')) + ', find the half-life to the nearest tenth of a day.', mc: mcN(h, ws, fmt),
-          why: [m(A1 + ' = ' + A0 + ex(t1 + '<i>k</i>')) + ', so ' + m('<i>k</i> = ' + fr('ln(' + A1 + '/' + A0 + ')', t1) + ' ≈ ' + dec(ln(A1 / A0) / t1, 6)) + '.', 'Half-life: set ' + m(ex('<i>kt</i>') + ' = 0.5') + ': ' + m('<i>t</i> = ' + fr(M + 'ln 2', '<i>k</i>')) + '.', m('<i>t</i> ≈ ' + fr(M + d4(ln(2)), dec(ln(A1 / A0) / t1, 6)) + ' ≈ ' + d4(h)) + ', about ' + fmt(h) + '.'] },
+        return QP({ q: 'A sample of a radioactive substance decays from ' + A0 + ' grams to ' + A1 + ' grams in ' + t1 + ' days. Assuming ' + m('<i>A</i>(<i>t</i>) = <i>A</i><sub>0</sub>' + ex('<i>kt</i>')) + ', find the half-life to the nearest tenth of a day.' + ' Keep ' + m('<i>k</i>') + ' unrounded until the final step.', mc: mcN(h, ws, fmt),
+          why: [m(A1 + ' = ' + A0 + ex(t1 + '<i>k</i>')) + ', so ' + m('<i>k</i> = ' + fr('ln(' + A1 + '/' + A0 + ')', t1) + ' ≈ ' + dec(ln(A1 / A0) / t1, 6)) + '.', 'Half-life: set ' + m(ex('<i>kt</i>') + ' = 0.5') + ': ' + m('<i>t</i> = ' + fr(M + 'ln 2', '<i>k</i>')) + '.', m('<i>t</i> ≈ ' + fr(d4(ln(2)), dec(-ln(A1 / A0) / t1, 6)) + ' ≈ ' + d4(h)) + ' (the two negatives cancel)' + ', about ' + fmt(h) + '.'] },
           { t: 'halfdata', A0: A0, A1: A1, t1: t1 });
       }
     ]

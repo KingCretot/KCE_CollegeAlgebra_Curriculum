@@ -20,6 +20,13 @@
   function dec2(v) { return Math.abs(v * 100 - Math.round(v * 100)) < 1e-7; }  // at most 2 decimals
   function dol(v) { return nint(v) ? '$' + K.comma(Math.round(v)) : K.money(v); }
   function L(s) { return s.replace(/[A-Za-z]/g, '<i>$&</i>').replace(/\^2/g, '<sup>2</sup>'); } // italic letters
+  function pl(v, w) { return n(v) + ' ' + w + (v === 1 ? '' : 's'); }       // 1 hour / 2 hours
+  // article before a number: "an 8-ft", "an 11%", "an 80-ft", "a 25-ft"
+  function an(v) { var d = String(v).replace(/,/g, '').replace(/^\D+/, '').split('.')[0], lead = d.slice(0, d.length % 3 || 3); return (d.charAt(0) === '8' || lead === '11' || lead === '18') ? 'an' : 'a'; }
+  function An(v) { return an(v) === 'an' ? 'An' : 'A'; }
+  // "Subtract 5x from both sides" / "Add 5x to both sides" (never "subtract −5x")
+  function addSubX(c, v) { v = v || X; return c < 0 ? 'Add ' + m(P([[-c, v]])) + ' to' : 'Subtract ' + m(P([[c, v]])) + ' from'; }
+  function cmul(k, inner) { return k === 1 ? inner : n(k) + '(' + inner + ')'; }   // numeric k(inner), with k = 1 dropped
   function sqrtF(h) { return '<span class="rad">√<span class="rc" style="display:inline-block;vertical-align:middle;padding-top:1px">' + h + '</span></span>'; } // radical over a stacked fraction
 
   // value-keyed multiple choice: c and wrong items are [html, values]; values are numbers, R, or [re, im]
@@ -114,7 +121,7 @@
   function classifyQ(eq, A1, B1, A2, B2, first) {
     var steps = [first], ans, wr;
     if (A1 === A2) {
-      steps.push('Subtract ' + m(P([[A1, X]])) + ' from both sides: ' + m(n(B1) + ' = ' + n(B2)) + '.');
+      steps.push(addSubX(A1) + ' both sides: ' + m(n(B1) + ' = ' + n(B2)) + '.');
       if (B1 === B2) {
         steps.push('That statement is always true, so every real number is a solution. The equation is an <b>identity</b>.');
         var z = ri(1, 5); ans = ID; wr = [CO, CD(0), CD(z)];
@@ -124,7 +131,7 @@
       }
     } else {
       var x0 = R(B2 - B1, A1 - A2);
-      steps.push('Collect terms: ' + m(P([[A1 - A2, X]]) + ' = ' + n(B2 - B1)) + ', so ' + m('<i>x</i> = ' + x0.html()) + '.');
+      steps.push('Collect terms: ' + m(P([[A1 - A2, X]]) + ' = ' + n(B2 - B1)) + (A1 - A2 === 1 ? '' : ', so ' + m('<i>x</i> = ' + x0.html())) + '.');
       steps.push('Exactly one value works, so the equation is <b>conditional</b>.');
       ans = CD(x0); wr = [ID, CO, CD(x0.n === 0 ? R(1) : x0.neg())];
     }
@@ -151,7 +158,7 @@
         do { a = rnz(-9, 9); c = rnz(-9, 9); } while (a === c);
         var d = (a - c) * x + b, e = m(lin(a, b) + ' = ' + lin(c, d));
         var w = [xi(-x), xi(R(d + b, a - c))]; if (a + c !== 0) w.push(xi(R(d - b, a + c)));
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x + rnz(-4, 4)); }), why: ['Subtract ' + m(P([[c, X]])) + ' from both sides: ' + m(lin(a - c, b) + ' = ' + n(d)) + '.', (b > 0 ? 'Subtract ' + n(b) : 'Add ' + n(-b)) + ' on both sides: ' + m(P([[a - c, X]]) + ' = ' + n(d - b)) + '.', 'Divide by ' + n(a - c) + ': ' + xeq(x) + '. Check: ' + m(K.lin([[a, n(x)]]) + K.plusK(b) + ' = ' + n(a * x + b)) + ' and ' + m(K.lin([[c, n(x)]]) + K.plusK(d) + ' = ' + n(c * x + d)) + ' ✓'] }), { k: 'solve', e: e });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x + rnz(-4, 4)); }), why: [addSubX(c) + ' both sides: ' + m(lin(a - c, b) + ' = ' + n(d)) + '.', (b > 0 ? 'Subtract ' + n(b) : 'Add ' + n(-b)) + ' on both sides: ' + m(P([[a - c, X]]) + ' = ' + n(d - b)) + '.', (a - c === 1 ? '' : 'Divide by ' + n(a - c) + ': ' + xeq(x) + '. ') + 'Check: ' + m(K.lin([[a, n(x)]]) + K.plusK(b) + ' = ' + n(a * x + b)) + ' and ' + m(K.lin([[c, n(x)]]) + K.plusK(d) + ' = ' + n(c * x + d)) + ' ✓'] }), { k: 'solve', e: e });
       },
       function () { // x/A + p = q
         var A = ri(2, 9), t = ri(-9, 9), x = A * t, p = rnz(-9, 9), q = t + p;
@@ -178,7 +185,7 @@
         var e = m(fr(lin(1, p), A) + (s > 0 ? ' + ' : ' ' + M + ' ') + fr(lin(1, q), B) + ' = ' + n(C));
         var w = [xi(R(C - cA * p - cB * q, coef)), xi(R(Lc * C - cA * p + cB * q, coef))];
         var c2 = Lc / B + s * Lc / A; if (c2 !== 0) w.push(xi(R(Lc * C - (Lc / B) * p - s * (Lc / A) * q, c2)));
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x.add(rnz(-3, 3))); }), why: ['Multiply every term by the LCD, ' + Lc + ': ' + m(K.lin([[cA, lin(1, p)], [cB, lin(1, q)]]) + ' = ' + n(Lc * C)) + '.', 'Distribute and combine like terms: ' + m(lin(coef, cA * p + cB * q) + ' = ' + n(Lc * C)) + '.', 'Isolate ' + X + ': ' + m(P([[coef, X]]) + ' = ' + n(rhs)) + ', so ' + xeq(x) + '.'] }), { k: 'solve', e: e });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x.add(rnz(-3, 3))); }), why: ['Multiply every term by the LCD, ' + Lc + ': ' + m(K.lin([[cA, lin(1, p)], [cB, lin(1, q)]]) + ' = ' + n(Lc * C)) + '.', 'Distribute and combine like terms: ' + m(lin(coef, cA * p + cB * q) + ' = ' + n(Lc * C)) + '.', 'Isolate ' + X + ': ' + (coef === 1 ? xeq(x) : m(P([[coef, X]]) + ' = ' + n(rhs)) + ', so ' + xeq(x)) + '.'] }), { k: 'solve', e: e });
       },
       function () { // decimals: r1 x + r2(T − x) = r3 T
         var r1, r2, r3, T, x, base, g;
@@ -231,12 +238,12 @@
         var e = m(fr(lin(a1, b1), A) + ' ' + M + ' ' + fr(lin(a2, b2), B) + ' = ' + fr(lin(a3, b3), C));
         var w = [xi(R(b3 * Lc / C - b1 * Lc / A - b2 * Lc / B, coef)), xi(x.neg())];
         var cf2 = a1 * Lc / A - a2 * Lc / B - a3; if (cf2 !== 0) w.push(xi(R(b3 - b1 * Lc / A + b2 * Lc / B, cf2)));
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x.add(rnz(-3, 3))); }), why: ['Multiply every term by the LCD, ' + Lc + ': ' + m(K.lin([[Lc / A, lin(a1, b1)], [-Lc / B, lin(a2, b2)]]) + ' = ' + K.lin([[Lc / C, lin(a3, b3)]])) + '. The minus sign applies to the whole second numerator.', 'Distribute: ' + m(P([[a1 * Lc / A - a2 * Lc / B, X], [b1 * Lc / A - b2 * Lc / B, '']]) + ' = ' + lin(a3 * Lc / C, b3 * Lc / C)) + '.', 'Collect terms: ' + m(P([[coef, X]]) + ' = ' + n(rhs)) + ', so ' + xeq(x) + '.'] }), { k: 'solve', e: e });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(xi(x), w, function () { return xi(x.add(rnz(-3, 3))); }), why: ['Multiply every term by the LCD, ' + Lc + ': ' + m(K.lin([[Lc / A, lin(a1, b1)], [-Lc / B, lin(a2, b2)]]) + ' = ' + K.lin([[Lc / C, lin(a3, b3)]])) + '. The minus sign applies to the whole second numerator.', 'Distribute: ' + m(P([[a1 * Lc / A - a2 * Lc / B, X], [b1 * Lc / A - b2 * Lc / B, '']]) + ' = ' + lin(a3 * Lc / C, b3 * Lc / C)) + '.', 'Collect terms: ' + (coef === 1 ? xeq(x) : m(P([[coef, X]]) + ' = ' + n(rhs)) + ', so ' + xeq(x)) + '.'] }), { k: 'solve', e: e });
       },
       function () { // simple interest: solve A = P(1 + rt) for t numerically
         var Pp = ri(10, 90) * 100, r = ri(2, 8), t = ri(2, 12), A = Pp + Pp * r * t / 100, I = A - Pp;
-        var yr = function (v) { return [m(n(v) + ' years'), [v]]; };
-        return withP(Q({ q: 'Use ' + m(L('A = P(1 + rt)')) + '. How many years does it take ' + dol(Pp) + ' invested at ' + r + '% simple interest to grow to ' + dol(A) + '?', mc: mcV(yr(t), [yr(t / 100), dec2(A / (Pp * r / 100)) ? yr(A / (Pp * r / 100)) : null, yr(t + 1)], function () { return yr(t + rnz(-3, 3)); }), why: ['Substitute: ' + m(K.comma(A) + ' = ' + K.comma(Pp) + '(1 + ' + n(r / 100) + L('t') + ')') + '. Write the rate as a decimal: ' + r + '% = ' + n(r / 100) + '.', 'Distribute and subtract ' + K.comma(Pp) + ': ' + m(K.comma(I) + ' = ' + K.comma(Pp * r / 100) + L('t')) + '.', 'Divide: ' + m(L('t = ') + n(t)) + ' years.'] }), { k: 'word', w: 'interestT', A: A, P: Pp, r: r });
+        var yr = function (v) { return [m(pl(v, 'year')), [v]]; };
+        return withP(Q({ q: 'Use ' + m(L('A = P(1 + rt)')) + '. How many years does it take ' + dol(Pp) + ' invested at ' + r + '% simple interest to grow to ' + dol(A) + '?', mc: mcV(yr(t), [yr(t / 100), dec2(A / (Pp * r / 100)) ? yr(A / (Pp * r / 100)) : null, yr(t + 1)], function () { var z = t + rnz(-3, 3); return z > 0 ? yr(z) : null; }), why: ['Substitute: ' + m(K.comma(A) + ' = ' + K.comma(Pp) + '(1 + ' + n(r / 100) + L('t') + ')') + '. Write the rate as a decimal: ' + r + '% = ' + n(r / 100) + '.', 'Distribute and subtract ' + K.comma(Pp) + ': ' + m(K.comma(I) + ' = ' + K.comma(Pp * r / 100) + L('t')) + '.', 'Divide: ' + m(L('t = ') + n(t)) + (t === 1 ? ' year.' : ' years.')] }), { k: 'word', w: 'interestT', A: A, P: Pp, r: r });
       }
     ]
   ];
@@ -254,18 +261,18 @@
       function () { // linear model: fee + per-unit
         var F = ri(5, 20), c = ri(2, 6), x = ri(3, 15), B = F + c * x;
         var w = []; [B / c, (B + F) / c, B - F].forEach(function (v) { if (nint(v)) w.push(numC(v)); });
-        return withP(Q({ q: 'A streaming plan costs ' + dol(F) + ' per month plus ' + dol(c) + ' per movie rental. How many rentals make the monthly bill ' + dol(B) + '?', mc: mcV(numC(x), w, function () { return numC(x + rnz(-4, 4)); }), why: ['Model: ' + m(L('C = ') + c + X + ' + ' + F) + ', where ' + X + ' is the number of rentals.', 'Set ' + m(c + X + ' + ' + F + ' = ' + B) + ', so ' + m(c + X + ' = ' + (B - F)) + '.', 'Divide by ' + c + ': ' + xeq(x) + ' rentals.'] }), { k: 'word', w: 'plan', F: F, c: c, B: B });
+        return withP(Q({ q: 'A streaming plan costs ' + dol(F) + ' per month plus ' + dol(c) + ' per movie rental. How many rentals make the monthly bill ' + dol(B) + '?', mc: mcV(numC(x), w, function () { var z = x + rnz(-4, 4); return z > 0 ? numC(z) : null; }), why: ['Model: ' + m(L('C = ') + c + X + ' + ' + F) + ', where ' + X + ' is the number of rentals.', 'Set ' + m(c + X + ' + ' + F + ' = ' + B) + ', so ' + m(c + X + ' = ' + (B - F)) + '.', 'Divide by ' + c + ': ' + xeq(x) + (x === 1 ? ' rental.' : ' rentals.')] }), { k: 'word', w: 'plan', F: F, c: c, B: B });
       },
       function () { // rectangle perimeter, length = w + d
         var wv = ri(3, 20), d = ri(1, 9), Lv = wv + d, Pv = 2 * (wv + Lv);
         var w = [numC(Lv, 'cm')]; [Pv / 4, (Pv - d) / 2, (Pv - 2 * d) / 2].forEach(function (v) { if (nint(v)) w.push(numC(v, 'cm')); });
-        return withP(Q({ q: 'A rectangle has a perimeter of ' + Pv + ' cm, and its length is ' + d + ' cm more than its width. What is the width?', mc: mcV(numC(wv, 'cm'), w, function () { return numC(wv + rnz(-3, 3), 'cm'); }), why: ['Let the width be ' + m(L('w')) + '; the length is ' + m(L('w + ') + d) + '.', m(L('2w + 2(w + ') + d + ') = ' + Pv) + ', so ' + m(L('4w + ') + 2 * d + ' = ' + Pv) + '.', m(L('4w = ') + (Pv - 2 * d)) + ', so the width is ' + wv + ' cm (and the length is ' + Lv + ' cm).'] }), { k: 'word', w: 'rectP', P: Pv, d: d });
+        return withP(Q({ q: 'A rectangle has a perimeter of ' + Pv + ' cm, and its length is ' + d + ' cm more than its width. What is the width?', mc: mcV(numC(wv, 'cm'), w, function () { var z = wv + rnz(-3, 3); return z > 0 ? numC(z, 'cm') : null; }), why: ['Let the width be ' + m(L('w')) + '; the length is ' + m(L('w + ') + d) + '.', m(L('2w + 2(w + ') + d + ') = ' + Pv) + ', so ' + m(L('4w + ') + 2 * d + ' = ' + Pv) + '.', m(L('4w = ') + (Pv - 2 * d)) + ', so the width is ' + wv + ' cm (and the length is ' + Lv + ' cm).'] }), { k: 'word', w: 'rectP', P: Pv, d: d });
       },
       function () { // opposite directions
         var r1 = ri(6, 14) * 5, r2 = ri(6, 14) * 5, t = pick([2, 2.5, 3, 4, 5, 6]), D = (r1 + r2) * t;
-        var hrs = function (v) { return [m(n(v) + ' hours'), [v]]; }, w = [];
+        var hrs = function (v) { return [m(pl(v, 'hour')), [v]]; }, w = [];
         [D / r1, D / r2, r1 !== r2 ? D / Math.abs(r2 - r1) : 0].forEach(function (v) { if (v > 0 && Math.abs(v * 10 - Math.round(v * 10)) < 1e-9) w.push(hrs(v)); });
-        return withP(Q({ q: 'Two cars leave the same point at the same time and travel in opposite directions, one at ' + r1 + ' mph and the other at ' + r2 + ' mph. After how many hours are they ' + K.comma(D) + ' miles apart?', mc: mcV(hrs(t), w, function () { return hrs(t + pick([-1, 1, -0.5, 0.5, 2])); }), why: ['In ' + m(L('t')) + ' hours the cars travel ' + m(r1 + L('t')) + ' and ' + m(r2 + L('t')) + ' miles.', 'Opposite directions means the distances add: ' + m(r1 + L('t') + ' + ' + r2 + L('t') + ' = ' + K.comma(D)) + '.', m((r1 + r2) + L('t') + ' = ' + K.comma(D)) + ', so ' + m(L('t = ') + n(t)) + ' hours.'] }), { k: 'word', w: 'opposite', r1: r1, r2: r2, D: D });
+        return withP(Q({ q: 'Two cars leave the same point at the same time and travel in opposite directions, one at ' + r1 + ' mph and the other at ' + r2 + ' mph. After how many hours are they ' + K.comma(D) + ' miles apart?', mc: mcV(hrs(t), w, function () { var z = t + pick([-1, 1, -0.5, 0.5, 2]); return z > 0 ? hrs(z) : null; }), why: ['In ' + m(L('t')) + ' hours the cars travel ' + m(r1 + L('t')) + ' and ' + m(r2 + L('t')) + ' miles.', 'Opposite directions means the distances add: ' + m(r1 + L('t') + ' + ' + r2 + L('t') + ' = ' + K.comma(D)) + '.', m((r1 + r2) + L('t') + ' = ' + K.comma(D)) + ', so ' + m(L('t = ') + n(t)) + (t === 1 ? ' hour.' : ' hours.')] }), { k: 'word', w: 'opposite', r1: r1, r2: r2, D: D });
       }
     ],
     [
@@ -275,9 +282,9 @@
         Pv = 2 * (wv + Lv);
         var dim = function (a, b) { return ['Width ' + n(a) + ' m, length ' + n(b) + ' m', [a, b * 1000]]; };
         var w = [dim(Lv, wv)], w1 = (Pv - 2 * d) / (2 * k + 1), w2 = (Pv - d) / (k + 1);
-        if (nint(w1) && w1 > 0) w.push(dim(w1, k * w1 + d)); if (nint(w2) && w2 > 0) w.push(dim(w2, k * w2 + d));
+        if (nint(w1) && w1 > 0 && k * w1 + d > 0) w.push(dim(w1, k * w1 + d)); if (nint(w2) && w2 > 0 && k * w2 + d > 0) w.push(dim(w2, k * w2 + d));
         var desc = (k === 2 ? 'twice' : 'three times') + ' its width' + (d > 0 ? ' plus ' + d + ' m' : ' minus ' + (-d) + ' m');
-        return withP(Q({ q: 'A rectangle’s length is ' + desc + ', and its perimeter is ' + Pv + ' m. Find its dimensions.', mc: mcV(dim(wv, Lv), w, function () { var z = wv + rnz(-3, 3); return z > 0 ? dim(z, k * z + d) : null; }), why: ['Let the width be ' + m(L('w')) + '; the length is ' + m(lin(k, d, L('w'))) + '.', 'Perimeter: ' + m('2(' + lin(k, d, L('w')) + ') + ' + L('2w') + ' = ' + Pv) + ', so ' + m(lin(2 * k + 2, 2 * d, L('w')) + ' = ' + Pv) + '.', m(L('w = ') + wv) + ' m and the length is ' + m(k + '(' + wv + ')' + K.plusK(d) + ' = ' + Lv) + ' m. Check: ' + m('2(' + wv + ') + 2(' + Lv + ') = ' + Pv) + ' ✓'] }), { k: 'word', w: 'rectKP', P: Pv, kk: k, d: d });
+        return withP(Q({ q: 'A rectangle’s length is ' + desc + ', and its perimeter is ' + Pv + ' m. Find its dimensions.', mc: mcV(dim(wv, Lv), w, function () { var z = wv + rnz(-3, 3); return z > 0 && k * z + d > 0 ? dim(z, k * z + d) : null; }), why: ['Let the width be ' + m(L('w')) + '; the length is ' + m(lin(k, d, L('w'))) + '.', 'Perimeter: ' + m('2(' + lin(k, d, L('w')) + ') + ' + L('2w') + ' = ' + Pv) + ', so ' + m(lin(2 * k + 2, 2 * d, L('w')) + ' = ' + Pv) + '.', m(L('w = ') + wv) + ' m and the length is ' + m(k + '(' + wv + ')' + K.plusK(d) + ' = ' + Lv) + ' m. Check: ' + m('2(' + wv + ') + 2(' + Lv + ') = ' + Pv) + ' ✓'] }), { k: 'word', w: 'rectKP', P: Pv, kk: k, d: d });
       },
       function () { // investment split
         var T = ri(5, 20) * 1000, r1 = ri(2, 6), r2 = r1 + ri(1, 3), x;
@@ -295,13 +302,14 @@
         } while (p1 === p2 || p2 === 0 || Math.abs(p1 - p2) < 10 || !nint(x) || x <= 0 || x > 100);
         var lit = function (v) { return [m(n(v) + ' L'), [v]]; };
         var what = p1 === 0 ? 'pure water' : p1 + '% acid solution';
-        return withP(Q({ q: 'How many liters of ' + what + ' must be added to ' + V + ' L of a ' + p2 + '% acid solution to make a ' + p3 + '% acid solution?', mc: mcV(lit(x), [lit(x + V), lit(V * (p3 - p1) / (p2 - p3))], function () { var z = x + 5 * rnz(-3, 3); return z > 0 ? lit(z) : null; }), why: ['Pure acid before mixing: ' + m(n(p1 / 100) + X + ' + ' + n(p2 / 100) + '(' + V + ')') + '. Pure acid after: ' + m(n(p3 / 100) + '(' + X + ' + ' + V + ')') + '.', 'Multiply by 100: ' + m(P([[p1, X]]) + (p1 ? ' + ' : '') + p2 * V + ' = ' + p3 + X + ' + ' + p3 * V) + '.', m(n(p2 * V - p3 * V) + ' = ' + n(p3 - p1) + X) + ', so ' + xeq(x) + ' liters.'] }), { k: 'word', w: 'mixAdd', p1: p1, p2: p2, p3: p3, V: V });
+        var before = p1 === 0 ? m(n(p2 / 100) + '(' + V + ')') + ' (the water adds no acid)' : m(n(p1 / 100) + X + ' + ' + n(p2 / 100) + '(' + V + ')');
+        return withP(Q({ q: 'How many liters of ' + what + ' must be added to ' + V + ' L of ' + an(p2) + ' ' + p2 + '% acid solution to make ' + an(p3) + ' ' + p3 + '% acid solution?', mc: mcV(lit(x), [lit(x + V), lit(V * (p3 - p1) / (p2 - p3))], function () { var z = x + 5 * rnz(-3, 3); return z > 0 ? lit(z) : null; }), why: ['Pure acid before mixing: ' + before + '. Pure acid after: ' + m(n(p3 / 100) + '(' + X + ' + ' + V + ')') + '.', 'Multiply by 100: ' + m((p1 ? P([[p1, X]]) + ' + ' : '') + p2 * V + ' = ' + p3 + X + ' + ' + p3 * V) + '.', m(n(p2 * V - p3 * V) + ' = ' + P([[p3 - p1, X]])) + (p3 - p1 === 1 ? '' : ', so ' + xeq(x)) + ': add ' + pl(x, 'liter') + '.'] }), { k: 'word', w: 'mixAdd', p1: p1, p2: p2, p3: p3, V: V });
       },
       function () { // two legs of a trip
         var t1 = ri(1, 5), t2 = ri(1, 5), r = ri(6, 14) * 5, d = ri(1, 4) * 5, D = t1 * r + t2 * (r + d);
         var mph = function (v) { return [m(n(v) + ' mph'), [v]]; }, w = [mph(r + d)];
         [D / (t1 + t2), (D + t2 * d) / (t1 + t2), (D - d) / (t1 + t2)].forEach(function (v) { if (Math.abs(v * 10 - Math.round(v * 10)) < 1e-9) w.push(mph(v)); });
-        return withP(Q({ q: 'A train travels ' + t1 + ' hour' + (t1 > 1 ? 's' : '') + ' at ' + m(L('r')) + ' mph and then ' + t2 + ' hour' + (t2 > 1 ? 's' : '') + ' at a speed ' + d + ' mph faster, covering ' + D + ' miles in all. What is ' + m(L('r')) + '?', mc: mcV(mph(r), w, function () { return mph(r + 5 * rnz(-3, 3)); }), why: ['Distance = rate × time for each part: ' + m(t1 + L('r') + ' + ' + t2 + L('(r + ') + d + ') = ' + D) + '.', 'Simplify: ' + m((t1 + t2) + L('r') + ' + ' + t2 * d + ' = ' + D) + ', so ' + m((t1 + t2) + L('r') + ' = ' + (D - t2 * d)) + '.', m(L('r = ') + r) + ' mph. Check: ' + m(t1 + '(' + r + ') + ' + t2 + '(' + (r + d) + ') = ' + D) + ' ✓'] }), { k: 'word', w: 'twoLegs', t1: t1, t2: t2, d: d, D: D });
+        return withP(Q({ q: 'A train travels ' + t1 + ' hour' + (t1 > 1 ? 's' : '') + ' at ' + m(L('r')) + ' mph and then ' + t2 + ' hour' + (t2 > 1 ? 's' : '') + ' at a speed ' + d + ' mph faster, covering ' + D + ' miles in all. What is ' + m(L('r')) + '?', mc: mcV(mph(r), w, function () { return mph(r + 5 * rnz(-3, 3)); }), why: ['Distance = rate × time for each part: ' + m(P([[t1, L('r')]]) + ' + ' + cpar(t2) + L('(r + ') + d + ') = ' + D) + '.', 'Simplify: ' + m((t1 + t2) + L('r') + ' + ' + t2 * d + ' = ' + D) + ', so ' + m((t1 + t2) + L('r') + ' = ' + (D - t2 * d)) + '.', m(L('r = ') + r) + ' mph. Check: ' + m(cmul(t1, r) + ' + ' + cmul(t2, r + d) + ' = ' + D) + ' ✓'] }), { k: 'word', w: 'twoLegs', t1: t1, t2: t2, d: d, D: D });
       }
     ],
     [
@@ -311,27 +319,27 @@
         while (!(p3 > Math.min(p1, p2) && p3 < Math.max(p1, p2)) || !nint(a) || a <= 0 || a >= V || a === V - a);
         var b = V - a;
         var two = function (u, v) { return [n(u) + ' L of ' + p1 + '% and ' + n(v) + ' L of ' + p2 + '%', [u, v * 1000]]; };
-        return withP(Q({ q: 'A chemist mixes a ' + p1 + '% solution with a ' + p2 + '% solution to make ' + V + ' L of a ' + p3 + '% solution. How many liters of each are used?', mc: mcV(two(a, b), [two(b, a), two(V / 2, V / 2)], function () { var z = a + rnz(-8, 8); return z > 0 && z < V ? two(z, V - z) : null; }), why: ['Let ' + X + ' = liters of ' + p1 + '%; then ' + m(V + ' ' + M + ' ' + X) + ' liters are ' + p2 + '%.', 'Pure substance: ' + m(n(p1 / 100) + X + ' + ' + n(p2 / 100) + '(' + V + ' ' + M + ' ' + X + ') = ' + n(p3 / 100) + '(' + V + ')') + '.', 'Multiply by 100: ' + m(P([[p1 - p2, X]]) + ' + ' + p2 * V + ' = ' + p3 * V) + ', so ' + xeq(a) + '. Use ' + a + ' L of ' + p1 + '% and ' + b + ' L of ' + p2 + '%.'] }), { k: 'word', w: 'mixTotal', p1: p1, p2: p2, p3: p3, V: V });
+        return withP(Q({ q: 'A chemist mixes ' + an(p1) + ' ' + p1 + '% solution with ' + an(p2) + ' ' + p2 + '% solution to make ' + V + ' L of ' + an(p3) + ' ' + p3 + '% solution. How many liters of each are used?', mc: mcV(two(a, b), [two(b, a), two(V / 2, V / 2)], function () { var z = a + rnz(-8, 8); return z > 0 && z < V ? two(z, V - z) : null; }), why: ['Let ' + X + ' = liters of ' + p1 + '%; then ' + m(V + ' ' + M + ' ' + X) + ' liters are ' + p2 + '%.', 'Pure substance: ' + m(n(p1 / 100) + X + ' + ' + n(p2 / 100) + '(' + V + ' ' + M + ' ' + X + ') = ' + n(p3 / 100) + '(' + V + ')') + '.', 'Multiply by 100: ' + m(P([[p1 - p2, X]]) + ' + ' + p2 * V + ' = ' + p3 * V) + ', so ' + xeq(a) + '. Use ' + a + ' L of ' + p1 + '% and ' + b + ' L of ' + p2 + '%.'] }), { k: 'word', w: 'mixTotal', p1: p1, p2: p2, p3: p3, V: V });
       },
       function () { // catch-up
         var r1, r2, h, t;
         do { r1 = ri(8, 12) * 5; r2 = r1 + ri(1, 6) * 5; h = ri(1, 3); t = r1 * h / (r2 - r1); } while (!nint(t) || t > 10);
-        var hrs = function (v) { return [m(n(v) + ' hours'), [v]]; }, w = [hrs(t + h)];
+        var hrs = function (v) { return [m(pl(v, 'hour')), [v]]; }, w = [hrs(t + h)];
         var v2 = r1 * h / (r1 + r2); if (dec2(v2)) w.push(hrs(v2));
-        return withP(Q({ q: 'A truck leaves a depot traveling ' + r1 + ' mph. ' + h + ' hour' + (h > 1 ? 's' : '') + ' later, a car leaves the same depot on the same road traveling ' + r2 + ' mph. How many hours after the car leaves does it catch up to the truck?', mc: mcV(hrs(t), w, function () { var z = t + rnz(-3, 3); return z > 0 ? hrs(z) : null; }), why: ['Let ' + m(L('t')) + ' be the car’s time; the truck has driven ' + m(L('t + ') + h) + ' hours.', 'At the catch-up point the distances are equal: ' + m(r2 + L('t = ') + r1 + L('(t + ') + h + ')') + '.', m((r2 - r1) + L('t = ') + r1 * h) + ', so ' + m(L('t = ') + n(t)) + ' hours.'] }), { k: 'word', w: 'catch', r1: r1, r2: r2, h: h });
+        return withP(Q({ q: 'A truck leaves a depot traveling ' + r1 + ' mph. ' + h + ' hour' + (h > 1 ? 's' : '') + ' later, a car leaves the same depot on the same road traveling ' + r2 + ' mph. How many hours after the car leaves does it catch up to the truck?', mc: mcV(hrs(t), w, function () { var z = t + rnz(-3, 3); return z > 0 ? hrs(z) : null; }), why: ['Let ' + m(L('t')) + ' be the car’s driving time in hours; by then the truck has been driving for ' + m(L('(t + ') + h + ')') + ' hours.', 'At the catch-up point the distances are equal: ' + m(r2 + L('t = ') + r1 + L('(t + ') + h + ')') + '.', m((r2 - r1) + L('t = ') + r1 * h) + ', so ' + m(L('t = ') + n(t)) + (t === 1 ? ' hour.' : ' hours.')] }), { k: 'word', w: 'catch', r1: r1, r2: r2, h: h });
       },
       function () { // two plans cost the same
         var F1, F2, c1, c2, x;
         do { c2 = ri(2, 9); c1 = c2 + ri(1, 6); F1 = ri(0, 10) * 5; x = ri(4, 30); F2 = F1 + (c1 - c2) * x; } while (F2 > 300);
-        var mo = function (v) { return [m(n(v) + ' months'), [v]]; }, w = [];
+        var mo = function (v) { return [m(pl(v, 'month')), [v]]; }, w = [];
         [(F2 + F1) / (c1 + c2), F2 / c1, (F2 - F1) / c2].forEach(function (v) { if (nint(v) && v > 0) w.push(mo(v)); });
-        return withP(Q({ q: 'Gym A charges a ' + dol(F1) + ' sign-up fee plus ' + dol(c1) + ' per month. Gym B charges a ' + dol(F2) + ' sign-up fee plus ' + dol(c2) + ' per month. After how many months is the total cost the same?', mc: mcV(mo(x), w, function () { var z = x + rnz(-4, 4); return z > 0 ? mo(z) : null; }), why: ['Costs after ' + X + ' months: A = ' + m(c1 + X + (F1 ? ' + ' + F1 : '')) + ', B = ' + m(c2 + X + ' + ' + F2) + '.', 'Set them equal: ' + m(c1 + X + (F1 ? ' + ' + F1 : '') + ' = ' + c2 + X + ' + ' + F2) + ', so ' + m(P([[c1 - c2, X]]) + ' = ' + (F2 - F1)) + '.', xeq(x) + ' months (both cost ' + dol(F1 + c1 * x) + ').'] }), { k: 'word', w: 'plans', F1: F1, c1: c1, F2: F2, c2: c2 });
+        return withP(Q({ q: 'Gym A charges ' + (F1 ? an(F1) + ' ' + dol(F1) + ' sign-up fee plus ' + dol(c1) + ' per month' : 'no sign-up fee, just ' + dol(c1) + ' per month') + '. Gym B charges ' + an(F2) + ' ' + dol(F2) + ' sign-up fee plus ' + dol(c2) + ' per month. After how many months is the total cost the same?', mc: mcV(mo(x), w, function () { var z = x + rnz(-4, 4); return z > 0 ? mo(z) : null; }), why: ['Costs after ' + X + ' months: A = ' + m(c1 + X + (F1 ? ' + ' + F1 : '')) + ', B = ' + m(c2 + X + ' + ' + F2) + '.', 'Set them equal: ' + m(c1 + X + (F1 ? ' + ' + F1 : '') + ' = ' + c2 + X + ' + ' + F2) + ', so ' + m(P([[c1 - c2, X]]) + ' = ' + (F2 - F1)) + '.', xeq(x) + ' months (both cost ' + dol(F1 + c1 * x) + ').'] }), { k: 'word', w: 'plans', F1: F1, c1: c1, F2: F2, c2: c2 });
       },
       function () { // overall rate
         var A, r1, r2, r3, y;
         do { r1 = ri(2, 5); r3 = r1 + ri(1, 3); r2 = r3 + ri(1, 4); A = ri(2, 20) * 1000; y = A * (r3 - r1) / (r2 - r3); } while (!nint(y) || y % 100 !== 0 || y === A);
         var dv = function (v) { return [dol(v), [v]]; };
-        return withP(Q({ q: 'An investor has ' + dol(A) + ' earning ' + r1 + '% simple interest. How much more must be invested at ' + r2 + '% so that the total investment earns ' + r3 + '% overall per year?', mc: mcV(dv(y), [dv(y + A), dv(A * (r3 - r1) / (r2 - r1)), dv(A)], function () { var z = y + 500 * rnz(-4, 4); return z > 0 ? dv(z) : null; }), why: ['Let ' + X + ' be the new amount. Interest: ' + m(n(r1 / 100) + '(' + K.comma(A) + ') + ' + n(r2 / 100) + X + ' = ' + n(r3 / 100) + '(' + K.comma(A) + ' + ' + X + ')') + '.', 'Multiply by 100: ' + m(K.comma(r1 * A) + ' + ' + r2 + X + ' = ' + K.comma(r3 * A) + ' + ' + r3 + X) + '.', m(P([[r2 - r3, X]]) + ' = ' + K.comma((r3 - r1) * A)) + ', so ' + X + ' = ' + dol(y) + '.'] }), { k: 'word', w: 'overall', A: A, r1: r1, r2: r2, r3: r3 });
+        return withP(Q({ q: 'An investor has ' + dol(A) + ' earning ' + r1 + '% simple interest. How much more must be invested at ' + r2 + '% so that the total investment earns ' + r3 + '% overall per year?', mc: mcV(dv(y), [dv(y + A), dv(A * (r3 - r1) / (r2 - r1)), dv(A)], function () { var z = y + 500 * rnz(-4, 4); return z > 0 ? dv(z) : null; }), why: ['Let ' + X + ' be the new amount. Interest: ' + m(n(r1 / 100) + '(' + K.comma(A) + ') + ' + n(r2 / 100) + X + ' = ' + n(r3 / 100) + '(' + K.comma(A) + ' + ' + X + ')') + '.', 'Multiply by 100: ' + m(K.comma(r1 * A) + ' + ' + r2 + X + ' = ' + K.comma(r3 * A) + ' + ' + r3 + X) + '.', m(P([[r2 - r3, X]]) + ' = ' + K.comma((r3 - r1) * A)) + (r2 - r3 === 1 ? '' : ', so ' + m(X + ' = ' + K.comma(y))) + '. Invest ' + dol(y) + ' more at ' + r2 + '%.'] }), { k: 'word', w: 'overall', A: A, r1: r1, r2: r2, r3: r3 });
       }
     ]
   ];
@@ -348,7 +356,7 @@
         do { s = ri(1, 10); r = pick([1, 1, 2, 3, 5, 6, 7]); N = s * s * r; } while (N > 300 || N < 4);
         var e = m(K.sqrt(M + N)), val = s * Math.sqrt(r), cor = [m(rootPos(-N)), [[0, val]]];
         var w = [[m(M + radH(s, r)), [-val]], [m(radH(s, r)), [val]], [m(M + rootPos(-N)), [[0, -val]]]];
-        return withP(Q({ q: 'Write ' + e + ' in terms of i, in simplest form.', mc: mcV(cor, w), why: ['For ' + m('<i>a</i> &gt; 0') + ', ' + m(K.sqrt(M + '<i>a</i>') + ' = i' + K.sqrt('<i>a</i>')) + '. So ' + m(e + ' = i' + K.sqrt(N)) + '.', r === 1 ? m(K.sqrt(N) + ' = ' + s) + ', so the answer is ' + m(rootPos(-N)) + '.' : 'Simplify: ' + m(K.sqrt(N) + ' = ' + K.sqrt(s * s + ' · ' + r) + ' = ' + radH(s, r)) + ', so the answer is ' + m(rootPos(-N)) + '.', 'A real number like ' + m(M + radH(s, r)) + ' cannot be the answer: its square is positive.'] }), { k: 'cx', e: e });
+        return withP(Q({ q: 'Write ' + e + ' in terms of i, in simplest form.', mc: mcV(cor, w), why: ['For ' + m('<i>a</i> &gt; 0') + ', ' + m(K.sqrt(M + '<i>a</i>') + ' = i' + K.sqrt('<i>a</i>')) + '. So ' + m(e + ' = i' + K.sqrt(N)) + '.', r === 1 ? m(K.sqrt(N) + ' = ' + s) + ', so the answer is ' + m(rootPos(-N)) + '.' : s === 1 ? N + ' has no perfect-square factor, so ' + m(K.sqrt(N)) + ' is already simplified and the answer is ' + m(rootPos(-N)) + '.' : 'Simplify: ' + m(K.sqrt(N) + ' = ' + K.sqrt(s * s + ' · ' + r) + ' = ' + radH(s, r)) + ', so the answer is ' + m(rootPos(-N)) + '.', 'A real number like ' + m(M + radH(s, r)) + ' cannot be the answer: its square is positive.'] }), { k: 'cx', e: e });
       },
       function () { // add / subtract
         var a = rnz(-9, 9), b = rnz(-9, 9), c = rnz(-9, 9), d = rnz(-9, 9), plus = K.coin(), s = plus ? 1 : -1;
@@ -398,7 +406,7 @@
         var w = [cxv(R(a * c - b * d, D), R(b * c + a * d, D)), cxv(re, im.neg())];
         if (c * c !== d * d) w.push(cxv(R(a * c + b * d, c * c - d * d), R(b * c - a * d, c * c - d * d)));
         if (c !== 0) w.push(cxv(R(a, c), R(b, d)));
-        return withP(Q({ q: 'Write ' + e + ' in ' + m('<i>a</i> + <i>b</i>i') + ' form.', mc: mcV(cxv(re, im), w, function () { return cxv(re.add(rnz(-2, 2)), im.add(rnz(-2, 2))); }), why: ['Multiply the numerator and denominator by the conjugate of the denominator, ' + m(cpr(c, -d)) + '.', 'Numerator: ' + m(cpr(a, b) + cpr(c, -d) + ' = ' + cx(a * c + b * d, b * c - a * d)) + '. Denominator: ' + m(cpr(c, d) + cpr(c, -d) + ' = ' + (c ? c * c + ' + ' : '') + d * d + ' = ' + D) + '.', 'Divide each part by ' + D + ': ' + m(cx(re, im)) + '.'] }), { k: 'cx', e: e });
+        return withP(Q({ q: 'Write ' + e + ' in ' + m('<i>a</i> + <i>b</i>i') + ' form.', mc: mcV(cxv(re, im), w, function () { return cxv(re.add(rnz(-2, 2)), im.add(rnz(-2, 2))); }), why: ['Multiply the numerator and denominator by the conjugate of the denominator, ' + m(cpr(c, -d)) + '.', 'Numerator: ' + m(cpr(a, b) + cpr(c, -d) + ' = ' + cx(a * c + b * d, b * c - a * d)) + '. Denominator: ' + m(cpr(c, d) + cpr(c, -d) + ' = ' + (c ? c * c + ' + ' + d * d + ' = ' : '') + D) + '.', (D === 1 ? 'The denominator is 1, so the result is ' : 'Divide each part by ' + D + ': ') + m(cx(re, im)) + '.'] }), { k: 'cx', e: e });
       },
       function () { // sum of powers of i
         var p = ri(5, 60), q = ri(5, 60), r = ri(5, 60);
@@ -493,7 +501,7 @@
         var r1, r2, p, q, Kv;
         do { r1 = ri(-8, 8); r2 = ri(-8, 8); p = rnz(-6, 6); q = -(r1 + r2) - p; Kv = p * q - r1 * r2; } while (r1 === r2 || q === 0 || Kv === 0);
         var e = m(fp(p) + fp(q) + ' = ' + n(Kv)), b = p + q, c = p * q - Kv;
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([r1, r2]), [setH([Kv - p, Kv - q]), setH([-p, -q]), setH([-r1, -r2])], function () { return setH([r1 + rnz(-3, 3), r2]); }), why: ['Multiply out: ' + m(quad(1, p + q, p * q) + ' = ' + n(Kv)) + '. (Setting each factor equal to ' + n(Kv) + ' is not allowed; the zero-factor property needs 0.)', 'Subtract ' + n(Kv) + ': ' + m(quad(1, b, c) + ' = 0') + '.', 'Factor: ' + m(fp(-r1) + fp(-r2) + ' = 0').replace(/\(<i>x<\/i>\)/g, X) + ', so the solution set is ' + setH([r1, r2])[0] + '.'] }), { k: 'solve', e: e, dom: 'C' });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([r1, r2]), [setH([Kv - p, Kv - q]), setH([-p, -q]), setH([-r1, -r2])], function () { return setH([r1 + rnz(-3, 3), r2]); }), why: ['Multiply out: ' + m(quad(1, p + q, p * q) + ' = ' + n(Kv)) + '. (Setting each factor equal to ' + n(Kv) + ' is not allowed; the zero-factor property needs 0.)', (Kv < 0 ? 'Add ' + n(-Kv) : 'Subtract ' + n(Kv)) + ' on both sides: ' + m(quad(1, b, c) + ' = 0') + '.', 'Factor: ' + m(fp(-r1) + fp(-r2) + ' = 0').replace(/\(<i>x<\/i>\)/g, X) + ', so the solution set is ' + setH([r1, r2])[0] + '.'] }), { k: 'solve', e: e, dom: 'C' });
       },
       function () { // value of k for exactly one solution
         if (K.coin()) {
@@ -529,11 +537,11 @@
       function () { // ladder
         var T = pick(TRIP), k = ri(1, 3), legs = K.shuffle([T[0] * k, T[1] * k]), b = legs[0], h = legs[1], c = T[2] * k;
         var ft = function (v) { return [m(n(v) + ' ft'), [v]]; };
-        return withP(Q({ q: 'A ' + c + '-ft ladder leans against a wall with its base ' + b + ' ft from the wall. How high up the wall does it reach?', mc: mcV(ft(h), [ft(c + b), ft(c - b), ft(c * c - b * b)], function () { return ft(h + rnz(-3, 3)); }), why: ['The ladder is the hypotenuse: ' + m(L('h^2 + ') + b + '<sup>2</sup> = ' + c + '<sup>2</sup>') + '.', m(L('h^2 = ') + c * c + ' ' + M + ' ' + b * b + ' = ' + h * h) + '.', m(L('h = ') + h) + ' ft (a height is positive).'] }), { k: 'word', w: 'ladder', c: c, b: b });
+        return withP(Q({ q: An(c) + ' ' + c + '-ft ladder leans against a wall with its base ' + b + ' ft from the wall. How high up the wall does it reach?', mc: mcV(ft(h), [ft(c + b), ft(c - b), ft(c * c - b * b)], function () { var z = h + rnz(-3, 3); return z > 0 ? ft(z) : null; }), why: ['The ladder is the hypotenuse: ' + m(L('h^2 + ') + b + '<sup>2</sup> = ' + c + '<sup>2</sup>') + '.', m(L('h^2 = ') + c * c + ' ' + M + ' ' + b * b + ' = ' + h * h) + '.', m(L('h = ') + h) + ' ft (a height is positive).'] }), { k: 'word', w: 'ladder', c: c, b: b });
       },
       function () { // ground launch
         var t = ri(2, 8), v = 16 * t, s = m(L('s = ') + quad(-16, v, 0, 't'));
-        return withP(Q({ q: 'A ball is thrown straight up from ground level. Its height in feet after ' + m(L('t')) + ' seconds is ' + s + '. When does it hit the ground?', mc: mcV(sec(t), [sec(t / 2), sec(2 * t), sec(v / 32 + t)], function () { return sec(t + rnz(-2, 2)); }), why: ['It is on the ground when ' + m(L('s = 0')) + ': ' + m(quad(-16, v, 0, 't') + ' = 0') + '.', 'Factor: ' + m(M + '16' + L('t(t − ') + t + ') = 0') + ', so ' + m(L('t = 0')) + ' or ' + m(L('t = ') + t) + '.', m(L('t = 0')) + ' is the launch, so it lands after ' + t + ' seconds. (Halfway, ' + n(t / 2) + ' s, is when it is highest.)'] }), { k: 'word', w: 'ground', v: v });
+        return withP(Q({ q: 'A ball is thrown straight up from ground level. Its height in feet after ' + m(L('t')) + ' seconds is ' + s + '. When does it hit the ground?', mc: mcV(sec(t), [sec(t / 2), sec(2 * t), sec(v / 32 + t)], function () { var z = t + rnz(-2, 2); return z > 0 ? sec(z) : null; }), why: ['It is on the ground when ' + m(L('s = 0')) + ': ' + m(quad(-16, v, 0, 't') + ' = 0') + '.', 'Factor: ' + m(M + '16' + L('t(t − ') + t + ') = 0') + ', so ' + m(L('t = 0')) + ' or ' + m(L('t = ') + t) + '.', m(L('t = 0')) + ' is the launch, so it lands after ' + t + ' seconds. (Halfway, ' + n(t / 2) + ' s, is when it is highest.)'] }), { k: 'word', w: 'ground', v: v });
       },
       function () { // rectangle area
         var wv = ri(3, 15), d = ri(1, 8), A = wv * (wv + d);
@@ -543,14 +551,14 @@
       function () { // consecutive integers
         var a = ri(4, 20), pr = a * (a + 1);
         var pair = function (u) { return [n(u) + ' and ' + n(u + 1), [u]]; };
-        return withP(Q({ q: 'The product of two consecutive positive integers is ' + pr + '. What are the integers?', mc: mcV(pair(a), [pair(-a - 1), pair(a + 1), pair(a - 1)], function () { return pair(a + rnz(-4, 4)); }), why: ['Let the integers be ' + m(L('n')) + ' and ' + m(L('n + 1')) + ': ' + m(L('n(n + 1) = ') + pr) + '.', m(quad(1, 1, -pr, 'n') + ' = 0') + ' factors as ' + m(L('(n + ') + (a + 1) + L(')(n − ') + a + ') = 0') + '.', 'The integers are positive, so ' + m(L('n = ') + a) + ': the integers are ' + a + ' and ' + (a + 1) + '.'] }), { k: 'word', w: 'consec', pr: pr });
+        return withP(Q({ q: 'The product of two consecutive positive integers is ' + pr + '. What are the integers?', mc: mcV(pair(a), [pair(-a - 1), pair(a + 1), pair(a - 1)], function () { var z = a + rnz(-4, 4); return z > 0 ? pair(z) : null; }), why: ['Let the integers be ' + m(L('n')) + ' and ' + m(L('n + 1')) + ': ' + m(L('n(n + 1) = ') + pr) + '.', m(quad(1, 1, -pr, 'n') + ' = 0') + ' factors as ' + m(L('(n + ') + (a + 1) + L(')(n − ') + a + ') = 0') + '.', 'The integers are positive, so ' + m(L('n = ') + a) + ': the integers are ' + a + ' and ' + (a + 1) + '.'] }), { k: 'word', w: 'consec', pr: pr });
       }
     ],
     [
       function () { // launch from a height
         var T, q; do { T = ri(2, 8); q = ri(1, 3); } while (T <= q);
         var v = 16 * (T - q), s0 = 16 * T * q, s = m(L('s = ') + quad(-16, v, s0, 't'));
-        return withP(Q({ q: 'A ball is thrown upward from the top of a ' + s0 + '-ft building. Its height after ' + m(L('t')) + ' seconds is ' + s + '. When does it hit the ground?', mc: mcV(sec(T), [sec(q), sec((T - q) / 2), sec(T + q)], function () { return sec(T + rnz(-2, 2)); }), why: ['Set ' + m(L('s = 0')) + ' and divide by ' + m(M + '16') + ': ' + m(quad(1, -(T - q), -T * q, 't') + ' = 0') + '.', 'Factor: ' + m(L('(t − ') + T + L(')(t + ') + q + ') = 0') + ', so ' + m(L('t = ') + T) + ' or ' + m(L('t = ') + M + q) + '.', 'Time cannot be negative, so it hits the ground after ' + T + ' seconds.'] }), { k: 'word', w: 'height0', v: v, s0: s0 });
+        return withP(Q({ q: 'A ball is thrown upward from the top of ' + an(s0) + ' ' + s0 + '-ft building. Its height after ' + m(L('t')) + ' seconds is ' + s + '. When does it hit the ground?', mc: mcV(sec(T), [sec(q), sec((T - q) / 2), sec(T + q)], function () { var z = T + rnz(-2, 2); return z > 0 ? sec(z) : null; }), why: ['Set ' + m(L('s = 0')) + ' and divide by ' + m(M + '16') + ': ' + m(quad(1, -(T - q), -T * q, 't') + ' = 0') + '.', 'Factor: ' + m(L('(t − ') + T + L(')(t + ') + q + ') = 0') + ', so ' + m(L('t = ') + T) + ' or ' + m(L('t = ') + M + q) + '.', 'Time cannot be negative, so it hits the ground after ' + T + ' seconds.'] }), { k: 'word', w: 'height0', v: v, s0: s0 });
       },
       function () { // both times at a height
         var t1 = ri(1, 4), t2 = t1 + ri(1, 3), s0 = pick([0, 0, 16, 32, 48]), v = 16 * (t1 + t2), h = s0 + 16 * t1 * t2;
@@ -562,12 +570,12 @@
       function () { // legs x and x + d
         var T = pick(TRIP.slice(0, 5)), k = T[2] <= 13 ? ri(1, 2) : 1, a = T[0] * k, b = T[1] * k, c = T[2] * k, d = b - a;
         var pr = function (u) { return [n(u) + ' and ' + n(u + d), [u]]; };
-        return withP(Q({ q: 'A right triangle has legs ' + m(X) + ' and ' + m(lin(1, d)) + ' and hypotenuse ' + c + '. Find the lengths of the legs.', mc: mcV(pr(a), [pr(-b), pr(c - d), pr(a + 1)], function () { var z = a + rnz(-3, 3); return z > 0 ? pr(z) : null; }), why: ['Pythagorean theorem: ' + m(X2 + ' + (' + lin(1, d) + ')<sup>2</sup> = ' + c + '<sup>2</sup>') + '.', 'Expand: ' + m(quad(2, 2 * d, d * d - c * c) + ' = 0') + '; divide by 2: ' + m(quad(1, d, (d * d - c * c) / 2) + ' = 0') + ', so ' + m('(' + lin(1, b) + ')(' + lin(1, -a) + ') = 0') + '.', 'A length is positive, so ' + xeq(a) + ': the legs are ' + a + ' and ' + b + '.'] }), { k: 'word', w: 'legs', d: d, c: c });
+        return withP(Q({ q: 'A right triangle has legs ' + m(X) + ' and ' + m(lin(1, d)) + ' and hypotenuse ' + c + '. Find the lengths of the legs.', mc: mcV(pr(a), [pr(b), pr(c - d), pr(a + 1)], function () { var z = a + rnz(-3, 3); return z > 0 ? pr(z) : null; }), why: ['Pythagorean theorem: ' + m(X2 + ' + (' + lin(1, d) + ')<sup>2</sup> = ' + c + '<sup>2</sup>') + '.', 'Expand: ' + m(quad(2, 2 * d, d * d - c * c) + ' = 0') + '; divide by 2: ' + m(quad(1, d, (d * d - c * c) / 2) + ' = 0') + ', so ' + m('(' + lin(1, b) + ')(' + lin(1, -a) + ') = 0') + '.', 'A length is positive, so ' + xeq(a) + ': the legs are ' + a + ' and ' + b + '.'] }), { k: 'word', w: 'legs', d: d, c: c });
       },
       function () { // uniform border
         var Lg = ri(6, 20), Wg = ri(6, 20), x = pick([1, 1.5, 2, 2.5, 3, 4]), T = (Lg + 2 * x) * (Wg + 2 * x);
         var ft = function (v) { return [m(n(v) + ' ft'), [v]]; };
-        return withP(Q({ q: 'A ' + Wg + ' ft by ' + Lg + ' ft garden is surrounded by a border of uniform width ' + m(X) + '. The garden and border together cover ' + n(T) + ' ft². How wide is the border?', mc: mcV(ft(x), [ft(2 * x), ft(x / 2), ft(x + 1)], function () { return ft(x + pick([-0.5, 0.5, 1.5, 2])); }), why: ['With the border, the outer dimensions are ' + m('(' + lin(2, Wg) + ')') + ' and ' + m('(' + lin(2, Lg) + ')') + ': ' + m('(' + lin(2, Wg) + ')(' + lin(2, Lg) + ') = ' + n(T)) + '.', 'Expand: ' + m(quad(4, 2 * (Lg + Wg), Lg * Wg - T) + ' = 0') + '. Solve (by factoring or the quadratic formula).', 'The positive solution is ' + xeq(x) + ' ft; the negative one is rejected. Check: ' + m(n(Wg + 2 * x) + ' × ' + n(Lg + 2 * x) + ' = ' + n(T)) + ' ✓'] }), { k: 'word', w: 'border', Lg: Lg, Wg: Wg, T: T });
+        return withP(Q({ q: An(Wg) + ' ' + Wg + ' ft by ' + Lg + ' ft garden is surrounded by a border of uniform width ' + m(X) + '. The garden and border together cover ' + n(T) + ' ft². How wide is the border?', mc: mcV(ft(x), [ft(2 * x), ft(x / 2), ft(x + 1)], function () { return ft(x + pick([-0.5, 0.5, 1.5, 2])); }), why: ['With the border, the outer dimensions are ' + m('(' + lin(2, Wg) + ')') + ' and ' + m('(' + lin(2, Lg) + ')') + ': ' + m('(' + lin(2, Wg) + ')(' + lin(2, Lg) + ') = ' + n(T)) + '.', 'Expand: ' + m(quad(4, 2 * (Lg + Wg), Lg * Wg - T) + ' = 0') + '. Solve (by factoring or the quadratic formula).', 'The positive solution is ' + xeq(x) + ' ft; the negative one is rejected. Check: ' + m(n(Wg + 2 * x) + ' × ' + n(Lg + 2 * x) + ' = ' + n(T)) + ' ✓'] }), { k: 'word', w: 'border', Lg: Lg, Wg: Wg, T: T });
       }
     ],
     [
@@ -577,12 +585,12 @@
         var r1 = function (x) { return Math.round(x * 10) / 10; };
         var tc = function (x) { return ['About ' + r1(x).toFixed(1) + ' seconds', [r1(x)]]; };
         var other = (Math.sqrt(v * v + 64 * s0) - v) / 32, D = v * v + 64 * s0;
-        return withP(Q({ q: 'A rock is thrown upward from a ' + s0 + '-ft cliff. Its height in feet after ' + m(L('t')) + ' seconds is ' + m(L('s = ') + quad(-16, v, s0, 't')) + '. When does it hit the ground below? Round to the nearest tenth of a second.', mc: mcV(tc(rt), [tc(other), tc(v / 32), tc(v / 16)], function () { return tc(rt + pick([-0.4, -0.2, 0.2, 0.4, 0.6])); }), why: ['Set ' + m(quad(-16, v, s0, 't') + ' = 0') + ' and use the quadratic formula with ' + m('<i>a</i> = ' + M + '16, <i>b</i> = ' + v + ', <i>c</i> = ' + s0) + '.', m(L('t = ') + fr(M + v + ' ± ' + K.sqrt(v + '<sup>2</sup> + 64(' + s0 + ')'), M + '32') + ' = ' + fr(M + v + ' ± ' + K.sqrt(D), M + '32')) + '.', 'The solutions are about ' + m(n(K.round(-other, 2))) + ' and ' + m(n(K.round(rt, 2))) + '. Reject the negative time: about ' + r1(rt).toFixed(1) + ' seconds.'] }), { k: 'word', w: 'cliff', v: v, s0: s0 });
+        return withP(Q({ q: 'A rock is thrown upward from ' + an(s0) + ' ' + s0 + '-ft cliff. Its height in feet after ' + m(L('t')) + ' seconds is ' + m(L('s = ') + quad(-16, v, s0, 't')) + '. When does it hit the ground below? Round to the nearest tenth of a second.', mc: mcV(tc(rt), [tc(other), tc(v / 32), tc(v / 16)], function () { return tc(rt + pick([-0.4, -0.2, 0.2, 0.4, 0.6])); }), why: ['Set ' + m(quad(-16, v, s0, 't') + ' = 0') + ' and use the quadratic formula with ' + m('<i>a</i> = ' + M + '16, <i>b</i> = ' + v + ', <i>c</i> = ' + s0) + '.', m(L('t = ') + fr(M + v + ' ± ' + K.sqrt(v + '<sup>2</sup> + 64(' + s0 + ')'), M + '32') + ' = ' + fr(M + v + ' ± ' + K.sqrt(D), M + '32')) + '.', 'The solutions are about ' + m(n(K.round(-other, 2))) + ' and ' + m(n(K.round(rt, 2))) + '. Reject the negative time: about ' + r1(rt).toFixed(1) + ' seconds.'] }), { k: 'word', w: 'cliff', v: v, s0: s0 });
       },
       function () { // open box
         var c = ri(1, 4), b = ri(4, 14), S = b + 2 * c, V = c * b * b;
         var inch = function (v) { return [m(n(v) + ' in.'), [v]]; };
-        return withP(Q({ q: 'Squares ' + c + ' in. on a side are cut from each corner of a square sheet of metal, and the sides are folded up to make an open box with volume ' + V + ' in³. What was the side length of the original sheet?', mc: mcV(inch(S), [inch(b), inch(b + c), inch(b + 4 * c)], function () { return inch(S + rnz(-3, 3)); }), why: ['If the sheet has side ' + X + ', the base is ' + m(lin(1, -2 * c)) + ' on a side and the height is ' + c + ': ' + m(c + '(' + lin(1, -2 * c) + ')<sup>2</sup> = ' + V) + '.', m('(' + lin(1, -2 * c) + ')<sup>2</sup> = ' + b * b) + ', so ' + m(lin(1, -2 * c) + ' = ' + b) + ' (the negative root gives a negative length).', xeq(S) + ': the sheet was ' + S + ' in. on a side.'] }), { k: 'word', w: 'box', c: c, V: V });
+        return withP(Q({ q: 'Squares ' + c + ' in. on a side are cut from each corner of a square sheet of metal, and the sides are folded up to make an open box with volume ' + V + ' in³. What was the side length of the original sheet?', mc: mcV(inch(S), [inch(b), inch(b + c), inch(b + 4 * c)], function () { return inch(S + rnz(-3, 3)); }), why: ['If the sheet has side ' + X + ', the base is ' + m(lin(1, -2 * c)) + ' on a side and the height is ' + c + ': ' + m(cpar(c) + '(' + lin(1, -2 * c) + ')<sup>2</sup> = ' + V) + '.', (c === 1 ? 'Take the square root: ' : m('(' + lin(1, -2 * c) + ')<sup>2</sup> = ' + b * b) + ', so ') + m(lin(1, -2 * c) + ' = ' + b) + ' (the negative root gives a negative length).', xeq(S) + ': the sheet was ' + S + ' in. on a side.'] }), { k: 'word', w: 'box', c: c, V: V });
       },
       function () { // perimeter and area
         var wv, Lv; do { wv = ri(4, 25); Lv = ri(5, 30); } while (Lv <= wv);
@@ -592,7 +600,7 @@
       },
       function () { // on the way down
         var t1 = ri(1, 4), t2 = t1 + ri(1, 4), s0 = pick([16, 32, 48, 64, 80]), v = 16 * (t1 + t2), h = s0 + 16 * t1 * t2;
-        return withP(Q({ q: 'A ball is thrown upward from a ' + s0 + '-ft platform. Its height in feet after ' + m(L('t')) + ' seconds is ' + m(L('s = ') + quad(-16, v, s0, 't')) + '. At what time is the ball ' + h + ' ft high <b>on its way down</b>?', mc: mcV(sec(t2), [sec(t1), sec((t1 + t2) / 2), sec(t1 + t2)]), why: ['Set ' + m(quad(-16, v, s0, 't') + ' = ' + h) + ': ' + m(quad(-16, v, s0 - h, 't') + ' = 0') + '.', 'Divide by ' + m(M + '16') + ' and factor: ' + m(L('(t − ') + t1 + L(')(t − ') + t2 + ') = 0') + '.', 'The ball passes ' + h + ' ft at ' + t1 + ' s going up and at ' + t2 + ' s coming down, so the answer is ' + t2 + ' seconds.'] }), { k: 'word', w: 'down', v: v, s0: s0, h: h });
+        return withP(Q({ q: 'A ball is thrown upward from ' + an(s0) + ' ' + s0 + '-ft platform. Its height in feet after ' + m(L('t')) + ' seconds is ' + m(L('s = ') + quad(-16, v, s0, 't')) + '. At what time is the ball ' + h + ' ft high <b>on its way down</b>?', mc: mcV(sec(t2), [sec(t1), sec((t1 + t2) / 2), sec(t1 + t2)]), why: ['Set ' + m(quad(-16, v, s0, 't') + ' = ' + h) + ': ' + m(quad(-16, v, s0 - h, 't') + ' = 0') + '.', 'Divide by ' + m(M + '16') + ' and factor: ' + m(L('(t − ') + t1 + L(')(t − ') + t2 + ') = 0') + '.', 'The ball passes ' + h + ' ft at ' + t1 + ' s going up and at ' + t2 + ' s coming down, so the answer is ' + t2 + ' seconds.'] }), { k: 'word', w: 'down', v: v, s0: s0, h: h });
       }
     ]
   ];
@@ -607,8 +615,9 @@
         do { x0 = rnz(-9, 9); k = ri(2, 6); eD = rnz(-5, 5); A = x0 * eD / k; } while (!nint(A) || A === 0);
         B = rnz(-5, 5); C = B + eD;
         var e = m((A < 0 ? M : '') + fr(n(Math.abs(A)), X) + (B > 0 ? ' + ' : ' ' + M + ' ') + R(Math.abs(B), k).html() + ' = ' + R(C, k).html());
+        var Lk = K.lcm(R(B, k).d, R(C, k).d);
         var w = [setH([-x0]), setH([R(A, eD)])]; if (C + B !== 0) w.push(setH([R(k * A, C + B)]));
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([x0]), w, function () { var z = x0 + rnz(-4, 4); return z ? setH([z]) : null; }), why: ['Note ' + m('<i>x</i> ≠ 0') + '. Multiply every term by ' + m(k + X) + ': ' + m(n(k * A) + (B > 0 ? ' + ' : ' ' + M + ' ') + (Math.abs(B) === 1 ? '' : Math.abs(B)) + X + ' = ' + P([[C, X]])) + '.', 'Collect the ' + X + '-terms: ' + m(n(k * A) + ' = ' + P([[eD, X]])) + ', so ' + xeq(x0) + '.', n(x0) + ' is not excluded, so the solution set is ' + setH([x0])[0] + '.'] }), { k: 'solve', e: e });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([x0]), w, function () { var z = x0 + rnz(-4, 4); return z ? setH([z]) : null; }), why: ['Note ' + m('<i>x</i> ≠ 0') + '. ' + (Lk === 1 ? 'Multiply every term by ' + X : 'The LCD is ' + m(Lk + X) + '. Multiply every term by ' + m(Lk + X)) + ': ' + m(n(A * Lk) + cont([[B * Lk / k, X]]) + ' = ' + P([[C * Lk / k, X]])) + '.', 'Collect the ' + X + '-terms: ' + m(n(A * Lk) + ' = ' + P([[eD * Lk / k, X]])) + (eD * Lk / k === 1 ? '' : ', so ' + xeq(x0)) + '.', n(x0) + ' is not excluded, so the solution set is ' + setH([x0])[0] + '.'] }), { k: 'solve', e: e });
       },
       function () { // √(ax + b) = c
         var a = ri(1, 5), x0 = ri(-5, 12), c = ri(1, 9), b = c * c - a * x0, neg = ri(1, 5) === 1;
@@ -618,8 +627,8 @@
       },
       function () { // work together
         var a, b, t; do { a = ri(2, 12); b = ri(2, 12); t = a * b / (a + b); } while (a === b || !dec2(t));
-        var nm = pick(NAMES), hr = function (v) { return [m(n(v) + ' hours'), [v]]; };
-        return withP(Q({ q: nm[0] + ' can paint a room in ' + a + ' hours, and ' + nm[1] + ' can paint it in ' + b + ' hours. How long does it take them working together?', mc: mcV(hr(t), [hr((a + b) / 2), hr(a + b), hr(Math.abs(a - b)), hr(Math.min(a, b))], function () { var z = t + pick([-1, 1, 0.5, -0.5, 2]); return z > 0 ? hr(z) : null; }), why: ['Rates: ' + nm[0] + ' paints ' + m(fr(1, a)) + ' of the room per hour and ' + nm[1] + ' paints ' + m(fr(1, b)) + '.', 'Together: ' + m(fr(1, a) + ' + ' + fr(1, b) + ' = ' + R(a + b, a * b).html()) + ' of the room per hour.', 'Time = ' + m('1 ÷ ' + R(a + b, a * b).html() + ' = ' + R(a * b, a + b).html() + ' = ' + n(t)) + ' hours (faster than either person alone).'] }), { k: 'word', w: 'work', a: a, b: b });
+        var nm = pick(NAMES), hr = function (v) { return [m(pl(v, 'hour')), [v]]; };
+        return withP(Q({ q: nm[0] + ' can paint a room in ' + a + ' hours, and ' + nm[1] + ' can paint it in ' + b + ' hours. How long does it take them working together?', mc: mcV(hr(t), [hr((a + b) / 2), hr(a + b), hr(Math.abs(a - b)), hr(Math.min(a, b))], function () { var z = t + pick([-1, 1, 0.5, -0.5, 2]); return z > 0 ? hr(z) : null; }), why: ['Rates: ' + nm[0] + ' paints ' + m(fr(1, a)) + ' of the room per hour and ' + nm[1] + ' paints ' + m(fr(1, b)) + '.', 'Together: ' + m(fr(1, a) + ' + ' + fr(1, b) + ' = ' + R(a + b, a * b).html()) + ' of the room per hour.', 'Time = ' + m('1 ÷ ' + R(a + b, a * b).html() + ' = ' + R(a * b, a + b).html() + (nint(t) ? '' : ' = ' + n(t))) + ' ' + (t === 1 ? 'hour' : 'hours') + ' (faster than either person alone).'] }), { k: 'word', w: 'work', a: a, b: b });
       },
       function () { // excluded values
         var p, q; do { p = rnz(-7, 7); q = rnz(-7, 7); } while (p === -q);
@@ -705,7 +714,7 @@
         return withP(Q({ q: 'Find all complex solutions of ' + e2 + '.', mc: mcV(cset(p, q), [setH([-p, p]), setH([-q * q, p * p]), cset(q, p)]), why: ['Let ' + m('<i>u</i> = ' + X2) + ': ' + m(P([[1, '<i>u</i><sup>2</sup>'], [q * q - p * p, '<i>u</i>'], [-p * p * q * q, '']]) + ' = 0') + ', which factors as ' + m('(<i>u</i> ' + M + ' ' + p * p + ')(<i>u</i> + ' + q * q + ') = 0') + '.', m(X2 + ' = ' + p * p) + ' gives ' + m('<i>x</i> = ±' + p) + '; ' + m(X2 + ' = ' + M + q * q) + ' gives ' + m('<i>x</i> = ±' + iq(q)) + '.', 'Four solutions: ' + cset(p, q)[0] + '.'] }), { k: 'solve', e: e2, dom: 'C' });
       },
       function () { // work: unknown time, or fill and drain
-        var hr = function (v) { return [m(n(v) + ' hours'), [v]]; };
+        var hr = function (v) { return [m(pl(v, 'hour')), [v]]; };
         if (K.coin()) {
           var a, B, T; do { a = ri(2, 12); B = ri(2, 20); T = a * B / (a + B); } while (a === B || !nint(T * 10));
           var w = []; [a - T, 2 * T, a + T].forEach(function (v) { if (v > 0 && dec2(v)) w.push(hr(v)); });
@@ -767,7 +776,7 @@
         do { a = rnz(-6, 6); c = rnz(-6, 6); p = rnz(-6, 6); d = rnz(-12, 12); kk = a - c; } while (kk === 0 || Math.abs(a) < 2);
         var sym = pick(['<', '<=', '>', '>=']), x0 = R(d - a * p, kk), s2 = kk < 0 ? FLIP[sym] : sym, dir = (s2 === '>' || s2 === '>=') ? 1 : -1, cl = s2.length === 2;
         var e = m(cpar(a) + '(' + lin(1, p) + ') ' + SYM[sym] + ' ' + lin(c, d)), cor = ray(x0, dir, cl);
-        return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, [ray(x0, -dir, cl), ray(x0, dir, !cl), ray(R(d + a * p, kk), dir, cl)], function () { return ray(x0.add(rnz(-3, 3)), dir, cl); }), why: ['Distribute: ' + m(lin(a, a * p) + ' ' + SYM[sym] + ' ' + lin(c, d)) + '.', 'Collect terms: ' + m(P([[kk, X]]) + ' ' + SYM[sym] + ' ' + n(d - a * p)) + '.', 'Divide by ' + n(kk) + (kk < 0 ? ' and reverse the symbol' : '') + ': ' + m('<i>x</i> ' + SYM[s2] + ' ' + x0.html()) + ', so the solution set is ' + cor + '.'] }), { k: 'ineq', e: e });
+        return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, [ray(x0, -dir, cl), ray(x0, dir, !cl), ray(R(d + a * p, kk), dir, cl)], function () { return ray(x0.add(rnz(-3, 3)), dir, cl); }), why: ['Distribute: ' + m(lin(a, a * p) + ' ' + SYM[sym] + ' ' + lin(c, d)) + '.', 'Collect terms: ' + m(P([[kk, X]]) + ' ' + SYM[sym] + ' ' + n(d - a * p)) + '.', (kk === 1 ? 'So' : 'Divide by ' + n(kk) + (kk < 0 ? ' and reverse the symbol' : '') + ': ' + m('<i>x</i> ' + SYM[s2] + ' ' + x0.html()) + ', so') + ' the solution set is ' + cor + '.'] }), { k: 'ineq', e: e });
       },
       function () { // factorable quadratic
         var r1, r2; do { r1 = ri(-7, 7); r2 = ri(-7, 7); } while (r1 >= r2);

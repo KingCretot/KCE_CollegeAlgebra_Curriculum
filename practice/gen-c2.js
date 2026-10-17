@@ -45,6 +45,68 @@
   function lin(a, b) { return P([[a, X], [b, '']]); }
   function quad(a, b, c) { return P([[a, K.xp(2)], [b, X], [c, '']]); }
   function attach(o, p) { o.p = p; return o; }
+  /* ---- shared text helpers (added in review fixes) ---- */
+  // a = b = c chain that drops a step identical to the one before it (no "1/2 = 1/2")
+  function eqs() { var a = [].slice.call(arguments), out = [a[0]]; for (var i = 1; i < a.length; i++) if (K.plain(a[i]) !== K.plain(out[out.length - 1])) out.push(a[i]); return out.join(' = '); }
+  // quotient of two integers as shown in a step: never a negative denominator under a fraction bar
+  function frq(a, b) { return b < 0 ? n(a) + ' ÷ (' + n(b) + ')' : K.frx(n(a), n(b)); }
+  // indefinite article for a number that follows it ("an 8-mile", "an 11-mile", "a 12-mile")
+  function art(v) { var s = String(v).replace(/[^0-9]/g, ''); return /^8/.test(s) || (/^1[18]/.test(s) && s.length % 3 === 2) ? 'an' : 'a'; }
+  // count + noun with the right number ("1 year", "3 years")
+  function cnt(v, one, many) { return n(v) + ' ' + (Math.abs(v) === 1 ? one : (many || one + 's')); }
+  // math that may wrap between top-level terms or factors (never inside parentheses or a fraction)
+  function brk(s) {
+    var chunks = [], seps = [], cur = '', dp = 0, ds = 0, i = 0;
+    while (i < s.length) {
+      if (s.substr(i, 5) === '<span') ds++; else if (s.substr(i, 6) === '</span') ds--;
+      var ch = s.charAt(i), op = s.substr(i, 3);
+      if (dp === 0 && ds === 0 && cur.trim() && (op === ' + ' || op === ' ' + K.MINUS + ' ' || op === ' = ' || op === ' ÷ ')) { chunks.push(cur.trim()); seps.push(' '); cur = ''; }
+      if (ch === '(') dp++; else if (ch === ')') dp--;
+      cur += ch; i++;
+      if (dp === 0 && ds === 0 && ch === ')' && s.charAt(i) === '(') { chunks.push(cur.trim()); seps.push('<wbr>'); cur = ''; }
+    }
+    if (cur.trim()) chunks.push(cur.trim());
+    return chunks.map(function (c, j) { return (j ? seps[j - 1] : '') + K.m(c); }).join('');
+  }
+  // Graph point labels: choose a side for each label so it does not sit on a tick label, an axis,
+  // an asymptote, the curve, another point or another label. P.pref lists preferred positions
+  // ('ne','se','nw','sw','e','w'); the lowest-collision position wins, earlier ones on ties. Mutates o.pts; returns o.
+  function place(o) {
+    var x0 = o.x[0], x1 = o.x[1], y0 = o.y[0], y1 = o.y[1], W = o.w || 320, H = o.h || 320, pad = o.pad || 30, padB = o.xlab ? 40 : pad, padL = o.ylab ? 44 : pad, pw = W - padL - pad, ph = H - pad - padB;
+    var X = function (x) { return padL + (x - x0) / (x1 - x0) * pw; }, Y = function (y) { return pad + (y1 - y) / (y1 - y0) * ph; };
+    var ax = (y0 <= 0 && y1 >= 0) ? Y(0) : (y0 > 0 ? pad + ph : pad), ay = (x0 <= 0 && x1 >= 0) ? X(0) : (x0 > 0 ? padL : padL + pw);
+    var gx = o.stepX || o.step || 1, gy = o.stepY || o.step || 1, lx = o.labX || o.lab || (gx * ((x1 - x0) / gx > 12 ? 2 : 1)), ly = o.labY || o.lab || (gy * ((y1 - y0) / gy > 12 ? 2 : 1));
+    var obs = []; // [rect, penalty]
+    var tw = function (v) { return 6.2 * K.n(K.round(v, 6)).length + 2; };
+    for (var v = Math.ceil(x0 / lx) * lx; v <= x1 + 1e-9; v += lx) if (!(Math.abs(v) < 1e-9 && (x0 < 0 || y0 >= 0))) obs.push([[X(v) - tw(v) / 2, ax + 6, X(v) + tw(v) / 2, ax + 16], 10]);
+    for (v = Math.ceil(y0 / ly) * ly; v <= y1 + 1e-9; v += ly) if (Math.abs(v) > 1e-9) obs.push([[ay - 6 - tw(v), Y(v) - 5, ay - 6, Y(v) + 5], 10]);
+    obs.push([[padL - 8, ax - 1.5, padL + pw + 8, ax + 1.5], 3], [[ay - 1.5, pad - 8, ay + 1.5, pad + ph + 8], 3]);
+    (o.lines || []).forEach(function (L) { if (L.vx !== undefined) obs.push([[X(L.vx) - 2, pad, X(L.vx) + 2, pad + ph], 6]); else if (K.R(L.m).n === 0) { var yb = Y(K.R(L.b).val()); obs.push([[padL, yb - 2, padL + pw, yb + 2], 6]); } });
+    (o.pts || []).forEach(function (P) { obs.push([[X(P.x) - 5, Y(P.y) - 5, X(P.x) + 5, Y(P.y) + 5], 10]); });
+    var curves = [];
+    (o.fns || []).forEach(function (F) { curves.push(function (px) { var x = x0 + (px - padL) / pw * (x1 - x0); if (F.from !== undefined && x < F.from) return NaN; if (F.to !== undefined && x > F.to) return NaN; return Y(F.f(x)); }); });
+    (o.lines || []).forEach(function (L) { if (L.vx === undefined && K.R(L.m).n !== 0) { var mm = K.R(L.m).val(), bb = K.R(L.b).val(); curves.push(function (px) { var x = x0 + (px - padL) / pw * (x1 - x0); return Y(mm * x + bb); }); } });
+    var hit = function (r, s) { return !(r[2] < s[0] || r[0] > s[2] || r[3] < s[1] || r[1] > s[3]); };
+    var segHit = function (r) { return (o.segs || []).some(function (S) { for (var t = 0; t <= 1; t += 0.01) { var px = X(S.x1 + (S.x2 - S.x1) * t), py = Y(S.y1 + (S.y2 - S.y1) * t); if (px >= r[0] - 1 && px <= r[2] + 1 && py >= r[1] - 1 && py <= r[3] + 1) return true; } return false; }); };
+    var curveHit = function (r) { return curves.some(function (c) { for (var px = r[0] - 1; px <= r[2] + 1; px += 1) { var py = c(px), py2 = c(px + 1); if (!isFinite(py)) continue; if (py >= r[1] - 1 && py <= r[3] + 1) return true; if (isFinite(py2) && Math.min(py, py2) <= r[1] && Math.max(py, py2) >= r[3]) return true; } return false; }); };
+    // [horizontal side, dy]  (side +1: text starts right of the point; −1: text ends left of it)
+    var OFF = { ne: [1, -7], se: [1, 17], nw: [-1, -7], sw: [-1, 17], e: [1, 4], w: [-1, 4] };
+    (o.pts || []).forEach(function (P) {
+      if (!P.label || P.dx !== undefined) return;
+      var w = 6.6 * String(P.label).length + 2, px = X(P.x), py = Y(P.y), best = null;
+      var order = (P.pref || []).concat(['ne', 'se', 'nw', 'sw', 'e', 'w']), cands = [];
+      order.forEach(function (c) { var f = OFF[c]; cands.push([f[0], (c === 'e' || c === 'w' ? 9 : 7), f[1], 0]); });
+      [[7, -22], [7, 32], [18, -7], [18, 17], [18, -22], [18, 32], [7, -36], [7, 46], [30, -7], [30, 17], [30, 4]].forEach(function (d) { [1, -1].forEach(function (sd) { cands.push([sd, d[0], d[1], 1 + (d[0] > 7 ? 0.5 : 0) + (d[0] > 20 ? 2 : 0) + (Math.abs(d[1] - 5) > 35 ? 0.5 : 0)]); }); });
+      cands.forEach(function (cd, idx) {
+        var dx = cd[1] * cd[0], dy = cd[2], r = cd[0] > 0 ? [px + dx, py + dy - 10, px + dx + w, py + dy + 1] : [px + dx - w, py + dy - 10, px + dx, py + dy + 1];
+        var across = (o.lines || []).some(function (L) { if (L.vx !== undefined) { var xv = X(L.vx); return (px < xv && r[2] > xv) || (px > xv && r[0] < xv); } if (K.R(L.m).n !== 0) return false; var yh = Y(K.R(L.b).val()); return (py < yh && r[3] > yh) || (py > yh && r[1] < yh); });
+        var sc = (across ? 6 : 0) + obs.reduce(function (s, b) { return s + (hit(r, b[0]) ? b[1] : 0); }, 0) + (curveHit(r) ? 8 : 0) + (segHit(r) ? 8 : 0) + (r[0] < 2 || r[2] > W - 2 || r[1] < 2 || r[3] > H - 2 ? 50 : 0) + cd[3] + idx * 0.001;
+        if (!best || sc < best.sc) best = { sc: sc, sd: cd[0], r: r, dx: dx, dy: dy };
+      });
+      P.anchor = best.sd > 0 ? 'start' : 'end'; P.dx = best.dx; P.dy = best.dy; obs.push([best.r, 10]);
+    });
+    return o;
+  }
 
   /* ================= 2.1 Rectangular Coordinates and Graphs ================= */
   var QN = ['Quadrant I', 'Quadrant II', 'Quadrant III', 'Quadrant IV'];
@@ -55,7 +117,7 @@
     [
       function () { // read a point from the graph
         var x = rnz(-6, 6), y = rnz(-6, 6);
-        var g = K.plane({ x: [-7, 7], y: [-7, 7], pts: [{ x: x, y: y, label: 'P', color: C.red }] });
+        var g = K.plane(place({ x: [-7, 7], y: [-7, 7], pts: [{ x: x, y: y, label: 'P', color: C.red }] }));
         return attach(Q({ q: 'What are the coordinates of point ' + I('P') + ' in the graph?', graph: g, mc: mc(K.pt(x, y), [K.pt(y, x), K.pt(-x, y), K.pt(x, -y)], function () { return K.pt(x + rnz(-2, 2), y + rnz(-2, 2)); }), why: ['Start at the origin. Move ' + lr(x) + ' along the ' + X + '-axis, so ' + m(I('x') + ' = ' + n(x)) + '.', 'Then move ' + ud(y) + ' parallel to the ' + Y + '-axis, so ' + m(I('y') + ' = ' + n(y)) + '.', 'The ' + X + '-coordinate is always written first: ' + I('P') + K.pt(x, y) + '.'] }), { kind: 'pt', x: x, y: y });
       },
       function () { // quadrant
@@ -101,7 +163,8 @@
         var a = pick([1, -1, 2]), b = ri(-3, 3), c = ri(-5, 5), f = function (x) { return a * x * x + b * x + c; };
         var xs = K.sample([-3, -2, -1, 0, 1, 2, 3], 4), x0 = xs[0], wrong = [];
         xs.slice(1).forEach(function (x) { var y = K.coin() ? -a * x * x + b * x + c : f(x) + rnz(-3, 3); if (y === f(x)) y = f(x) + 2; wrong.push(K.pt(x, y)); });
-        return attach(Q({ q: 'Which point lies on the graph of ' + m(I('y') + ' = ' + quad(a, b, c)) + '?', mc: mc(K.pt(x0, f(x0)), wrong), why: ['A point is on the graph when its coordinates make the equation true.', 'Test ' + K.pt(x0, f(x0)) + ': ' + m(K.subst([[a, 2], [b, 1], [c, 0]], n(x0)) + ' = ' + n(f(x0))) + ' ✔.', 'Each of the other points gives a different ' + Y + '-value when its ' + X + '-value is substituted. Remember ' + m('(' + M + '3)<sup>2</sup> = 9') + ', not ' + m(M + '9') + '.'] }), { kind: 'onGraph', a: a, b: b, c: c });
+        var negs = xs.filter(function (x) { return x < 0; }), xn = x0 < 0 ? x0 : negs[0];
+        return attach(Q({ q: 'Which point lies on the graph of ' + m(I('y') + ' = ' + quad(a, b, c)) + '?', mc: mc(K.pt(x0, f(x0)), wrong), why: ['A point is on the graph when its coordinates make the equation true.', 'Test ' + K.pt(x0, f(x0)) + ': ' + m(eqs(K.subst([[a, 2], [b, 1], [c, 0]], n(x0)), n(f(x0)))) + ' ✔.', 'Each of the other points gives a different ' + Y + '-value when its ' + X + '-value is substituted.' + (xn !== undefined ? ' Remember ' + m('(' + n(xn) + ')<sup>2</sup> = ' + xn * xn) + ', not ' + m(n(-xn * xn)) + '.' : '')] }), { kind: 'onGraph', a: a, b: b, c: c });
       }
     ],
     [
@@ -124,7 +187,7 @@
         var right = isR ? 'A right triangle with the right angle at ' + I(names[1]) : 'Not a right triangle';
         var all = ['A', 'B', 'C'].map(function (L) { return 'A right triangle with the right angle at ' + I(L); }).concat(['Not a right triangle']);
         var vtx = order.map(function (i) { return I(names[i]) + K.pt(pts[i][0], pts[i][1]); }).join(', ');
-        return attach(Q({ q: 'A triangle has vertices ' + vtx + '. Use the distance formula to decide whether it is a right triangle.', mc: mc(right, all.filter(function (z) { return z !== right; })), why: ['Squared side lengths: ' + sides.map(function (s) { return m(s.nm + '<sup>2</sup> = ' + s.v); }).join(', ') + '.', 'Check the Pythagorean theorem with the longest side: ' + m(sides[0].v + ' + ' + sides[1].v + ' = ' + (sides[0].v + sides[1].v)) + (sides[0].v + sides[1].v === sides[2].v ? ' = ' + sides[2].v + ' ✔.' : ' ≠ ' + sides[2].v + '.'), isR ? 'So it is a right triangle. The right angle is opposite the longest side ' + sides[2].nm + ', at vertex ' + I(sides[2].opp) + '.' : 'The theorem fails, so it is not a right triangle.'] }), { kind: 'rtri', pts: order.map(function (i) { return [names[i], pts[i][0], pts[i][1]]; }) });
+        return attach(Q({ q: 'A triangle has vertices ' + vtx + '. Use the distance formula to decide whether it is a right triangle.', mc: mc(right, all.filter(function (z) { return z !== right; })), why: ['Squared side lengths: ' + sides.map(function (s) { return m(s.nm + '<sup>2</sup> = ' + s.v); }).join(', ') + '.', 'Check the Pythagorean theorem with the longest side: ' + m(sides[0].v + ' + ' + sides[1].v + ' = ' + (sides[0].v + sides[1].v)) + (sides[0].v + sides[1].v === sides[2].v ? ', which equals ' + m(sides[2].nm + '<sup>2</sup>') + ' ✔.' : ', which is not ' + m(sides[2].nm + '<sup>2</sup> = ' + sides[2].v) + '.'), isR ? 'So it is a right triangle. The right angle is opposite the longest side ' + sides[2].nm + ', at vertex ' + I(sides[2].opp) + '.' : 'The theorem fails, so it is not a right triangle.'] }), { kind: 'rtri', pts: order.map(function (i) { return [names[i], pts[i][0], pts[i][1]]; }) });
       },
       function () { // unknown coordinate from a distance
         var t = pick(TRI), x1 = rnz(-5, 5), y1 = rnz(-6, 6), x2 = x1 + (K.coin() ? t[0] : -t[0]), lo = y1 - t[1], hi = y1 + t[1];
@@ -281,7 +344,7 @@
         if (lin2 && mm === 1 && b === 0) b = 2;
         do { c = rnz(-4, 4); } while (Math.abs(f(c)) > 7 || c === f(c));
         var g = K.plane({ x: [-8, 8], y: [-8, 8], fns: [{ f: f }] });
-        return attach(Q({ q: 'The graph of ' + m(I('y') + ' = ' + I('f') + '(' + I('x') + ')') + ' is shown. Find ' + m(I('f') + '(' + n(c) + ')') + '.', graph: g, mc: mcV(n(f(c)), f(c), [[n(c), c], [n(f(-c)), f(-c)], [n(-f(c)), -f(c)]], nx(f(c))), why: [m(I('f') + '(' + n(c) + ')') + ' is the height of the graph above (or below) ' + m(I('x') + ' = ' + n(c)) + '.', 'Go to ' + m(I('x') + ' = ' + n(c)) + ' on the ' + X + '-axis and move ' + (f(c) >= 0 ? 'up' : 'down') + ' to the graph: the point is ' + K.pt(c, f(c)) + '.', 'So ' + m(I('f') + '(' + n(c) + ') = ' + n(f(c))) + '.'] }), { kind: 'readF', lin: lin2, mm: mm, b: b, h: h, kk: s > 0 ? k - 2 : k + 3, s: s, c: c });
+        return attach(Q({ q: 'The graph of ' + m(I('y') + ' = ' + I('f') + '(' + I('x') + ')') + ' is shown. Find ' + m(I('f') + '(' + n(c) + ')') + '.', graph: g, mc: mcV(n(f(c)), f(c), [[n(c), c], [n(f(-c)), f(-c)], [n(-f(c)), -f(c)]], nx(f(c))), why: [m(I('f') + '(' + n(c) + ')') + ' is the height of the graph above (or below) ' + m(I('x') + ' = ' + n(c)) + '.', 'Go to ' + m(I('x') + ' = ' + n(c)) + ' on the ' + X + '-axis' + (f(c) === 0 ? ': the graph meets the ' + X + '-axis right there, so the point is ' : ' and move ' + (f(c) > 0 ? 'up' : 'down') + ' to the graph: the point is ') + K.pt(c, f(c)) + '.', 'So ' + m(I('f') + '(' + n(c) + ') = ' + n(f(c))) + '.'] }), { kind: 'readF', lin: lin2, mm: mm, b: b, h: h, kk: s > 0 ? k - 2 : k + 3, s: s, c: c });
       }
     ],
     [
@@ -354,7 +417,7 @@
       function () { // taxi application
         var r = pick([1.5, 2, 2.25, 2.5, 2.75, 3]), b = pick([2.5, 3, 3.5, 4, 5]), k = ri(4, 15), v = b + r * k;
         var ch = function (s1, b1, val) { return m(I('C') + '(' + I('x') + ') = ' + n(s1) + I('x') + (b1 ? ' + ' + n(b1) : '')) + '; ' + m(I('C') + '(' + k + ') = ' + K.money(val)); };
-        return attach(Q({ q: 'A taxi charges a base fare of ' + K.money(b) + ' plus ' + K.money(r) + ' per mile. Write the cost ' + m(I('C') + '(' + I('x') + ')') + ' in dollars for a ride of ' + X + ' miles, and find the cost of a ' + k + '-mile ride.', mc: mc(ch(r, b, v), [ch(b, r, b * k + r), ch(r, b, r * k), ch(r + b, 0, (r + b) * k)], function () { return ch(r, b, v + rnz(1, 6)); }), why: ['The fixed part is the base fare ' + K.money(b) + '; the per-mile rate ' + K.money(r) + ' is the slope.', 'So ' + m(I('C') + '(' + I('x') + ') = ' + n(r) + I('x') + ' + ' + n(b)) + '.', m(I('C') + '(' + k + ') = ' + n(r) + '(' + k + ') + ' + n(b) + ' = ' + n(r * k) + ' + ' + n(b) + ' = ' + n(v)) + ', so the ride costs ' + K.money(v) + '.'] }), { kind: 'taxi', r: r, b: b, x: k });
+        return attach(Q({ q: 'A taxi charges a base fare of ' + K.money(b) + ' plus ' + K.money(r) + ' per mile. Write the cost ' + m(I('C') + '(' + I('x') + ')') + ' in dollars for a ride of ' + X + ' miles, and find the cost of ' + art(k) + ' ' + k + '-mile ride.', mc: mc(ch(r, b, v), [ch(b, r, b * k + r), ch(r, b, r * k), ch(r + b, 0, (r + b) * k)], function () { return ch(r, b, v + rnz(1, 6)); }), why: ['The fixed part is the base fare ' + K.money(b) + '; the per-mile rate ' + K.money(r) + ' is the slope.', 'So ' + m(I('C') + '(' + I('x') + ') = ' + n(r) + I('x') + ' + ' + n(b)) + '.', brk(I('C') + '(' + k + ') = ' + n(r) + '(' + k + ') + ' + n(b) + ' = ' + n(r * k) + ' + ' + n(b) + ' = ' + n(v)) + ', so the ride costs ' + K.money(v) + '.'] }), { kind: 'taxi', r: r, b: b, x: k });
       },
       function () { // domain of sqrt over linear
         var a = ri(-6, 6), b; do { b = ri(-6, 6); } while (b === a);
@@ -383,7 +446,7 @@
         var x1 = ri(-7, 7), y1 = ri(-7, 7), x2, y2;
         do { x2 = ri(-7, 7); y2 = ri(-7, 7); } while (x2 === x1 || y2 === y1);
         var mm = R(y2 - y1, x2 - x1);
-        return attach(Q({ q: 'Find the slope of the line through ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + '.', mc: mcV(mm.html(), mm.val(), slopeOpts(mm), slopeX(mm)), why: ['Change in ' + Y + ': ' + m(n(y2) + ' ' + M + ' ' + sb(y1) + ' = ' + n(y2 - y1)) + '. Change in ' + X + ': ' + m(n(x2) + ' ' + M + ' ' + sb(x1) + ' = ' + n(x2 - x1)) + '.', m(I('m') + ' = ' + K.frx(n(y2 - y1), n(x2 - x1)) + ' = ' + mm.html()) + '.', 'Keep the ' + Y + '-change on top and subtract in the same order.'] }), { kind: 'slope2', x1: x1, y1: y1, x2: x2, y2: y2 });
+        return attach(Q({ q: 'Find the slope of the line through ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + '.', mc: mcV(mm.html(), mm.val(), slopeOpts(mm), slopeX(mm)), why: ['Change in ' + Y + ': ' + m(n(y2) + ' ' + M + ' ' + sb(y1) + ' = ' + n(y2 - y1)) + '. Change in ' + X + ': ' + m(n(x2) + ' ' + M + ' ' + sb(x1) + ' = ' + n(x2 - x1)) + '.', m(I('m') + ' = ' + eqs(frq(y2 - y1, x2 - x1), mm.html())) + '.', 'Keep the ' + Y + '-change on top and subtract in the same order.'] }), { kind: 'slope2', x1: x1, y1: y1, x2: x2, y2: y2 });
       },
       function () { // horizontal/vertical slope
         var c = pick([2, 3, 4, 5, 6, 7, -2, -3, -4, -5, -6, -7]), vert = K.coin();
@@ -392,7 +455,7 @@
       },
       function () { // x-intercept of f(x) = ax + b
         var r = rnz(-6, 6), a = rnz(-5, 5), b = -a * r;
-        return attach(Q({ q: 'Find the ' + X + '-intercept of the graph of ' + fx('f', lin(a, b)) + '.', mc: mc(K.pt(r, 0), [K.pt(0, b), K.pt(-r, 0), K.pt(b, 0)], function () { return K.pt(r + rnz(-3, 3), 0); }), why: ['At the ' + X + '-intercept, ' + m(I('f') + '(' + I('x') + ') = 0') + ': ' + m(lin(a, b) + ' = 0') + '.', m(P([[a, X]]) + ' = ' + n(-b)) + ', so ' + m(I('x') + ' = ' + n(r)) + '.', 'The ' + X + '-intercept is ' + K.pt(r, 0) + '. (' + K.pt(0, b) + ' is the ' + Y + '-intercept.)'] }), { kind: 'xint', fq: true });
+        return attach(Q({ q: 'Find the ' + X + '-intercept of the graph of ' + fx('f', lin(a, b)) + '.', mc: mc(K.pt(r, 0), [K.pt(0, b), K.pt(-r, 0), K.pt(b, 0)], function () { return K.pt(r + rnz(-3, 3), 0); }), why: ['At the ' + X + '-intercept, ' + m(I('f') + '(' + I('x') + ') = 0') + ': ' + m(lin(a, b) + ' = 0') + '.', a === 1 ? (b > 0 ? 'Subtract ' + b + ' from' : 'Add ' + (-b) + ' to') + ' both sides: ' + m(I('x') + ' = ' + n(r)) + '.' : m(P([[a, X]]) + ' = ' + n(-b)) + ', so ' + m(I('x') + ' = ' + n(r)) + '.', 'The ' + X + '-intercept is ' + K.pt(r, 0) + '. (' + K.pt(0, b) + ' is the ' + Y + '-intercept.)'] }), { kind: 'xint', fq: true });
       },
       function () { // slope from the graph
         var mm = pick(SL), b = ri(-3, 3), xs = [], x;
@@ -400,7 +463,7 @@
         var xa = xs[ri(0, Math.max(0, xs.length - 2))], xb = xs[xs.indexOf(xa) + 1] !== undefined ? xs[xs.indexOf(xa) + 1] : xs[0];
         var g = K.plane({ x: [-7, 7], y: [-7, 7], lines: [{ m: mm, b: b }], pts: [{ x: xa, y: mm.mul(xa).add(b).val() }, { x: xb, y: mm.mul(xb).add(b).val() }] });
         var rise = mm.mul(xb - xa).val(), run = xb - xa;
-        return attach(Q({ q: 'Find the slope of the line in the graph. (Two points on the line are marked.)', graph: g, mc: mcV(mm.html(), mm.val(), slopeOpts(mm), slopeX(mm)), why: ['The marked points are ' + K.pt(xa, mm.mul(xa).add(b)) + ' and ' + K.pt(xb, mm.mul(xb).add(b)) + '.', 'Rise ' + n(rise) + ', run ' + n(run) + ': ' + m(I('m') + ' = ' + K.frx(n(rise), n(run)) + ' = ' + mm.html()) + '.', 'The line ' + (mm.n > 0 ? 'rises' : 'falls') + ' from left to right, so the slope is ' + (mm.n > 0 ? 'positive' : 'negative') + '.'] }), { kind: 'lineSlope', m: [mm.n, mm.d], b: b });
+        return attach(Q({ q: 'Find the slope of the line in the graph. (Two points on the line are marked.)', graph: g, mc: mcV(mm.html(), mm.val(), slopeOpts(mm), slopeX(mm)), why: ['The marked points are ' + K.pt(xa, mm.mul(xa).add(b)) + ' and ' + K.pt(xb, mm.mul(xb).add(b)) + '.', 'Rise ' + n(rise) + ', run ' + n(run) + ': ' + m(I('m') + ' = ' + eqs(frq(rise, run), mm.html())) + '.', 'The line ' + (mm.n > 0 ? 'rises' : 'falls') + ' from left to right, so the slope is ' + (mm.n > 0 ? 'positive' : 'negative') + '.'] }), { kind: 'lineSlope', m: [mm.n, mm.d], b: b });
       }
     ],
     [
@@ -418,7 +481,7 @@
         if (Math.abs(y2) > 6) x2 = -x2, y2 = mm.mul(x2).add(b).val();
         var g = K.plane({ x: [-7, 7], y: [-7, 7], lines: [{ m: mm, b: b }], pts: [{ x: 0, y: b }, { x: x2, y: y2 }] });
         var ch = function (s1, b1) { return fx('f', lin(s1, b1)); };
-        return attach(Q({ q: 'Which linear function is graphed? (Two points on the line are marked.)', graph: g, mc: mc(ch(mm, b), [ch(mm.neg(), b), ch(R(mm.d, mm.n), b), ch(mm, -b)], function () { return ch(mm, b + rnz(-2, 2)); }), why: ['The line crosses the ' + Y + '-axis at ' + K.pt(0, b) + ', so ' + m(I('b') + ' = ' + n(b)) + '.', 'From ' + K.pt(0, b) + ' to ' + K.pt(x2, y2) + ': rise ' + n(y2 - b) + ', run ' + n(x2) + ', so ' + m(I('m') + ' = ' + K.frx(n(y2 - b), n(x2)) + ' = ' + mm.html()) + '.', 'So ' + ch(mm, b) + '.'] }), { kind: 'lineFromGraph', m: [mm.n, mm.d], b: b });
+        return attach(Q({ q: 'Which linear function is graphed? (Two points on the line are marked.)', graph: g, mc: mc(ch(mm, b), [ch(mm.neg(), b), ch(R(mm.d, mm.n), b), ch(mm, -b)], function () { return ch(mm, b + rnz(-2, 2)); }), why: ['The line crosses the ' + Y + '-axis at ' + K.pt(0, b) + ', so ' + m(I('b') + ' = ' + n(b)) + '.', 'From ' + K.pt(0, b) + ' to ' + K.pt(x2, y2) + ': rise ' + n(y2 - b) + ', run ' + n(x2) + ', so ' + m(I('m') + ' = ' + eqs(frq(y2 - b, x2), mm.html())) + '.', 'So ' + ch(mm, b) + '.'] }), { kind: 'lineFromGraph', m: [mm.n, mm.d], b: b });
       },
       function () { // both intercepts, fraction possible
         var a = pick([2, 3, 4, 5, -2, -3, -4, -5]), b; do { b = rnz(-9, 9); } while (b % a === 0);
@@ -436,16 +499,16 @@
       function () { // find k for a given slope
         var mm = pick(SL), x2 = ri(-6, 6), y2 = ri(-6, 6), run = mm.d * pick([1, 2, -1, -2]), k = x2 - run, y1 = y2 - mm.mul(run).val();
         var w1 = x2 + run, w2 = R(x2).sub(mm.mul(y2 - y1)), w3 = R(run);
-        return attach(Q({ q: 'Find ' + I('k') + ' so that the line through ' + '(' + I('k') + ', ' + n(y1) + ')' + ' and ' + K.pt(x2, y2) + ' has slope ' + m(mm.html()) + '.', mc: mcV(n(k), k, [[n(w1), w1], [w2.html(), w2.val()], [w3.html(), w3.val()]], nx(k)), why: ['Slope formula: ' + m(K.frx(n(y2) + ' ' + M + ' ' + sb(y1), n(x2) + ' ' + M + ' ' + I('k')) + ' = ' + mm.html()) + ', so ' + m(K.frx(n(y2 - y1), n(x2) + ' ' + M + ' ' + I('k')) + ' = ' + mm.html()) + '.', 'Cross-multiply: ' + m(n(x2) + ' ' + M + ' ' + I('k') + ' = ' + K.frx(n(y2 - y1), mm.html()) + ' = ' + n(run)) + '.', 'So ' + m(I('k') + ' = ' + n(x2) + ' ' + M + ' ' + sb(run) + ' = ' + n(k)) + '.'] }), { kind: 'findkSlope', y1: y1, x2: x2, y2: y2, m: [mm.n, mm.d] });
+        return attach(Q({ q: 'Find ' + I('k') + ' so that the line through ' + '(' + I('k') + ', ' + n(y1) + ')' + ' and ' + K.pt(x2, y2) + ' has slope ' + m(mm.html()) + '.', mc: mcV(n(k), k, [[n(w1), w1], [w2.html(), w2.val()], [w3.html(), w3.val()]], nx(k)), why: ['Slope formula: ' + m(K.frx(n(y2) + ' ' + M + ' ' + sb(y1), n(x2) + ' ' + M + ' ' + I('k')) + ' = ' + mm.html()) + ', so ' + m(K.frx(n(y2 - y1), n(x2) + ' ' + M + ' ' + I('k')) + ' = ' + mm.html()) + '.', 'Solve for the denominator: ' + m(n(x2) + ' ' + M + ' ' + I('k') + ' = ' + n(y2 - y1) + ' ÷ ' + sb(mm) + ' = ' + n(run)) + '.', 'So ' + m(I('k') + ' = ' + n(x2) + ' ' + M + ' ' + sb(run) + ' = ' + n(k)) + '.'] }), { kind: 'findkSlope', y1: y1, x2: x2, y2: y2, m: [mm.n, mm.d] });
       },
       function () { // linear function from a table
         var mm = pick(SL), s = mm.d, x0 = mm.d * ri(-2, 1), b = ri(-6, 6), xs = [0, 1, 2, 3].map(function (i) { return x0 + i * s; }), ys = xs.map(function (x) { return mm.mul(x).add(b).val(); });
         var ch = function (s1, b1) { return fx('f', lin(s1, b1)); };
-        return attach(Q({ q: 'The table shows values of a linear function ' + I('f') + '. Find ' + m(I('f') + '(' + I('x') + ')') + '.<div class="center">' + K.xyTable(xs, ys, X, m(I('f') + '(' + I('x') + ')')) + '</div>', mc: mc(ch(mm, b), [ch(R(mm.d, mm.n), b), ch(mm, ys[0]), ch(mm.mul(s), b)], function () { return ch(mm, b + rnz(-3, 3)); }), why: ['Each time ' + X + ' increases by ' + s + ', ' + I('f') + ' changes by ' + n(ys[1] - ys[0]) + ', so ' + m(I('m') + ' = ' + K.frx(n(ys[1] - ys[0]), String(s)) + ' = ' + mm.html()) + '.', 'Use ' + K.pt(xs[0], ys[0]) + ': ' + m(n(ys[0]) + ' = ' + K.lin([[mm, n(xs[0])]]) + ' + ' + I('b')) + ', so ' + m(I('b') + ' = ' + n(b)) + '.', 'So ' + ch(mm, b) + '.'] }), { kind: 'table', xs: xs, ys: ys });
+        return attach(Q({ q: 'The table shows values of a linear function ' + I('f') + '. Find ' + m(I('f') + '(' + I('x') + ')') + '.<div class="center">' + K.xyTable(xs, ys, X, m(I('f') + '(' + I('x') + ')')) + '</div>', mc: mc(ch(mm, b), [ch(R(mm.d, mm.n), b), ch(mm, ys[0]), ch(mm.mul(s), b)], function () { return ch(mm, b + rnz(-3, 3)); }), why: ['Each time ' + X + ' increases by ' + s + ', ' + I('f') + ' changes by ' + n(ys[1] - ys[0]) + ', so ' + m(I('m') + ' = ' + eqs(frq(ys[1] - ys[0], s), mm.html())) + '.', 'Use ' + K.pt(xs[0], ys[0]) + ': ' + m(n(ys[0]) + ' = ' + K.lin([[mm, n(xs[0])]]) + ' + ' + I('b')) + ', so ' + m(I('b') + ' = ' + n(b)) + '.', 'So ' + ch(mm, b) + '.'] }), { kind: 'table', xs: xs, ys: ys });
       },
       function () { // depreciation
         var V, d, t, Xv; do { V = ri(18, 40) * 1000; d = ri(15, 40) * 100; t = ri(3, 8); Xv = V - d * t; } while (Xv < 2000);
-        var ch = function (v) { return 'After ' + n(v, 1) + ' years'; };
+        var ch = function (v) { return 'After ' + cnt(K.round(v, 1), 'year'); };
         return attach(Q({ q: 'A car worth ' + K.money(V).replace('.00', '') + ' loses ' + K.money(d).replace('.00', '') + ' in value each year, so its value after ' + I('t') + ' years is ' + m(I('V') + '(' + I('t') + ') = ' + K.comma(V) + ' ' + M + ' ' + K.comma(d) + I('t')) + '. When will the car be worth ' + K.money(Xv).replace('.00', '') + '?', mc: mcV(ch(t), t, [[ch(K.round(Xv / d, 1)), K.round(Xv / d, 1)], [ch(K.round((V + Xv) / d, 1)), K.round((V + Xv) / d, 1)], [ch(t + 1), t + 1]], function () { var z = t + rnz(-2, 3); return [ch(z), z]; }), why: ['Set ' + m(I('V') + '(' + I('t') + ') = ' + K.comma(Xv)) + ': ' + m(K.comma(V) + ' ' + M + ' ' + K.comma(d) + I('t') + ' = ' + K.comma(Xv)) + '.', 'Subtract ' + K.comma(V) + ': ' + m(M + K.comma(d) + I('t') + ' = ' + M + K.comma(V - Xv)) + '.', 'Divide: ' + m(I('t') + ' = ' + t) + '. The car is worth ' + K.money(Xv).replace('.00', '') + ' after ' + t + ' years.'] }), { kind: 'deprec', V: V, d: d, X: Xv });
       }
     ]
@@ -461,7 +524,7 @@
     [
       function () { // point-slope -> slope-intercept
         var x1 = rnz(-6, 6), y1 = ri(-6, 6), mm = rnz(-5, 5), b = y1 - mm * x1;
-        return attach(Q({ q: 'Write the equation of the line through ' + K.pt(x1, y1) + ' with slope ' + n(mm) + ' in slope-intercept form.', mc: mc(le(mm, b), [le(mm, y1), le(mm, -mm * x1 - y1), le(mm, y1 - x1)], function () { return le(mm, b + rnz(-3, 3)); }), why: ['Point-slope form: ' + psF(mm, x1, y1) + '.', 'Distribute: ' + m(K.minusH(I('y'), y1) + ' = ' + lin(mm, -mm * x1)) + '.', (y1 ? (y1 > 0 ? 'Add ' + y1 : 'Subtract ' + (-y1)) + ' to both sides: ' : 'So ') + le(mm, b) + '.'] }), { kind: 'lineThru', pts: [[x1, y1]], m: [mm, 1] });
+        return attach(Q({ q: 'Write the equation of the line through ' + K.pt(x1, y1) + ' with slope ' + n(mm) + ' in slope-intercept form.', mc: mc(le(mm, b), [le(mm, y1), le(mm, -mm * x1 - y1), le(mm, y1 - x1)], function () { return le(mm, b + rnz(-3, 3)); }), why: ['Point-slope form: ' + psF(mm, x1, y1) + '.', 'Distribute: ' + m(K.minusH(I('y'), y1) + ' = ' + lin(mm, -mm * x1)) + '.', (y1 ? (y1 > 0 ? 'Add ' + y1 + ' to' : 'Subtract ' + (-y1) + ' from') + ' both sides: ' : 'So ') + le(mm, b) + '.'] }), { kind: 'lineThru', pts: [[x1, y1]], m: [mm, 1] });
       },
       function () { // parallel / perpendicular slope
         var mm = pick(SLn1), b = ri(-5, 5), perp = K.coin(), ans = perp ? R(-mm.d, mm.n) : mm;
@@ -479,7 +542,7 @@
       function () { // through two points
         var mm = pick(SL), x1 = ri(-5, 5), y1 = ri(-5, 5), run = mm.d * pick([1, 2, -1, -2]), x2 = x1 + run, y2 = mm.mul(run).add(y1).val(), b = thru(mm, x1, y1);
         var inv = R(mm.d, mm.n);
-        return attach(Q({ q: 'Write the equation of the line through ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + ' in slope-intercept form.', mc: mc(le(mm, b), [le(inv, thru(inv, x1, y1)), le(mm, b.neg()), le(mm.neg(), thru(mm.neg(), x1, y1))], function () { return le(mm, b.add(rnz(-3, 3))); }), why: ['Slope: ' + m(I('m') + ' = ' + K.frx(n(y2) + ' ' + M + ' ' + sb(y1), n(x2) + ' ' + M + ' ' + sb(x1)) + ' = ' + K.frx(n(y2 - y1), n(run)) + ' = ' + mm.html()) + '.', 'Point-slope with ' + K.pt(x1, y1) + ': ' + psF(mm, x1, y1) + '.', 'Solve for ' + Y + ': ' + le(mm, b) + '. Check ' + K.pt(x2, y2) + ': ' + m(K.lin([[mm, n(x2)]]) + K.plusK(b) + ' = ' + n(y2)) + ' ✔'] }), { kind: 'lineThru', pts: [[x1, y1], [x2, y2]] });
+        return attach(Q({ q: 'Write the equation of the line through ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + ' in slope-intercept form.', mc: mc(le(mm, b), [le(inv, thru(inv, x1, y1)), le(mm, b.neg()), le(mm.neg(), thru(mm.neg(), x1, y1))], function () { return le(mm, b.add(rnz(-3, 3))); }), why: ['Slope: ' + m(I('m') + ' = ' + K.frx(n(y2) + ' ' + M + ' ' + sb(y1), n(x2) + ' ' + M + ' ' + sb(x1)) + ' = ' + eqs(frq(y2 - y1, run), mm.html())) + '.', 'Point-slope with ' + K.pt(x1, y1) + ': ' + psF(mm, x1, y1) + '.', 'Solve for ' + Y + ': ' + le(mm, b) + '. Check ' + K.pt(x2, y2) + ': ' + m(K.lin([[mm, n(x2)]]) + K.plusK(b) + ' = ' + n(y2)) + ' ✔'] }), { kind: 'lineThru', pts: [[x1, y1], [x2, y2]] });
       },
       function () { // parallel to a standard-form line
         var A = rnz(-5, 5), B = rnz(-5, 5), Cc = ri(-10, 10), px, py; do { px = ri(-5, 5); py = ri(-5, 5); } while (A * px + B * py === Cc);
@@ -504,7 +567,7 @@
         do { px = pp.d * ri(-3, 3); py = ri(-5, 5); tries++; } while ((mm.mul(px).add(b).eq(py) || Math.abs(px) > 6) && tries < 50);
         var xs = []; for (var x = -6; x <= 6; x++) { var yv = mm.mul(x).add(b); if (yv.isInt() && Math.abs(yv.val()) <= 6) xs.push(x); }
         var xa = xs[0], xb = xs[1];
-        var g = K.plane({ x: [-7, 7], y: [-7, 7], lines: [{ m: mm, b: b }], pts: [{ x: xa, y: mm.mul(xa).add(b).val() }, { x: xb, y: mm.mul(xb).add(b).val() }, { x: px, y: py, color: C.red, label: 'P' }] });
+        var g = K.plane(place({ x: [-7, 7], y: [-7, 7], lines: [{ m: mm, b: b }], pts: [{ x: xa, y: mm.mul(xa).add(b).val() }, { x: xb, y: mm.mul(xb).add(b).val() }, { x: px, y: py, color: C.red, label: 'P' }] }));
         var bb = thru(pp, px, py);
         return attach(Q({ q: 'Point ' + I('P') + K.pt(px, py) + ' is shown in red. Write the equation, in slope-intercept form, of the line through ' + I('P') + ' that is perpendicular to the blue line.', graph: g, mc: mc(le(pp, bb), [le(mm, thru(mm, px, py)), le(pp.neg(), thru(pp.neg(), px, py)), le(pp, b)], function () { return le(pp, bb.add(rnz(-3, 3))); }), why: ['Blue line: from ' + K.pt(xa, mm.mul(xa).add(b)) + ' to ' + K.pt(xb, mm.mul(xb).add(b)) + ' the slope is ' + m(mm.html()) + '.', 'Perpendicular slope: ' + m(pp.html()) + '. Point-slope: ' + psF(pp, px, py) + '.', 'Solve for ' + Y + ': ' + le(pp, bb) + '.'] }), { kind: 'parPerp', A: mm.n, B: -mm.d, C: -b * mm.d, px: px, py: py, perp: true });
       },
@@ -521,7 +584,7 @@
       function () { // perpendicular bisector
         var x1 = ri(-6, 6), y1 = ri(-6, 6), dx = 2 * rnz(-3, 3), dy = 2 * rnz(-3, 3), x2 = x1 + dx, y2 = y1 + dy, mx = x1 + dx / 2, my = y1 + dy / 2;
         var mAB = R(dy, dx), pp = R(-dx, dy), b = thru(pp, mx, my);
-        return attach(Q({ q: 'Find the equation, in slope-intercept form, of the perpendicular bisector of the segment with endpoints ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + '.', mc: mc(le(pp, b), [le(mAB, thru(mAB, mx, my)), le(pp, thru(pp, x1, y1)), le(pp.neg(), thru(pp.neg(), mx, my))], function () { return le(pp, b.add(rnz(-3, 3))); }), why: ['The bisector passes through the midpoint ' + K.pt(mx, my) + '.', 'Slope of the segment: ' + m(K.frx(n(dy), n(dx)) + ' = ' + mAB.html()) + ', so the perpendicular slope is ' + m(pp.html()) + '.', psF(pp, mx, my) + ' simplifies to ' + le(pp, b) + '.'] }), { kind: 'perpBis', x1: x1, y1: y1, x2: x2, y2: y2 });
+        return attach(Q({ q: 'Find the equation, in slope-intercept form, of the perpendicular bisector of the segment with endpoints ' + K.pt(x1, y1) + ' and ' + K.pt(x2, y2) + '.', mc: mc(le(pp, b), [le(mAB, thru(mAB, mx, my)), le(pp, thru(pp, x1, y1)), le(pp.neg(), thru(pp.neg(), mx, my))], function () { return le(pp, b.add(rnz(-3, 3))); }), why: ['The bisector passes through the midpoint ' + K.pt(mx, my) + '.', 'Slope of the segment: ' + m(eqs(frq(dy, dx), mAB.html())) + ', so the perpendicular slope is ' + m(pp.html()) + '.', psF(pp, mx, my) + ' simplifies to ' + le(pp, b) + '.'] }), { kind: 'perpBis', x1: x1, y1: y1, x2: x2, y2: y2 });
       }
     ]
   ];
@@ -551,7 +614,7 @@
         var opL = incl ? '<=' : '<', opR = incl ? '>' : '>=';
         var f1 = function (x) { return a1 * x + b1; }, f2 = lq ? function (x) { return x * x + b2; } : function (x) { return -x + b2; };
         var e2 = lq ? P([[1, K.xp(2)], [b2, '']]) : lin(-1, b2), v = pick([c, c, c - ri(1, 3), c + ri(1, 3)]), useL = test(opL, v, c), val = useL ? f1(v) : f2(v), oth = useL ? f2(v) : f1(v);
-        return attach(Q({ q: 'Let ' + pwFn([[lin(a1, b1), cond(opL, c)], [e2, cond(opR, c)]]) + '. Find ' + m(I('f') + '(' + n(v) + ')') + '.', mc: mcV(n(val), val, [[n(oth), oth], [n(val + oth), val + oth], [n(-val), -val]], nx(val)), why: ['Decide which piece ' + m(I('x') + ' = ' + n(v)) + ' belongs to: ' + m(n(v) + ' ' + LE[useL ? opL : opR] + ' ' + n(c)) + ' is true, so use the ' + (useL ? 'first' : 'second') + ' piece.', m(I('f') + '(' + n(v) + ') = ' + (useL ? K.lin([[a1, n(v)]]) + K.plusK(b1) : lq ? sb(v) + '<sup>2</sup>' + K.plusK(b2) : M + sb(v) + K.plusK(b2)) + ' = ' + n(val)) + '.', 'Never evaluate both pieces and choose: the ' + X + '-value picks exactly one piece.'] }), { kind: 'pwEval', fq: true, x: v });
+        return attach(Q({ q: 'Let ' + pwFn([[lin(a1, b1), cond(opL, c)], [e2, cond(opR, c)]]) + '. Find ' + m(I('f') + '(' + n(v) + ')') + '.', mc: mcV(n(val), val, [[n(oth), oth], [n(val + oth), val + oth], [n(-val), -val]], nx(val)), why: ['Decide which piece ' + m(I('x') + ' = ' + n(v)) + ' belongs to: ' + m(n(v) + ' ' + LE[useL ? opL : opR] + ' ' + n(c)) + ' is true, so use the ' + (useL ? 'first' : 'second') + ' piece.', m(I('f') + '(' + n(v) + ') = ' + eqs(useL ? K.lin([[a1, n(v)]]) + K.plusK(b1) : lq ? sb(v) + '<sup>2</sup>' + K.plusK(b2) : (v === 0 ? '0' : M + sb(v)) + K.plusK(b2), n(val))) + '.', 'Never evaluate both pieces and choose: the ' + X + '-value picks exactly one piece.'] }), { kind: 'pwEval', fq: true, x: v });
       },
       function () { // greatest integer
         var ip = ri(-6, 6), fr0 = pick([0, 0.2, 0.3, 0.5, 0.7, 0.8, 0.25, 0.75, 0.9]); if (ip >= 0 && fr0 > 0 && K.coin()) ip = -ip - 1;
@@ -563,7 +626,7 @@
         var g = K.plane({ x: [-5, 5], y: [-5, 5], fns: [{ f: pr.f, from: key === 'sr' ? 0 : -5 }], pts: [{ x: 0, y: 0, r: 3 }] });
         desc('graph of the ' + pr.nm + ' function');
         var wr = K.sample(keys.filter(function (z) { return z !== key; }), 3).map(function (z) { return fx('f', PAR[z].h(X)); });
-        return attach(Q({ q: 'Which basic function is graphed?', graph: g, mc: mc(fx('f', pr.h(X)), wr), why: ['Check key points: ' + ({ id: [-3, 0, 3], sq: [-2, 0, 2], cu: [-1, 0, 1], sr: [0, 1, 4], cr: [-1, 0, 1], ab: [-3, 0, 3] })[key].map(function (x) { return K.pt(x, K.round(pr.f(x), 4)); }).join(', ') + ' lie on this graph' + (key === 'sr' ? ', and nothing is drawn for ' + m(I('x') + ' &lt; 0') : '') + '.', 'Those points match the ' + pr.nm + ' function ' + fx('f', pr.h(X)) + '.', 'Shape guide: ' + ({ id: 'a straight line through the origin', sq: 'a U-shaped parabola', cu: 'an S-shape through the origin, steep at the ends', sr: 'a half-curve that starts at the origin and goes right', cr: 'an S-shape on its side, flat at the ends', ab: 'a V-shape with vertex at the origin' })[key] + '.'] }), { kind: 'parId', key: key });
+        return attach(Q({ q: 'Which basic function is graphed?', graph: g, mc: mc(fx('f', pr.h(X)), wr), why: [key === 'cu' ? 'The curve passes through ' + K.pt(0, 0) + ' and ' + K.pt(1, 1) + ' but is not a line: it is flat at the origin, then shoots up steeply (at ' + m(I('x') + ' = 2') + ' it would already be at ' + m(I('y') + ' = 8') + ', off the top of the grid). It is symmetric about the origin.' : key === 'cr' ? 'The curve passes through ' + K.pt(0, 0) + ' and ' + K.pt(1, 1) + ' but is not a line: it is vertical at the origin, then levels off (it reaches only ' + m(I('y') + ' = 2') + ' at ' + m(I('x') + ' = 8') + '). Unlike the square root, it continues to the left of the origin.' : 'Check key points: ' + ({ id: [-3, 0, 3], sq: [-2, 0, 2], sr: [0, 1, 4], ab: [-3, 0, 3] })[key].map(function (x) { return K.pt(x, K.round(pr.f(x), 4)); }).join(', ') + ' lie on this graph' + (key === 'sr' ? ', and nothing is drawn for ' + m(I('x') + ' &lt; 0') : '') + '.', (key === 'cu' || key === 'cr' ? 'That shape matches' : 'Those points match') + ' the ' + pr.nm + ' function ' + fx('f', pr.h(X)) + '.', 'Shape guide: ' + ({ id: 'a straight line through the origin', sq: 'a U-shaped parabola', cu: 'an S-shape through the origin, steep at the ends', sr: 'a half-curve that starts at the origin and goes right', cr: 'an S-shape on its side, flat at the ends', ab: 'a V-shape with vertex at the origin' })[key] + '.'] }), { kind: 'parId', key: key });
       }
     ],
     [
@@ -632,7 +695,7 @@
       },
       function () { // vertex
         var key = pick(['sq', 'ab']), a = pick([1, -1, 2, -2, 3]), h = rnz(-7, 7), k = rnz(-7, 7);
-        return attach(Q({ q: 'What is the vertex of the graph of ' + m(I('y') + ' = ' + tf(key, a, h, k)) + '?', mc: mc(K.pt(h, k), [K.pt(-h, k), K.pt(h, -k), K.pt(-h, -k)]), why: ['The parent ' + m(I('y') + ' = ' + PAR[key].h(X)) + ' has its vertex at ' + K.pt(0, 0) + '.', m(K.minusH(I('x'), h)) + ' inside shifts it ' + (h > 0 ? 'right ' + h : 'left ' + (-h)) + '; ' + m(K.plusK(k).trim()) + ' outside shifts it ' + (k > 0 ? 'up ' + k : 'down ' + (-k)) + '.', (a !== 1 ? 'The factor ' + n(a) + ' changes the width' + (a < 0 ? ' and flips the graph' : '') + ', not the vertex. ' : '') + 'Vertex: ' + K.pt(h, k) + '.'] }), { kind: 'vertex', fq: true, key: key });
+        return attach(Q({ q: 'What is the vertex of the graph of ' + m(I('y') + ' = ' + tf(key, a, h, k)) + '?', mc: mc(K.pt(h, k), [K.pt(-h, k), K.pt(h, -k), K.pt(-h, -k)]), why: ['The parent ' + m(I('y') + ' = ' + PAR[key].h(X)) + ' has its vertex at ' + K.pt(0, 0) + '.', m(K.minusH(I('x'), h)) + ' inside shifts it ' + (h > 0 ? 'right ' + h : 'left ' + (-h)) + '; ' + m(K.plusK(k).trim()) + ' outside shifts it ' + (k > 0 ? 'up ' + k : 'down ' + (-k)) + '.', (a === -1 ? 'The negative sign in front flips the graph upside down, but it does not move the vertex. ' : a !== 1 ? 'The factor ' + n(a) + ' changes the width' + (a < 0 ? ' and flips the graph' : '') + ', not the vertex. ' : '') + 'Vertex: ' + K.pt(h, k) + '.'] }), { kind: 'vertex', fq: true, key: key });
       },
       function () { // even / odd / neither polynomial
         var type = pick(['e', 'o', 'n']), cs = {}, ps;
@@ -683,11 +746,11 @@
         var a = rnz(-5, 5), c = ri(1, 9), d, T = pick(['o1', 'o2', 'o3', 'e1', 'e2', 'e3', 'n1', 'n2', 'n3']), f, type;
         if (T === 'o1') { f = K.frx(P([[a, X]]), P([[1, K.xp(2)], [c, '']])); type = 1; }
         if (T === 'o2') { f = P([[a, X]]) + ' + ' + K.frx(String(c), X); type = 1; }
-        if (T === 'o3') { f = P([[a, K.xp(3)]]) + ' ' + (K.coin() ? '+' : M) + ' ' + c + I('x'); type = 1; }
+        if (T === 'o3') { f = P([[a, K.xp(3)]]) + ' ' + (K.coin() ? '+' : M) + ' ' + (c === 1 ? '' : c) + I('x'); type = 1; }
         if (T === 'e1') { f = '|' + X + '|' + K.coef(a) + K.xp(2); type = 0; }
         if (T === 'e2') { do { d = ri(1, 9); } while (d === c); f = K.frx(P([[1, K.xp(2)], [c, '']]), P([[1, K.xp(2)], [d, '']])); type = 0; }
         if (T === 'e3') { f = K.sqrt(P([[1, K.xp(2)], [c, '']])); type = 0; }
-        if (T === 'n1') { f = P([[a, K.xp(3)]]) + ' + ' + c + '|' + X + '|'; type = 2; }
+        if (T === 'n1') { f = P([[a, K.xp(3)]]) + ' + ' + (c === 1 ? '' : c) + '|' + X + '|'; type = 2; }
         if (T === 'n2') { f = '(' + P([[1, X], [K.coin() ? c : -c, '']]) + ')<sup>2</sup>'; type = 2; }
         if (T === 'n3') { f = P([[a, K.xp(3)], [K.coin() ? c : -c, '']]); type = 2; }
         var right = EO[type];
@@ -720,6 +783,8 @@
 
   /* ================= 2.8 Function Operations and Composition ================= */
   function pArr(c) { var t = []; for (var i = c.length - 1; i >= 0; i--) t.push([c[i], K.xp(i)]); return P(t); } // c[i] = coefficient of x^i
+  // narrower table cells so a 7-column table fits a phone screen
+  function tight(h) { return h.replace(/<t([dh])>/g, '<t$1 style="padding:6px 9px">'); }
   function fg2(fH, gH) { return fx('f', fH) + ' and ' + fx('g', gH); }
   var OPS = { '+': ['(' + I('f') + ' + ' + I('g') + ')'], '−': ['(' + I('f') + ' ' + M + ' ' + I('g') + ')'], '·': ['(' + I('f') + I('g') + ')'], '/': ['(' + I('f') + '/' + I('g') + ')'] };
   var c28 = [
@@ -728,14 +793,14 @@
         var a = rnz(-4, 4), b = ri(-6, 6), c = rnz(-6, 6), op = pick(['+', '−', '·', '/']), t, F, G;
         do { t = ri(-3, 3); F = a * t + b; G = t * t + c; } while (G === 0 || F === 0);
         var vals = { '+': R(F + G), '−': R(F - G), '·': R(F * G), '/': R(F, G) }, right = vals[op];
-        return attach(Q({ q: 'Let ' + fg2(lin(a, b), P([[1, K.xp(2)], [c, '']])) + '. Find ' + m(OPS[op][0] + '(' + n(t) + ')') + '.', mc: mcV(right.html(), right.val(), Object.keys(vals).filter(function (o) { return o !== op; }).map(function (o) { return [vals[o].html(), vals[o].val()]; }), function () { var z = right.add(rnz(-4, 4)); return [z.html(), z.val()]; }), why: ['Evaluate each function: ' + m(I('f') + '(' + n(t) + ') = ' + K.lin([[a, n(t)]]) + K.plusK(b) + ' = ' + n(F)) + ' and ' + m(I('g') + '(' + n(t) + ') = ' + sb(t) + '<sup>2</sup>' + K.plusK(c) + ' = ' + n(G)) + '.', op === '/' ? 'Divide: ' + m(K.frx(n(F), n(G)) + ' = ' + right.html()) + '.' : 'Combine: ' + m(n(F) + ' ' + (op === '+' ? '+' : op === '−' ? M : '·') + ' ' + sb(G) + ' = ' + right.html()) + '.', 'So ' + m(OPS[op][0] + '(' + n(t) + ') = ' + right.html()) + '.'] }), { kind: 'opVal', fq: true, op: op, x: t });
+        return attach(Q({ q: 'Let ' + fg2(lin(a, b), P([[1, K.xp(2)], [c, '']])) + '. Find ' + m(OPS[op][0] + '(' + n(t) + ')') + '.', mc: mcV(right.html(), right.val(), Object.keys(vals).filter(function (o) { return o !== op; }).map(function (o) { return [vals[o].html(), vals[o].val()]; }), function () { var z = right.add(rnz(-4, 4)); return [z.html(), z.val()]; }), why: ['Evaluate each function: ' + m(I('f') + '(' + n(t) + ') = ' + K.lin([[a, n(t)]]) + K.plusK(b) + ' = ' + n(F)) + ' and ' + m(I('g') + '(' + n(t) + ') = ' + sb(t) + '<sup>2</sup>' + K.plusK(c) + ' = ' + n(G)) + '.', op === '/' ? 'Divide: ' + m(eqs(frq(F, G), right.html())) + '.' : 'Combine: ' + m(n(F) + ' ' + (op === '+' ? '+' : op === '−' ? M : '·') + ' ' + sb(G) + ' = ' + right.html()) + '.', 'So ' + m(OPS[op][0] + '(' + n(t) + ') = ' + right.html()) + '.'] }), { kind: 'opVal', fq: true, op: op, x: t });
       },
       function () { // composition at a number
         var a = rnz(-4, 4), b = ri(-6, 6), c = ri(-6, 6), t = ri(-3, 3), sw = K.coin();
         var lf = function (x) { return a * x + b; }, qf = function (x) { return x * x + c; };
         var f = sw ? qf : lf, g = sw ? lf : qf, fH = sw ? P([[1, K.xp(2)], [c, '']]) : lin(a, b), gH = sw ? lin(a, b) : P([[1, K.xp(2)], [c, '']]);
         var ans = f(g(t)), alt = g(f(t));
-        return attach(Q({ q: 'Let ' + fg2(fH, gH) + '. Find ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(t) + ')') + '.', mc: mcV(n(ans), ans, [[n(alt), alt], [n(f(t) * g(t)), f(t) * g(t)], [n(g(t)), g(t)]], nx(ans)), why: ['Work from the inside out: ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(t) + ') = ' + I('f') + '(' + I('g') + '(' + n(t) + '))') + '.', 'Inside: ' + m(I('g') + '(' + n(t) + ') = ' + n(g(t))) + '.', 'Outside: ' + m(I('f') + '(' + n(g(t)) + ') = ' + n(ans)) + '. (' + n(alt) + ' would be ' + m(I('g') + '(' + I('f') + '(' + n(t) + '))') + ', the other order.)'] }), { kind: 'compVal', fq: true, x: t });
+        return attach(Q({ q: 'Let ' + fg2(fH, gH) + '. Find ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(t) + ')') + '.', mc: mcV(n(ans), ans, [[n(alt), alt], [n(f(t) * g(t)), f(t) * g(t)], [n(g(t)), g(t)]], nx(ans)), why: ['Work from the inside out: ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(t) + ') = ' + I('f') + '(' + I('g') + '(' + n(t) + '))') + '.', 'Inside: ' + m(I('g') + '(' + n(t) + ') = ' + n(g(t))) + '.', 'Outside: ' + m(I('f') + '(' + n(g(t)) + ') = ' + n(ans)) + '.' + (alt !== ans ? ' (' + n(alt) + ' would be ' + m(I('g') + '(' + I('f') + '(' + n(t) + '))') + ', the other order.)' : '')] }), { kind: 'compVal', fq: true, x: t });
       },
       function () { // domain of f/g
         var p = ri(-6, 6), a = pick([1, 2, 3, -1, -2]), b = rnz(-6, 6), r = R(-b, a);
@@ -764,12 +829,12 @@
         var sub3 = function (u, v, s) { return u.map(function (z, i) { return z + s * v[i]; }); };
         var right = sub3(A, B, -1), w1 = [A[0] + B[0], A[1] + B[1], A[2] - B[2]], w2 = sub3(A, B, 1), w3 = sub3(B, A, -1);
         var ch = function (cs) { return m(pArr(cs)); };
-        return attach(Q({ q: 'Let ' + fg2(pArr(A), pArr(B)) + '. Find ' + m('(' + I('f') + ' ' + M + ' ' + I('g') + ')(' + I('x') + ')') + '.', mc: mc(ch(right), [ch(w1), ch(w2), ch(w3)], function () { var z = right.slice(); z[0] += rnz(-3, 3); return ch(z); }), why: [m('(' + I('f') + ' ' + M + ' ' + I('g') + ')(' + I('x') + ') = (' + pArr(A) + ') ' + M + ' (' + pArr(B) + ')') + '.', 'Distribute the minus sign to <b>every</b> term of ' + I('g') + ': ' + m(pArr(A) + ' ' + K.poly([[-B[2], K.xp(2)], [-B[1], X], [-B[0], '']]).replace(/^(−?)/, function (s0) { return s0 ? M + ' ' : '+ '; })) + '.', 'Combine like terms: ' + ch(right) + '.'] }), { kind: 'diffFG', fq: true });
+        return attach(Q({ q: 'Let ' + fg2(pArr(A), pArr(B)) + '. Find ' + m('(' + I('f') + ' ' + M + ' ' + I('g') + ')(' + I('x') + ')') + '.', mc: mc(ch(right), [ch(w1), ch(w2), ch(w3)], function () { var z = right.slice(); z[0] += rnz(-3, 3); return ch(z); }), why: [m('(' + I('f') + ' ' + M + ' ' + I('g') + ')(' + I('x') + ') =') + ' ' + brk('(' + pArr(A) + ') ' + M + ' (' + pArr(B) + ')') + '.', 'Distribute the minus sign to <b>every</b> term of ' + I('g') + ': ' + brk(pArr(A) + ' ' + K.poly([[-B[2], K.xp(2)], [-B[1], X], [-B[0], '']]).replace(/^(−?)/, function (s0) { return s0 ? M + ' ' : '+ '; })) + '.', 'Combine like terms: ' + ch(right) + '.'] }), { kind: 'diffFG', fq: true });
       },
       function () { // composition from tables
         var S = [-2, -1, 0, 1, 2, 3], fv = S.map(function () { return pick(S); }), gv = S.map(function () { return pick(S); }), a = pick(S);
         var F = function (x) { return fv[S.indexOf(x)]; }, G = function (x) { return gv[S.indexOf(x)]; }, ans = F(G(a)), alt = G(F(a));
-        return attach(Q({ q: 'Use the tables to find ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ')') + '.<div class="center">' + K.xyTable(S, fv, X, m(I('f') + '(' + I('x') + ')')) + '</div><div class="center">' + K.xyTable(S, gv, X, m(I('g') + '(' + I('x') + ')')) + '</div>', mc: mcV(n(ans), ans, [[n(alt), alt], [n(G(a)), G(a)], [n(F(a)), F(a)], [n(F(a) * G(a)), F(a) * G(a)]], nx(ans)), why: [m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ') = ' + I('f') + '(' + I('g') + '(' + n(a) + '))') + ': start with ' + I('g') + '.', 'From the ' + I('g') + ' table: ' + m(I('g') + '(' + n(a) + ') = ' + n(G(a))) + '.', 'From the ' + I('f') + ' table: ' + m(I('f') + '(' + n(G(a)) + ') = ' + n(ans)) + '.'] }), { kind: 'tableComp', S: S, fv: fv, gv: gv, a: a });
+        return attach(Q({ q: 'Use the tables to find ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ')') + '.<div class="center">' + tight(K.xyTable(S, fv, X, m(I('f') + '(' + I('x') + ')'))) + '</div><div class="center">' + tight(K.xyTable(S, gv, X, m(I('g') + '(' + I('x') + ')'))) + '</div>', mc: mcV(n(ans), ans, [[n(alt), alt], [n(G(a)), G(a)], [n(F(a)), F(a)], [n(F(a) * G(a)), F(a) * G(a)]], nx(ans)), why: [m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ') = ' + I('f') + '(' + I('g') + '(' + n(a) + '))') + ': start with ' + I('g') + '.', 'From the ' + I('g') + ' table: ' + m(I('g') + '(' + n(a) + ') = ' + n(G(a))) + '.', 'From the ' + I('f') + ' table: ' + m(I('f') + '(' + n(G(a)) + ') = ' + n(ans)) + '.'] }), { kind: 'tableComp', S: S, fv: fv, gv: gv, a: a });
       }
     ],
     [
@@ -797,17 +862,19 @@
         }
         return attach(Q({ q: 'Let ' + fg2(fH, gH) + '. Find the domain of ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + I('x') + ')') + ' in interval notation.', mc: mc(m(d), wr.map(m)), why: why.concat(['Domain: ' + m(d) + '.']) }), { kind: 'domComp', fq: true });
       },
-      function () { // decomposition
-        var a = pick([2, 3, 4, 5, -2, -3]), b = rnz(-7, 7), T = pick(['pow', 'sqrt', 'rec', 'abs']), p = pick([3, 4, 5]);
-        var outer = function (u) { return T === 'pow' ? '(' + u + ')<sup>' + p + '</sup>' : T === 'sqrt' ? K.sqrt(u) : T === 'rec' ? K.frx('1', u) : '|' + u + '|'; };
-        var outerX = function () { return T === 'pow' ? K.xp(p) : outer(X); };
-        var ch = function (fH, gH) { return fx('f', fH) + ', ' + fx('g', gH); };
-        return attach(Q({ q: 'Find functions ' + I('f') + ' and ' + I('g') + ' so that ' + m(I('H') + '(' + I('x') + ') = ' + outer(lin(a, b))) + ' equals ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + I('x') + ')') + '.', mc: mc(ch(outerX(), lin(a, b)), [ch(lin(a, b), outerX()), ch(outerX(), lin(a, -b)), ch(T === 'pow' ? P([[1, K.xp(p)], [b, '']]) : T === 'sqrt' ? K.sqrt(X) + K.plusK(b) : T === 'rec' ? K.frx('1', X) + K.plusK(b) : '|' + X + '|' + K.plusK(b), P([[a, X]]))]), why: ['The inner part of ' + m(I('H') + '(' + I('x') + ')') + ' is ' + m(lin(a, b)) + ', so let ' + fx('g', lin(a, b)) + '.', 'The outer operation is applied to that inner part, so let ' + fx('f', outerX()) + '.', 'Check: ' + m(I('f') + '(' + I('g') + '(' + I('x') + ')) = ' + outer(lin(a, b))) + ' ✔. (Reversing them gives ' + m(I('g') + '(' + I('f') + '(' + I('x') + '))') + ', which is different.)'] }), { kind: 'decomp', fq: true });
+      function () { // order matters: (f ∘ g)(x) − (g ∘ f)(x)
+        var a = pick([2, 3, -1, -2, -3]), b = rnz(-5, 5), c = rnz(-6, 6), fgFirst = K.coin();
+        var FG = [b * b + c, 2 * a * b, a * a], GF = [a * c + b, 0, a], s = fgFirst ? 1 : -1;
+        var comb = function (u, v, k) { return u.map(function (z, i) { return s * (z + k * v[i]); }); };
+        var right = comb(FG, GF, -1), w1 = FG.map(function (z, i) { return z + GF[i]; }), w2 = right.map(function (z) { return -z; }), w3 = [right[0], 0, right[2]], w4 = comb(FG, [c + b, 0, a], -1);
+        var fH = P([[1, K.xp(2)], [c, '']]), gH = lin(a, b), ch = function (cs) { return m(pArr(cs)); };
+        var A1 = fgFirst ? 'f' : 'g', A2 = fgFirst ? 'g' : 'f', cmp = function (u, v) { return '(' + I(u) + ' ∘ ' + I(v) + ')(' + I('x') + ')'; };
+        return attach(Q({ q: 'Let ' + fg2(fH, gH) + '. Find ' + m(cmp(A1, A2) + ' ' + M + ' ' + cmp(A2, A1)) + ' and simplify.', mc: mc(ch(right), K.shuffle([w1, w2, w3, w4]).map(ch), function (i) { var z = right.slice(); z[0] += (i % 2 ? i : -i); return ch(z); }), why: [m(cmp('f', 'g') + ' = ' + I('f') + '(' + gH + ') =') + ' ' + brk('(' + gH + ')<sup>2</sup>' + K.plusK(c) + ' = ' + pArr(FG)) + ' (square the binomial, middle term included).', m(cmp('g', 'f') + ' = ' + I('g') + '(' + fH + ') =') + ' ' + brk(K.coef(a, true) + '(' + fH + ')' + K.plusK(b) + ' = ' + pArr(GF)) + ' (distribute ' + n(a) + ' to both terms).', 'Subtract in the order asked, changing the sign of every term being subtracted: ' + brk('(' + pArr(fgFirst ? FG : GF) + ') ' + M + ' (' + pArr(fgFirst ? GF : FG) + ') = ' + pArr(right)) + '. The answer is not 0: order matters in composition.'] }), { kind: 'compDiff', fgFirst: fgFirst });
       },
       function () { // coupon and percent
         var Xp = ri(8, 24) * 5, D = pick([5, 10, 15, 20]), pc = pick([10, 20, 25, 30]), first = K.coin(), r = 1 - pc / 100;
         var ans = first ? (Xp - D) * r : Xp * r - D, alt = first ? Xp * r - D : (Xp - D) * r, mon = K.money;
-        return attach(Q({ q: 'A store uses ' + m(I('c') + '(' + I('x') + ') = ' + I('x') + ' ' + M + ' ' + D) + ' for a ' + mon(D).replace('.00', '') + ' coupon and ' + m(I('p') + '(' + I('x') + ') = ' + n(r) + I('x')) + ' for ' + pc + '% off. Find ' + m('(' + I(first ? 'p' : 'c') + ' ∘ ' + I(first ? 'c' : 'p') + ')(' + Xp + ')') + ', the final price of a ' + mon(Xp).replace('.00', '') + ' item.', mc: mcV(mon(ans), ans, [[mon(alt), alt], [mon(Xp * r), Xp * r], [mon(Xp - D), Xp - D]], function () { var z = ans + rnz(-6, 6); return [mon(z), z]; }), why: ['Inside first: ' + (first ? m(I('c') + '(' + Xp + ') = ' + (Xp - D)) + ' (coupon first).' : m(I('p') + '(' + Xp + ') = ' + n(r) + '(' + Xp + ') = ' + n(Xp * r)) + ' (discount first).'), 'Then the outer function: ' + (first ? m(I('p') + '(' + (Xp - D) + ') = ' + n(r) + '(' + (Xp - D) + ') = ' + n(ans)) : m(I('c') + '(' + n(Xp * r) + ') = ' + n(Xp * r) + ' ' + M + ' ' + D + ' = ' + n(ans))) + '.', 'Final price: ' + mon(ans) + '. The other order gives ' + mon(alt) + ', so order matters.'] }), { kind: 'coupon', Xp: Xp, D: D, pc: pc, first: first });
+        return attach(Q({ q: 'A store uses ' + m(I('c') + '(' + I('x') + ') = ' + I('x') + ' ' + M + ' ' + D) + ' for ' + art(D) + ' ' + mon(D).replace('.00', '') + ' coupon and ' + m(I('p') + '(' + I('x') + ') = ' + n(r) + I('x')) + ' for ' + pc + '% off. Find ' + m('(' + I(first ? 'p' : 'c') + ' ∘ ' + I(first ? 'c' : 'p') + ')(' + Xp + ')') + ', the final price of ' + art(Xp) + ' ' + mon(Xp).replace('.00', '') + ' item.', mc: mcV(mon(ans), ans, [[mon(alt), alt], [mon(Xp * r), Xp * r], [mon(Xp - D), Xp - D]], function () { var z = ans + rnz(-6, 6); return [mon(z), z]; }), why: ['Inside first: ' + (first ? m(I('c') + '(' + Xp + ') = ' + (Xp - D)) + ' (coupon first).' : m(I('p') + '(' + Xp + ') = ' + n(r) + '(' + Xp + ') = ' + n(Xp * r)) + ' (discount first).'), 'Then the outer function: ' + (first ? m(I('p') + '(' + (Xp - D) + ') = ' + n(r) + '(' + (Xp - D) + ') = ' + n(ans)) : m(I('c') + '(' + n(Xp * r) + ') = ' + n(Xp * r) + ' ' + M + ' ' + D + ' = ' + n(ans))) + '.', 'Final price: ' + mon(ans) + '. The other order gives ' + mon(alt) + ', so order matters.'] }), { kind: 'coupon', Xp: Xp, D: D, pc: pc, first: first });
       },
       function () { // ripple area
         var c = pick([3, 4, 5, 6]);

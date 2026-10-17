@@ -205,6 +205,12 @@ def correct(p, raw, case):
     if t == 'kD0':
         roots = sp.solve(sp.Eq(S(p['a']) * S(p['d']) - S(p['b']) * kk, 0), kk)
         return [S(raw)] == roots
+    if t == 'kD0f':   # value of k with D = 0, then classify the system for that k
+        roots = sp.solve(sp.Eq(mat([[p['a'], kk], [p['ta'], p['d']]]).det(), 0), kk)
+        assert len(roots) == 1
+        k0 = roots[0]
+        cat, _ = lin_cat([[p['a'], k0, p['c1']], [p['ta'], p['d'], p['c2']]])
+        return S(raw[0]) == k0 and raw[1] == cat
     if t == 'pform':
         facs = p['facs']
         prod = 1

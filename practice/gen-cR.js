@@ -67,8 +67,9 @@
   var T2 = [1.37, 2.71, 0.61, 3.19, 1.93];
 
   /* radicals */
-  function rootH(r, idx) { if (idx === 2) return K.sqrt(r); if (idx === 3) return K.cbrt(r); return '<span class="rad"><sup class="ri">' + idx + '</sup>√<span class="rc">' + r + '</span></span>'; }
-  function radH(c, r, idx) { idx = idx || 2; if (r === 1) return n(c); return (c === 1 ? '' : c === -1 ? M : n(c)) + rootH(r, idx); }
+  // gap = true: an indexed radical follows a coefficient or variable, so add a small space (keeps 2x ∛5 from reading as 2x³√5)
+  function rootH(r, idx, gap) { if (idx === 2) return K.sqrt(r); return '<span class="rad"' + (gap ? ' style="margin-left:.3em"' : '') + '><sup class="ri">' + idx + '</sup>√<span class="rc">' + r + '</span></span>'; }
+  function radH(c, r, idx) { idx = idx || 2; if (r === 1) return n(c); var pre = c === 1 ? '' : c === -1 ? M : n(c); return pre + rootH(r, idx, pre !== '' && pre !== M); }
   function sqf(N, idx) { idx = idx || 2; var s = 1, f = N; for (var k = 2; ipow(k, idx) <= f; k++) { var kp = ipow(k, idx); while (f % kp === 0) { f /= kp; s *= k; } } return [s, f]; }
   function cbrtR(v) { return v < 0 ? -Math.pow(-v, 1 / 3) : Math.pow(v, 1 / 3); }
   var SQF = [2, 3, 5, 6, 7, 10, 11, 13, 14, 15];
@@ -193,7 +194,7 @@
         if (v) { lo = -ri(1, 4); hi = lo + ri(2, 5); S = range(lo, hi); q1 = sb(xv + ' is an integer and ' + m(n(lo) + ' ≤ ' + xv + ' ≤ ' + n(hi))); }
         else { lo = ri(1, 6); hi = lo + ri(4, 7); S = range(lo + 1, hi - 1); q1 = sb(xv + ' is a natural number between ' + lo + ' and ' + hi); }
         var k = S.length, proper = K.coin(), ans = ipow(2, k) - (proper ? 1 : 0);
-        return attach(Q({ q: 'How many ' + (proper ? '<b>proper</b> subsets' : 'subsets') + ' does ' + q1 + ' have?', mc: K.mcNum(ans, [proper ? ipow(2, k) : ipow(2, k) - 1, ipow(2, k + 1), ipow(2, k - 1), 2 * k]), why: ['Write the set in roster form first: ' + setH(S) + ', which has ' + k + ' elements.', 'It has ' + m('2<sup>' + k + '</sup> = ' + ipow(2, k)) + ' subsets' + (proper ? '.' : ', counting ' + EMPTY + ' and the set itself.'), proper ? 'A proper subset is any subset except the set itself, so there are ' + m(ipow(2, k) + ' ' + M + ' 1 = ' + ans) + '.' : 'Answer: ' + ans + ' subsets.'] }), { t: 'count', mode: proper ? 'proper' : 'all' });
+        return attach(Q({ q: 'How many ' + (proper ? '<b>proper</b> subsets' : 'subsets') + ' does ' + q1 + ' have?' + (proper ? ' (A proper subset is any subset except the set itself.)' : ''), mc: K.mcNum(ans, [proper ? ipow(2, k) : ipow(2, k) - 1, ipow(2, k + 1), ipow(2, k - 1), 2 * k]), why: ['Write the set in roster form first: ' + setH(S) + ', which has ' + k + ' elements.', 'It has ' + m('2<sup>' + k + '</sup> = ' + ipow(2, k)) + ' subsets' + (proper ? '.' : ', counting ' + EMPTY + ' and the set itself.'), proper ? 'A proper subset is any subset except the set itself, so there are ' + m(ipow(2, k) + ' ' + M + ' 1 = ' + ans) + '.' : 'Answer: ' + ans + ' subsets.'] }), { t: 'count', mode: proper ? 'proper' : 'all' });
       }
     ],
     [ // Level 3
@@ -408,9 +409,9 @@
         var w1 = t ? R(a * a + k * b, den) : R(a * a - k * a * b, den);
         var d2 = t ? a - b : a - b;
         var w2 = R(numer, d2), w3 = val.neg();
-        var subT = t ? M + pn(a) + '<sup>2</sup> + ' + k + pn(b) : pn(a) + '<sup>2</sup> ' + M + ' ' + k + '|(' + n(a) + ')(' + n(b) + ')|';
+        var subT = t ? M + pn(a) + '<sup>2</sup> + ' + k + '(' + n(b) + ')' : pn(a) + '<sup>2</sup> ' + M + ' ' + k + '|(' + n(a) + ')(' + n(b) + ')|';
         var subB = t ? '|' + n(a) + '| ' + M + ' ' + pn(b) : n(a) + ' ' + M + ' |' + n(b) + '|';
-        return attach(Q({ q: 'Evaluate ' + m(eh) + ' for ' + m(xv + ' = ' + n(a)) + ' and ' + m('<i>y</i> = ' + n(b)) + '.', mc: mcF([val.html(), function () { return val.val(); }], [[w1.html(), function () { return w1.val(); }], [w2.html(), function () { return w2.val(); }], [w3.html(), function () { return w3.val(); }]], function () { var z = val.add(rnz(-3, 3)); return [z.html(), function () { return z.val(); }]; }), why: ['Numerator: ' + m(subT + ' = ' + n(numer)) + (t ? ' (the square applies before the negative sign: ' + m(M + pn(a) + '<sup>2</sup> = ' + n(-a * a)) + ').' : '.'), 'Denominator: ' + m(subB + ' = ' + n(den)) + '.', 'Divide: ' + m(fr(n(numer), n(den)) + ' = ' + val.html()) + '.'] }), { t: 'num', eh: eh, vars: { x: a, y: b } });
+        return attach(Q({ q: 'Evaluate ' + m(eh) + ' for ' + m(xv + ' = ' + n(a)) + ' and ' + m('<i>y</i> = ' + n(b)) + '.', mc: mcF([val.html(), function () { return val.val(); }], [[w1.html(), function () { return w1.val(); }], [w2.html(), function () { return w2.val(); }], [w3.html(), function () { return w3.val(); }]], function () { var z = val.add(rnz(-3, 3)); return [z.html(), function () { return z.val(); }]; }), why: ['Numerator: ' + m(subT + ' = ' + n(numer)) + (t ? ' (the square applies before the negative sign: ' + m(M + pn(a) + '<sup>2</sup> = ' + n(-a * a)) + ').' : '.'), 'Denominator: ' + m(subB + ' = ' + n(den)) + '.', (den > 1 && gcd(numer, den) === 1 ? 'Divide: the value is ' + m(val.html()) + ', which is already in lowest terms.' : 'Divide: ' + m(fr(n(numer), n(den)) + ' = ' + val.html()) + '.')] }), { t: 'num', eh: eh, vars: { x: a, y: b } });
       },
       function () { // temperature readings, distance between extremes
         var t1 = -ri(2, 15), r = ri(8, 25), f = ri(5, 30), t2 = t1 + r, t3 = t2 - f;
@@ -569,7 +570,8 @@
 
   /* ================= R.4 FACTORING ================= */
   // factored form: k (integer), mon (html of a monomial factor), facs = array of coefficient arrays (repeats → exponent)
-  function fkey(c) { return [99 - (c.length - 1), 99 - c[c.length - 1], 99 - c[0]].map(function (z) { return ('000' + (z + 500)).slice(-4); }).join('|'); }
+  // factor order: higher degree first, then larger leading coefficient, then smaller |constant|, then − before + (keeps (x − 4)(x + 4) together)
+  function fkey(c) { return [99 - (c.length - 1), 99 - c[c.length - 1], Math.abs(c[0]), c[0] < 0 ? 0 : 1].map(function (z) { return ('000' + (z + 500)).slice(-4); }).join('|'); }
   function fmtF(k, mon, facs, v) {
     var groups = {}, order = [];
     facs.forEach(function (c) { var key = fkey(c) + ph(c, v); if (!groups[key]) { groups[key] = { c: c, e: 0 }; order.push(key); } groups[key].e++; });
@@ -638,7 +640,7 @@
         var c = fact(1, [[a, 1], [b, 0, d]]);
         var w = [fact(1, [[-a, 1], [b, 0, d]]), fact(1, [[a, 1], [-b, 0, d]]), fact(1, [[b, 1], [a, 0, d]]), fact(1, [[a, d], [b, 0, 1]])];
         var p1 = P([[d, xp(3)], [a * d, xp(2)]]), p2 = P([[b, X], [a * b, '']]);
-        return attach(Q({ q: 'Factor by grouping: ' + m(ph(poly)), mc: mcF(c, w), why: ['Group in pairs: ' + m('(' + p1 + ') + (' + p2 + ')') + '.', 'Factor each pair: ' + m(P([[d, xp(2)]]) + bin(1, a) + ' + ' + n(b) + bin(1, a)) + '.', 'Factor out the common binomial ' + m(bin(1, a)) + ': ' + c[0] + '.'] }), { t: 'expr', eh: ph(poly), chk: 'factor' });
+        return attach(Q({ q: 'Factor by grouping: ' + m(ph(poly)), mc: mcF(c, w), why: ['Group in pairs: ' + m('(' + p1 + ') + (' + p2 + ')') + '.', 'Factor each pair: ' + m(P([[d, xp(2)]]) + bin(1, a) + ' + ' + (b === 1 ? '' : n(b)) + bin(1, a)) + '.', 'Factor out the common binomial ' + m(bin(1, a)) + ': ' + c[0] + '.'] }), { t: 'expr', eh: ph(poly), chk: 'factor' });
       },
       function () { // perfect square trinomial
         var a, b, sgn = K.coin() ? 1 : -1; do { a = ri(1, 5); b = ri(1, 9); } while (gcd(a, b) !== 1 || (a === 1 && b === 1));
@@ -654,7 +656,7 @@
         var facs = [[a, 1], [-b, 1], [b, 1]], poly = prodAll(facs);
         var c = fact(1, facs);
         var w = [fact(1, [[-a, 1], [-b, 1], [b, 1]]), fact(1, [[a, 1], [b * b, 0, 1]]), fact(1, [[a, 1], [-b, 1], [-b, 1]]), fact(1, [[b, 1], [-a, 1], [a, 1]])];
-        return attach(Q({ q: 'Factor completely: ' + m(ph(poly)), mc: mcF(c, w), why: ['Group in pairs: ' + m('(' + P([[1, xp(3)], [a, xp(2)]]) + ') + (' + P([[-b * b, X], [-a * b * b, '']]) + ')') + ' = ' + m(xp(2) + bin(1, a) + ' ' + M + ' ' + b * b + bin(1, a)) + '.', 'Factor out the binomial: ' + m(bin(1, a) + '(' + ph([-b * b, 0, 1]) + ')') + '.', 'Keep going: ' + m(ph([-b * b, 0, 1])) + ' is a difference of squares, so the answer is ' + c[0] + '.'] }), { t: 'expr', eh: ph(poly), chk: 'factor' });
+        return attach(Q({ q: 'Factor completely: ' + m(ph(poly)), mc: mcF(c, w), why: ['Group in pairs: ' + m('(' + P([[1, xp(3)], [a, xp(2)]]) + ') + (' + P([[-b * b, X], [-a * b * b, '']]) + ')') + ' = ' + m(xp(2) + bin(1, a) + ' ' + M + ' ' + (b === 1 ? '' : b * b) + bin(1, a)) + '.', 'Factor out the binomial: ' + m(bin(1, a) + '(' + ph([-b * b, 0, 1]) + ')') + '.', 'Keep going: ' + m(ph([-b * b, 0, 1])) + ' is a difference of squares, so the answer is ' + c[0] + '.'] }), { t: 'expr', eh: ph(poly), chk: 'factor' });
       },
       function () { // GCF first, then factor further
         var v = ri(0, 2), c, w, poly, why;
@@ -663,7 +665,7 @@
           poly = [0, -k * p * p, 0, k];
           c = fact(k, [[p, 1], [-p, 1]], 'x', X, monF);
           w = [fact(k, [[-p, 1], [-p, 1]], 'x', X, monF), fact(k, [[p, 1], [-p, 1]], 'x', '', null), fact(k, [[p, 1], [p, 1]], 'x', X, monF), fact(k, [[p * p, 0, 1]], 'x', X, monF)];
-          why = ['Take out the GCF first: ' + m(ph(poly) + ' = ' + n(k) + X + '(' + ph([-p * p, 0, 1]) + ')') + '.', m(ph([-p * p, 0, 1])) + ' is a difference of squares: ' + m('(' + lin(1, p) + ')(' + lin(1, -p) + ')') + '.', 'Factored completely: ' + c[0] + '.'];
+          why = ['Take out the GCF first: ' + m(ph(poly) + ' = ' + n(k) + X + '(' + ph([-p * p, 0, 1]) + ')') + '.', m(ph([-p * p, 0, 1])) + ' is a difference of squares: ' + m('(' + lin(1, -p) + ')(' + lin(1, p) + ')') + '.', 'Factored completely: ' + c[0] + '.'];
         } else if (v === 1) {
           var k2 = ri(2, 5), p2, q2; do { p2 = rnz(-7, 7); q2 = rnz(-7, 7); } while (p2 === q2 || p2 === -q2);
           poly = pmul([k2], pmul([p2, 1], [q2, 1]));
@@ -675,7 +677,7 @@
           poly = [-sq * sq, 0, 0, 0, 1];
           c = fact(1, [[sq, 0, 1], [p3, 1], [-p3, 1]]);
           w = [fact(1, [[p3, 1], [p3, 1], [-p3, 1], [-p3, 1]]), fact(1, [[sq, 0, 1], [-p3, 1], [-p3, 1]]), fact(1, [[sq, 0, 1], [p3, 1], [p3, 1]]), fact(1, [[-sq, 0, 1], [p3, 1], [-p3, 1]])];
-          why = ['Difference of squares: ' + m(ph(poly) + ' = (' + ph([sq, 0, 1]) + ')(' + ph([-sq, 0, 1]) + ')') + '.', 'Keep going: ' + m(ph([-sq, 0, 1]) + ' = (' + lin(1, p3) + ')(' + lin(1, -p3) + ')') + '. The sum ' + m(ph([sq, 0, 1])) + ' does not factor over the real numbers.', 'Factored completely: ' + c[0] + '.'];
+          why = ['Difference of squares: ' + m(ph(poly) + ' = (' + ph([sq, 0, 1]) + ')(' + ph([-sq, 0, 1]) + ')') + '.', 'Keep going: ' + m(ph([-sq, 0, 1]) + ' = (' + lin(1, -p3) + ')(' + lin(1, p3) + ')') + '. The sum ' + m(ph([sq, 0, 1])) + ' does not factor over the real numbers.', 'Factored completely: ' + c[0] + '.'];
         }
         return attach(Q({ q: 'Factor completely: ' + m(ph(poly)), mc: mcF(c, w), why: why }), { t: 'expr', eh: ph(poly), chk: 'factor' });
       },
@@ -768,7 +770,7 @@
           [m(fr(lin(a + sB2 * b, -a * p - sB2 * b * q), dH)), function (x) { return ((a + sB2 * b) * x - a * p - sB2 * b * q) / ((x - p) * (x - q)); }]];
         if (sub) w.push([m(fr(lin(a - b, -a * q - b * p), dH)), function (x) { return ((a - b) * x - a * q - b * p) / ((x - p) * (x - q)); }]);
         if (a + sB2 * b === 0) w.splice(0, 2);
-        return attach(Q({ q: (sub ? 'Subtract' : 'Add') + ' and simplify: ' + m(eh), mc: mcF(c, K.shuffle(w).slice(0, 3), function () { var z = B + rnz(-4, 4); return [m(fr(lin(A, z), dH)), function (x) { return (A * x + z) / ((x - p) * (x - q)); }]; }), why: ['The denominators share no factor, so the LCD is ' + m(dH) + '.', 'Rewrite the numerators over the LCD: ' + m(n(a) + bin(1, -q) + (sub ? ' ' + M + ' ' : ' + ') + n(b) + bin(1, -p)) + (sub ? ' (the minus sign reaches both terms of the second numerator)' : '') + '.', 'Simplify: ' + m(P([[a, X], [-a * q, '']]) + (sub ? ' ' + M + ' (' + P([[b, X], [-b * p, '']]) + ')' : ' + ' + P([[b, X], [-b * p, '']])) + ' = ' + lin(A, B)) + '.', 'Result: ' + c[0] + '.'] }), { t: 'expr', eh: eh, chk: 'lowest' });
+        return attach(Q({ q: (sub ? 'Subtract' : 'Add') + ' and simplify: ' + m(eh), mc: mcF(c, K.shuffle(w).slice(0, 3), function () { var z = B + rnz(-4, 4); return [m(fr(lin(A, z), dH)), function (x) { return (A * x + z) / ((x - p) * (x - q)); }]; }), why: ['The denominators share no factor, so the LCD is ' + m(dH) + '.', 'Rewrite the numerators over the LCD: ' + m((a === 1 ? '' : n(a)) + bin(1, -q) + (sub ? ' ' + M + ' ' : ' + ') + (b === 1 ? '' : n(b)) + bin(1, -p)) + (sub ? ' (the minus sign reaches both terms of the second numerator)' : '') + '.', 'Simplify: ' + m(P([[a, X], [-a * q, '']]) + (sub ? ' ' + M + ' (' + P([[b, X], [-b * p, '']]) + ')' : ' + ' + P([[b, X], [-b * p, '']])) + ' = ' + lin(A, B)) + '.', 'Result: ' + c[0] + '.'] }), { t: 'expr', eh: eh, chk: 'lowest' });
       },
       function () { // multiply or divide
         var p, q; do { p = rnz(-6, 6); q = rnz(-6, 6); } while (p === q || p === -q);
@@ -812,13 +814,13 @@
           [m(fr(lin(sB * b, a + sB * b * p), dH)), function (x) { return (sB * b * x + a + sB * b * p) / ((x - p) * (x + p)); }],
           [m(fr(n(a + sB * b), ph([-p * p + p, 1, 1]))), function (x) { return (a + sB * b) / (x * x + x - p * p + p); }],
           [m(fr(lin(A, B), '(' + lin(1, p) + ')(' + ph([-p * p, 0, 1]) + ')')), function (x) { return (A * x + B) / ((x + p) * (x * x - p * p)); }]];
-        return attach(Q({ q: (sub ? 'Subtract' : 'Add') + ' and simplify: ' + m(eh), mc: mcF(c, K.shuffle(w).slice(0, 3), function () { var z = B + rnz(-4, 4); return [m(fr(lin(A, z), dH)), function (x) { return (A * x + z) / ((x - p) * (x + p)); }]; }), why: ['Factor: ' + m(ph([-p * p, 0, 1]) + ' = ' + dH) + ', so the LCD is ' + m(dH) + '.', 'Multiply the second fraction by ' + m(fr(lin(1, -p), lin(1, -p))) + ': its numerator becomes ' + m(n(b) + bin(1, -p) + ' = ' + lin(b, -b * p)) + '.', 'Combine: ' + m(n(a) + (sub ? ' ' + M + ' (' + lin(b, -b * p) + ')' : ' + ' + lin(b, -b * p)) + ' = ' + lin(A, B)) + ', so the result is ' + c[0] + '.'] }), { t: 'expr', eh: eh, chk: 'lowest' });
+        return attach(Q({ q: (sub ? 'Subtract' : 'Add') + ' and simplify: ' + m(eh), mc: mcF(c, K.shuffle(w).slice(0, 3), function () { var z = B + rnz(-4, 4); return [m(fr(lin(A, z), dH)), function (x) { return (A * x + z) / ((x - p) * (x + p)); }]; }), why: ['Factor: ' + m(ph([-p * p, 0, 1]) + ' = ' + dH) + ', so the LCD is ' + m(dH) + '.', 'Multiply the second fraction by ' + m(fr(lin(1, -p), lin(1, -p))) + ': its numerator becomes ' + m((b === 1 ? '' : n(b) + bin(1, -p) + ' = ') + lin(b, -b * p)) + '.', 'Combine: ' + m(n(a) + (sub ? ' ' + M + ' (' + lin(b, -b * p) + ')' : ' + ' + lin(b, -b * p)) + ' = ' + lin(A, B)) + ', so the result is ' + c[0] + '.'] }), { t: 'expr', eh: eh, chk: 'lowest' });
       },
       function () { // average cost word problem
         var F, c, n1, n2, tries = 0;
         do { F = pick([480, 600, 720, 840, 900, 960, 1080, 1200]); c = pick([8, 10, 12, 15, 18, 20, 25]); var ds = range(15, 80).filter(function (z) { return F % z === 0; }); n1 = pick(ds); n2 = pick(ds); } while (n2 <= n1 || F / n1 - F / n2 < 2);
         var a1 = F / n1 + c, a2 = F / n2 + c, diff = a1 - a2;
-        return attach(Q({ q: 'A school charters a bus for ' + money(F) + ' and pays ' + money(c) + ' per student for museum tickets. With ' + m(X) + ' students, the average cost per student is ' + m(fr(F + ' + ' + c + X, X)) + ' dollars. How much less is the average cost per student with ' + n2 + ' students than with ' + n1 + ' students?', mc: K.mc(money(diff), [money(a2), money(a1), money(F / (n2 - n1)), money(diff + c)], function () { return money(diff + rnz(-4, 4)); }), why: ['With ' + n1 + ' students: ' + m(fr(F + ' + ' + c + '(' + n1 + ')', n1) + ' = ' + fr(F + c * n1, n1) + ' = ' + a1) + ' dollars.', 'With ' + n2 + ' students: ' + m(fr(F + ' + ' + c + '(' + n2 + ')', n2) + ' = ' + fr(F + c * n2, n2) + ' = ' + a2) + ' dollars.', 'Difference: ' + m(money(a1) + ' ' + M + ' ' + money(a2) + ' = ' + money(diff)) + '. Only the bus share changes; the ' + money(c) + ' ticket cost is the same for everyone.'] }), { t: 'cost', F: F, c: c, n1: n1, n2: n2 });
+        return attach(Q({ q: 'A school charters a bus for ' + money(F) + ' and pays ' + money(c) + ' per student for museum tickets. With ' + m(X) + ' students, the average cost per student is ' + m(fr(F + ' + ' + c + X, X)) + ' dollars. How much less is the average cost per student with ' + n2 + ' students than with ' + n1 + ' students?', mc: K.mc(money(diff), [money(a2), money(a1), money(F / (n2 - n1)), money(diff + c)], function () { var z = diff + rnz(-4, 4); return money(z > 0 ? z : diff + rnz(5, 8)); }), why: ['With ' + n1 + ' students: ' + m(fr(F + ' + ' + c + '(' + n1 + ')', n1) + ' = ' + fr(F + c * n1, n1) + ' = ' + a1) + ' dollars.', 'With ' + n2 + ' students: ' + m(fr(F + ' + ' + c + '(' + n2 + ')', n2) + ' = ' + fr(F + c * n2, n2) + ' = ' + a2) + ' dollars.', 'Difference: ' + m(money(a1) + ' ' + M + ' ' + money(a2) + ' = ' + money(diff)) + '. Only the bus share changes; the ' + money(c) + ' ticket cost is the same for everyone.'] }), { t: 'cost', F: F, c: c, n1: n1, n2: n2 });
       }
     ]
   ];
@@ -887,12 +889,12 @@
           b = rr * rr; eh = M + powH(b, R(mm, 2));
           var v2 = -ipow(rr, mm);
           c = rvm(v2); w = [['Not a real number', null], rvm(-v2), rvm(R(-1, ipow(rr, mm)))];
-          why = ['Without parentheses, the exponent applies only to ' + b + '; the negative sign is applied afterward.', m(b + '<sup>' + expS(R(mm, 2)) + '</sup> = ' + rr + (mm > 1 ? '<sup>' + mm + '</sup>' : '') + ' = ' + ipow(rr, mm)) + '.', 'So the value is ' + m(n(v2)) + ', a real number.'];
+          why = ['Without parentheses, the exponent applies only to ' + b + '; the negative sign is applied afterward.', m(b + '<sup>' + expS(R(mm, 2)) + '</sup> = ' + (mm > 1 ? rr + '<sup>' + mm + '</sup> = ' : '') + ipow(rr, mm)) + '.', 'So the value is ' + m(n(v2)) + ', a real number.'];
         } else {
           rr = ri(2, 9); mm = pick([1, 3]); if (ipow(rr, mm) > 300) mm = 1;
           b = -rr * rr; eh = powH(b, R(mm, 2));
           c = ['Not a real number', null]; w = [rvm(-ipow(rr, mm)), rvm(ipow(rr, mm)), rvm(R(1, ipow(rr, mm)))];
-          why = ['The denominator 2 of the exponent means a square root.', 'No real number squared gives ' + m(n(b)) + ', so ' + m('(' + n(b) + ')<sup>1/2</sup>') + ' is not real.', 'So ' + m(eh) + ' is not a real number. (Compare ' + m(M + rr * rr + '<sup>1/2</sup> = ' + n(-rr)) + ', where the negative sign is outside.)'];
+          why = ['The denominator 2 of the exponent means a square root.', 'No real number squared gives ' + m(n(b)) + ', so ' + m('(' + n(b) + ')<sup>1/2</sup>') + ' is not real.', (mm > 1 ? 'So ' + m(eh + ' = ((' + n(b) + ')<sup>1/2</sup>)<sup>' + mm + '</sup>') + ' is not a real number either. ' : '') + 'Compare ' + m(M + rr * rr + '<sup>1/2</sup> = ' + n(-rr)) + ', where the negative sign is outside the power.'];
         }
         var o = Q({ q: 'Evaluate ' + m(eh) + '.', mc: mcF(c, w, function () { return rvm(R(rnz(-30, 30), pick([1, 1, 2, 3, 4]))); }), why: why });
         return attach(o, { t: 'num', eh: eh });
@@ -932,7 +934,7 @@
         var terms = K.coin() ? [t1, t2] : [t2, t1];
         var eh = mono(terms[0][0], [['x', terms[0][1]]]) + (terms[1][0] < 0 ? ' ' + M + ' ' : ' + ') + mono(Math.abs(terms[1][0]), [['x', terms[1][1]]]);
         var gH = mono(g, [['x', e]]), gFn = monoF(g, [['x', e]]);
-        var inner = function (vv, dd, uu) { return '(' + P([[vv, xp(dd)], [uu, '']]) + ')'; };
+        var inner = function (vv, dd, uu) { return '(' + (vv < 0 && uu > 0 ? P([[uu, ''], [vv, xp(dd)]]) : P([[vv, xp(dd)], [uu, '']])) + ')'; };   // positive term first
         var mk = function (pre, preF, vv, dd, uu) { return [m(pre + inner(vv, dd, uu)), function (x) { return preF(x) * (vv * Math.pow(x, dd) + uu); }]; };
         var c = mk(gH, gFn, v, d, u);
         var w = [mk(gH, gFn, v, d + 1, u), mk(gH, gFn, v, d, -u), mk(mono(g, [['x', e2]]), monoF(g, [['x', e2]]), u, d, v), mk(mono(1, [['x', e]]), monoF(1, [['x', e]]), v, d, u)];
@@ -994,7 +996,7 @@
         } else {
           q = 'Write ' + m(ex) + ' in radical form. Assume ' + m(X + ' &gt; 0') + '.';
           c = [m(rad), f(mm / nn)];
-          w = [[m(mm === 1 ? xp(nn) : rootH(xp(nn), mm)), f(nn / mm)], [m(fr('1', rad)), f(-mm / nn)], [m(rootH(xp(mm + 1), nn)), f((mm + 1) / nn)], [m(n(mm) + rootH(X, nn)), function (x) { return mm * Math.pow(x, 1 / nn); }]];
+          w = [[m(mm === 1 ? xp(nn) : rootH(xp(nn), mm)), f(nn / mm)], [m(fr('1', rad)), f(-mm / nn)], [m(rootH(xp(mm + 1), nn)), f((mm + 1) / nn)], [m(n(mm) + rootH(X, nn, true)), function (x) { return mm * Math.pow(x, 1 / nn); }]];
           why = ['The denominator of the exponent is the index of the root; the numerator is the power: ' + m('<i>a</i><sup><i>m</i>/<i>n</i></sup> = ' + '<span class="rad"><sup class="ri"><i>n</i></sup>√<span class="rc"><i>a</i><sup><i>m</i></sup></span></span>') + '.', 'Index ' + nn + ', power ' + mm + ': ' + m(ex + ' = ' + rad) + '.'];
         }
         return attach(Q({ q: q, mc: mcF(c, w, function () { var e = R(ri(1, 9), ri(2, 7)); return toExp ? [m(vpow('x', e)), f(e.val())] : [m(rootH(e.n === 1 ? X : xp(e.n), e.d)), f(e.val())]; }, TPOS), why: why }), { t: 'expr', eh: toExp ? rad : ex, pos: 1 });
@@ -1027,10 +1029,10 @@
         var inH = function (cc, rr) { return n(cc) + xp(rr); };
         var eh = rootH(n(N) + xp(E), idx);
         var rt = function (v) { return cube ? cbrtR(v) : Math.sqrt(v); };
-        var mk = function (cc, ea, rc, er) { return [m((cc === 1 ? '' : n(cc)) + xp(ea) + rootH(inH(rc, er), idx)), function (x) { return cc * Math.pow(x, ea) * rt(rc * Math.pow(x, er)); }]; };
+        var mk = function (cc, ea, rc, er) { var pre = (cc === 1 ? '' : n(cc)) + xp(ea); return [m(pre + rootH(inH(rc, er), idx, pre !== '')), function (x) { return cc * Math.pow(x, ea) * rt(rc * Math.pow(x, er)); }]; };
         var c = mk(s, a, f, r);
         var w = [mk(ipow(s, idx), a, f, r), mk(s, idx * a, f, r), mk(s, a, f, 0), mk(s, a + 1, f, r)];
-        w[2] = [m(n(s) + xp(a) + rootH(n(f), idx)), function (x) { return s * Math.pow(x, a) * rt(f); }];
+        w[2] = [m(n(s) + xp(a) + rootH(n(f), idx, true)), function (x) { return s * Math.pow(x, a) * rt(f); }];
         return attach(Q({ q: 'Simplify ' + m(eh) + '. Assume ' + m(X + ' ≥ 0') + '.', mc: mcF(c, w, null, TPOS), why: ['Split into perfect ' + (cube ? 'cubes' : 'squares') + ' and what is left: ' + m(N + ' = ' + ipow(s, idx) + ' · ' + f) + ' and ' + m(xp(E) + ' = ' + xp(idx * a) + (r ? ' · ' + xp(r) : '')) + '.', 'The ' + (cube ? 'cube' : 'square') + ' root of the perfect part comes out: ' + m(rootH(ipow(s, idx) + xp(idx * a), idx) + ' = ' + n(s) + xp(a)) + '.', 'Answer: ' + c[0] + '.'] }), { t: 'expr', eh: eh, chk: 'rad', pos: 1 });
       },
       function () { // rationalize a single square root
@@ -1040,7 +1042,7 @@
         var val = a / Math.sqrt(b);
         var w = [[m(radH(a, b)), function () { return a * Math.sqrt(b); }], [m(R(a, b).html()), function () { return a / b; }], [m(fr(radH(a, b), b * b)), function () { return a * Math.sqrt(b) / (b * b); }], [m(fr(K.sqrt(b), a === 1 ? b + 1 : a)), function () { return Math.sqrt(b) / (a === 1 ? b + 1 : a); }]];
         var eh = fr(n(a), K.sqrt(b));
-        return attach(Q({ q: 'Rationalize the denominator: ' + m(eh), mc: mcF([m(ansH), function () { return val; }], w), why: ['Multiply the top and bottom by ' + m(K.sqrt(b)) + ': ' + m(fr(n(a) + K.sqrt(b), K.sqrt(b) + ' · ' + K.sqrt(b)) + ' = ' + fr(radH(a, b), b)) + '.', g > 1 ? 'Reduce: ' + m(a + ' and ' + b) + ' share the factor ' + g + ', giving ' + m(ansH) + '.' : 'The fraction ' + m(fr(a, b)) + ' does not reduce, so the answer is ' + m(ansH) + '.', 'No radical is left in the denominator.'] }), { t: 'expr', eh: eh, chk: 'rad' });
+        return attach(Q({ q: 'Rationalize the denominator: ' + m(eh), mc: mcF([m(ansH), function () { return val; }], w), why: ['Multiply the top and bottom by ' + m(K.sqrt(b)) + ': ' + m(fr((a === 1 ? '' : n(a)) + K.sqrt(b), K.sqrt(b) + ' · ' + K.sqrt(b)) + ' = ' + fr(radH(a, b), b)) + '.', g > 1 ? 'Reduce: ' + m(a + ' and ' + b) + ' share the factor ' + g + ', giving ' + m(ansH) + '.' : 'The fraction ' + m(fr(a, b)) + ' does not reduce, so the answer is ' + m(ansH) + '.', 'No radical is left in the denominator.'] }), { t: 'expr', eh: eh, chk: 'rad' });
       },
       function () { // conjugate product
         var a, b; do { a = pick(SQF); b = ri(1, 5); } while (a === b * b);
@@ -1063,12 +1065,13 @@
         var Dp = a + b * b, g2 = gcd(c, Dp);
         var w = [mkF(sg2 * k * b, k, den), mkF(-sg2 * (c / g2) * b, c / g2, Dp / g2), mkF(0, c, a), mkF(-sg2 * b, 1, den === 1 ? 2 : den)];
         var eh = fr(n(c), radSum(sg2 * b, 1, a));
-        return attach(Q({ q: 'Rationalize the denominator and simplify: ' + m(eh), mc: mcF([m(ansH), function () { return val; }], w, function () { return mkF(-sg2 * k * b + rnz(1, 3), k, den); }), why: ['Multiply the top and bottom by the conjugate ' + m(radSum(-sg2 * b, 1, a)) + '.', 'Denominator: ' + m('(' + K.sqrt(a) + ')<sup>2</sup> ' + M + ' ' + b + '<sup>2</sup> = ' + a + ' ' + M + ' ' + b * b + ' = ' + n(D)) + '. Numerator: ' + m(n(c) + '(' + radSum(-sg2 * b, 1, a) + ')') + '.', 'Simplify: ' + m(fr(n(c) + '(' + radSum(-sg2 * b, 1, a) + ')', n(D)) + ' = ' + ansH) + '.'] }), { t: 'expr', eh: eh, chk: 'rad' });
+        var numC = c === 1 ? radSum(-sg2 * b, 1, a) : n(c) + '(' + radSum(-sg2 * b, 1, a) + ')';
+        return attach(Q({ q: 'Rationalize the denominator and simplify: ' + m(eh), mc: mcF([m(ansH), function () { return val; }], w, function () { return mkF(-sg2 * k * b + rnz(1, 3), k, den); }), why: ['Multiply the top and bottom by the conjugate ' + m(radSum(-sg2 * b, 1, a)) + '.', 'Denominator: ' + m('(' + K.sqrt(a) + ')<sup>2</sup> ' + M + ' ' + b + '<sup>2</sup> = ' + a + ' ' + M + ' ' + b * b + ' = ' + n(D)) + '. Numerator: ' + m(numC) + '.', (K.strip(fr(numC, n(D))) === K.strip(ansH) ? 'Result: ' + m(ansH) + '. It does not simplify further.' : 'Simplify: ' + m(fr(numC, n(D)) + ' = ' + ansH) + '.')] }), { t: 'expr', eh: eh, chk: 'rad' });
       },
       function () { // diagonal of a rectangle
         var a, b, S, sf, tries = 0;
         do { a = ri(3, 20); b = ri(3, 20); S = a * a + b * b; sf = sqf(S); } while ((a >= b || sf[0] === 1 || sf[1] === 1) && tries++ < 500);
-        var thing = pick(['room', 'garden', 'deck', 'patio', 'parking lot']);
+        var thing = pick(b <= 12 ? ['room', 'deck', 'patio', 'rug', 'garden bed'] : ['room', 'deck', 'patio', 'garden bed']);
         var mk = function (cc, r) { return [m(radH(cc, r) + ' ft'), function () { return cc * Math.sqrt(r); }]; };
         var c = mk(sf[0], sf[1]);
         var sab = sqf(a + b);
@@ -1078,7 +1081,8 @@
       function () { // (p√a + q)(r√a + s)
         var a = pick([2, 3, 5, 6, 7]), p, q, r, s, C, D;
         do { p = rnz(-3, 3); q = rnz(-6, 6); r = rnz(-3, 3); s = rnz(-6, 6); C = p * r * a + q * s; D = p * s + q * r; } while (D === 0 || C === 0 || p < 0);
-        var eh = '(' + radSum(q, p, a) + ')(' + radSum(s, r, a) + ')';
+        var rf = function (co, cst) { return P([[co, rootH(a, 2)], [cst, '']]); };   // radical term first in both factors, so the FOIL labels match the display
+        var eh = '(' + rf(p, q) + ')(' + rf(r, s) + ')';
         var mk = function (cst, co) { return [m(radSumC(cst, co, a)), rsF(cst, co, a)]; };
         var c = mk(C, D);
         var w = [mk(p * r + q * s, D), [m(n(C)), function () { return C; }], mk(C, p * s - q * r), mk(-p * r * a + q * s, D)];

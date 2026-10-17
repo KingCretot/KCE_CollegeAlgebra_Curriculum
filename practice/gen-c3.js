@@ -47,7 +47,66 @@
   function divisors(v) { v = Math.abs(v); var d = []; for (var i = 1; i <= v; i++) if (v % i === 0) d.push(i); return d; }
   function signs(c) { return c.filter(function (v) { return v !== 0; }).map(function (v) { return v > 0 ? '+' : M; }); }
   function changes(c) { var s = c.filter(function (v) { return v !== 0; }), k = 0; for (var i = 1; i < s.length; i++) if ((s[i] > 0) !== (s[i - 1] > 0)) k++; return k; }
+  // degree of gcd(a, b) for integer coefficient lists (highest power first); > 0 means a common factor
+  function gcdDeg(a, b) {
+    var cl = function (p) { p = p.map(function (v) { return R(v); }); while (p.length && p[0].n === 0) p.shift(); return p; };
+    a = cl(a); b = cl(b);
+    while (b.length) {
+      var r = a.slice();
+      while (r.length >= b.length) { var f = r[0].div(b[0]); for (var i = 0; i < b.length; i++) r[i] = r[i].sub(f.mul(b[i])); r.shift(); while (r.length && r[0].n === 0) r.shift(); }
+      a = b; b = r;
+    }
+    return a.length - 1;
+  }
   function negX(c) { var d = c.length - 1; return c.map(function (v, i) { return (d - i) % 2 ? -v : v; }); }
+  /* ---- shared text helpers (added in review fixes) ---- */
+  // a = b = c chain that drops a step identical to the one before it (no "1/2 = 1/2")
+  function eqs() { var a = [].slice.call(arguments), out = [a[0]]; for (var i = 1; i < a.length; i++) if (K.plain(a[i]) !== K.plain(out[out.length - 1])) out.push(a[i]); return out.join(' = '); }
+  // quotient of two integers as shown in a step: never a negative denominator under a fraction bar
+  function frq(a, b) { return b < 0 ? n(a) + ' ÷ (' + n(b) + ')' : K.frx(n(a), n(b)); }
+  // indefinite article for a number that follows it ("an 8-mile", "an 11-mile", "a 12-mile")
+  function art(v) { var s = String(v).replace(/[^0-9]/g, ''); return /^8/.test(s) || (/^1[18]/.test(s) && s.length % 3 === 2) ? 'an' : 'a'; }
+  // count + noun with the right number ("1 year", "3 years")
+  function cnt(v, one, many) { return n(v) + ' ' + (Math.abs(v) === 1 ? one : (many || one + 's')); }
+  // Graph point labels: choose a side for each label so it does not sit on a tick label, an axis,
+  // an asymptote, the curve, another point or another label. P.pref lists preferred positions
+  // ('ne','se','nw','sw','e','w'); the lowest-collision position wins, earlier ones on ties. Mutates o.pts; returns o.
+  function place(o) {
+    var x0 = o.x[0], x1 = o.x[1], y0 = o.y[0], y1 = o.y[1], W = o.w || 320, H = o.h || 320, pad = o.pad || 30, padB = o.xlab ? 40 : pad, padL = o.ylab ? 44 : pad, pw = W - padL - pad, ph = H - pad - padB;
+    var X = function (x) { return padL + (x - x0) / (x1 - x0) * pw; }, Y = function (y) { return pad + (y1 - y) / (y1 - y0) * ph; };
+    var ax = (y0 <= 0 && y1 >= 0) ? Y(0) : (y0 > 0 ? pad + ph : pad), ay = (x0 <= 0 && x1 >= 0) ? X(0) : (x0 > 0 ? padL : padL + pw);
+    var gx = o.stepX || o.step || 1, gy = o.stepY || o.step || 1, lx = o.labX || o.lab || (gx * ((x1 - x0) / gx > 12 ? 2 : 1)), ly = o.labY || o.lab || (gy * ((y1 - y0) / gy > 12 ? 2 : 1));
+    var obs = []; // [rect, penalty]
+    var tw = function (v) { return 6.2 * K.n(K.round(v, 6)).length + 2; };
+    for (var v = Math.ceil(x0 / lx) * lx; v <= x1 + 1e-9; v += lx) if (!(Math.abs(v) < 1e-9 && (x0 < 0 || y0 >= 0))) obs.push([[X(v) - tw(v) / 2, ax + 6, X(v) + tw(v) / 2, ax + 16], 10]);
+    for (v = Math.ceil(y0 / ly) * ly; v <= y1 + 1e-9; v += ly) if (Math.abs(v) > 1e-9) obs.push([[ay - 6 - tw(v), Y(v) - 5, ay - 6, Y(v) + 5], 10]);
+    obs.push([[padL - 8, ax - 1.5, padL + pw + 8, ax + 1.5], 3], [[ay - 1.5, pad - 8, ay + 1.5, pad + ph + 8], 3]);
+    (o.lines || []).forEach(function (L) { if (L.vx !== undefined) obs.push([[X(L.vx) - 2, pad, X(L.vx) + 2, pad + ph], 6]); else if (K.R(L.m).n === 0) { var yb = Y(K.R(L.b).val()); obs.push([[padL, yb - 2, padL + pw, yb + 2], 6]); } });
+    (o.pts || []).forEach(function (P) { obs.push([[X(P.x) - 5, Y(P.y) - 5, X(P.x) + 5, Y(P.y) + 5], 10]); });
+    var curves = [];
+    (o.fns || []).forEach(function (F) { curves.push(function (px) { var x = x0 + (px - padL) / pw * (x1 - x0); if (F.from !== undefined && x < F.from) return NaN; if (F.to !== undefined && x > F.to) return NaN; return Y(F.f(x)); }); });
+    (o.lines || []).forEach(function (L) { if (L.vx === undefined && K.R(L.m).n !== 0) { var mm = K.R(L.m).val(), bb = K.R(L.b).val(); curves.push(function (px) { var x = x0 + (px - padL) / pw * (x1 - x0); return Y(mm * x + bb); }); } });
+    var hit = function (r, s) { return !(r[2] < s[0] || r[0] > s[2] || r[3] < s[1] || r[1] > s[3]); };
+    var segHit = function (r) { return (o.segs || []).some(function (S) { for (var t = 0; t <= 1; t += 0.01) { var px = X(S.x1 + (S.x2 - S.x1) * t), py = Y(S.y1 + (S.y2 - S.y1) * t); if (px >= r[0] - 1 && px <= r[2] + 1 && py >= r[1] - 1 && py <= r[3] + 1) return true; } return false; }); };
+    var curveHit = function (r) { return curves.some(function (c) { for (var px = r[0] - 1; px <= r[2] + 1; px += 1) { var py = c(px), py2 = c(px + 1); if (!isFinite(py)) continue; if (py >= r[1] - 1 && py <= r[3] + 1) return true; if (isFinite(py2) && Math.min(py, py2) <= r[1] && Math.max(py, py2) >= r[3]) return true; } return false; }); };
+    // [horizontal side, dy]  (side +1: text starts right of the point; −1: text ends left of it)
+    var OFF = { ne: [1, -7], se: [1, 17], nw: [-1, -7], sw: [-1, 17], e: [1, 4], w: [-1, 4] };
+    (o.pts || []).forEach(function (P) {
+      if (!P.label || P.dx !== undefined) return;
+      var w = 6.6 * String(P.label).length + 2, px = X(P.x), py = Y(P.y), best = null;
+      var order = (P.pref || []).concat(['ne', 'se', 'nw', 'sw', 'e', 'w']), cands = [];
+      order.forEach(function (c) { var f = OFF[c]; cands.push([f[0], (c === 'e' || c === 'w' ? 9 : 7), f[1], 0]); });
+      [[7, -22], [7, 32], [18, -7], [18, 17], [18, -22], [18, 32], [7, -36], [7, 46], [30, -7], [30, 17], [30, 4]].forEach(function (d) { [1, -1].forEach(function (sd) { cands.push([sd, d[0], d[1], 1 + (d[0] > 7 ? 0.5 : 0) + (d[0] > 20 ? 2 : 0) + (Math.abs(d[1] - 5) > 35 ? 0.5 : 0)]); }); });
+      cands.forEach(function (cd, idx) {
+        var dx = cd[1] * cd[0], dy = cd[2], r = cd[0] > 0 ? [px + dx, py + dy - 10, px + dx + w, py + dy + 1] : [px + dx - w, py + dy - 10, px + dx, py + dy + 1];
+        var across = (o.lines || []).some(function (L) { if (L.vx !== undefined) { var xv = X(L.vx); return (px < xv && r[2] > xv) || (px > xv && r[0] < xv); } if (K.R(L.m).n !== 0) return false; var yh = Y(K.R(L.b).val()); return (py < yh && r[3] > yh) || (py > yh && r[1] < yh); });
+        var sc = (across ? 6 : 0) + obs.reduce(function (s, b) { return s + (hit(r, b[0]) ? b[1] : 0); }, 0) + (curveHit(r) ? 8 : 0) + (segHit(r) ? 8 : 0) + (r[0] < 2 || r[2] > W - 2 || r[1] < 2 || r[3] > H - 2 ? 50 : 0) + cd[3] + idx * 0.001;
+        if (!best || sc < best.sc) best = { sc: sc, sd: cd[0], r: r, dx: dx, dy: dy };
+      });
+      P.anchor = best.sd > 0 ? 'start' : 'end'; P.dx = best.dx; P.dy = best.dy; obs.push([best.r, 10]);
+    });
+    return o;
+  }
 
   // multiple choice for expression answers: [html, fn] pairs; drops wrong choices numerically equal to another choice
   var TP = [-4.37, -2.71, -1.29, -0.43, 0.61, 1.57, 2.33, 3.83, 5.17];
@@ -62,7 +121,7 @@
 
   // synthetic division display
   function synTable(k, top, s) {
-    var b = 'border:none;padding:4px 11px;text-align:right;background:#fff;color:#1a1a1a;';
+    var b = 'border:none;padding:4px 7px;text-align:right;background:#fff;color:#1a1a1a;';
     var kc = b + 'border-right:2px solid #0A1F3D;font-weight:700;color:#0047BA;';
     var r1 = '<tr><td style="' + kc + '">' + n(k) + '</td>' + top.map(function (v) { return '<td style="' + b + '">' + n(v) + '</td>'; }).join('') + '</tr>';
     var r2 = '<tr><td style="' + kc + '"></td><td style="' + b + '"></td>' + s.mids.map(function (v) { return '<td style="' + b + '">' + n(v) + '</td>'; }).join('') + '</tr>';
@@ -77,14 +136,26 @@
     var y0 = av > 0 ? Math.min(k - 2, -2) : Math.min(k - 10, -3), y1 = av > 0 ? Math.max(k + 10, 3) : Math.max(k + 2, 2);
     var o = { x: [x0, x1], y: [y0, y1], h: Math.round(Math.min(430, 24 * (y1 - y0) + 60)), fns: [{ f: function (x) { return av * (x - h) * (x - h) + k; } }] };
     for (var t in extra) o[t] = extra[t];
-    return K.plane(o);
+    // labels go outside the parabola: below the vertex when it opens up, above when it opens down,
+    // on the side away from the y-axis; other points are labeled on their outer side
+    (o.pts || []).forEach(function (P) {
+      if (!P.label) return;
+      var v = av > 0 ? 's' : 'n', side = P.x === h ? (h >= 0 ? 'e' : 'w') : (P.x > h ? 'e' : 'w');
+      P.pref = P.x === h ? [v + side, v + (side === 'e' ? 'w' : 'e')] : [v + side, side, v + (side === 'e' ? 'w' : 'e')];
+    });
+    return K.plane(place(o));
   }
   function ratGraph(f, vas, ha, o) {
     var x0 = o.x[0], x1 = o.x[1], cuts = [x0].concat(vas.slice().sort(function (a, b) { return a - b; })).concat([x1]), fns = [];
     for (var i = 0; i < cuts.length - 1; i++) fns.push({ f: f, from: cuts[i] + (i ? 0.004 : 0), to: cuts[i + 1] - (i < cuts.length - 2 ? 0.004 : 0) });
     var lines = vas.map(function (v) { return { vx: v, dash: true, color: COL.red }; });
     if (ha !== null && ha !== undefined) lines.push({ m: 0, b: ha, dash: true, color: COL.red });
-    return K.plane({ x: o.x, y: o.y, fns: fns, lines: lines, pts: o.pts || [], h: o.h || 340 });
+    (o.pts || []).forEach(function (P) {
+      if (!P.label) return;
+      var e = vas.length && P.x < vas[0] ? 'w' : 'e', v = ha !== null && ha !== undefined && P.y < ha ? 's' : 'n';
+      P.pref = [v + e, (v === 'n' ? 's' : 'n') + e, v + (e === 'e' ? 'w' : 'e')];
+    });
+    return K.plane(place({ x: o.x, y: o.y, fns: fns, lines: lines, pts: o.pts || [], h: o.h || 340 }));
   }
   var BEH = { uu: 'Rises on both ends', dd: 'Falls on both ends', du: 'Falls to the left, rises to the right', ud: 'Rises to the left, falls to the right' };
   function beh(deg, s) { return deg % 2 === 0 ? (s > 0 ? BEH.uu : BEH.dd) : (s > 0 ? BEH.du : BEH.ud); }
@@ -127,7 +198,7 @@
         var steps = [];
         if (a !== 1) steps.push('Factor ' + n(a) + ' out of the <i>x</i>-terms: ' + fx(lead(a) + '(' + pd([1, -2 * h, 0]) + ')' + K.plusK(c)) + '.');
         steps.push('Half of ' + n(-2 * h) + ' is ' + n(-h) + ', and ' + sub(-h) + '<sup>2</sup> = ' + n(h * h) + '. Add and subtract it inside: ' + fx(lead(a) + '(' + pd([1, -2 * h, h * h]) + ' ' + M + ' ' + n(h * h) + ')' + K.plusK(c)) + '.');
-        steps.push('Factor the trinomial' + (a !== 1 ? ' and multiply ' + n(a) + ' · ' + sub(-h * h) + ' = ' + n(-a * h * h) : '') + ': ' + fx(vform(a, h, 0) + K.plusK(-a * h * h) + K.plusK(c)) + ' = ' + m(vform(a, h, k)) + '.');
+        steps.push('Factor the trinomial' + (a !== 1 ? ' and multiply ' + n(a) + ' · ' + sub(-h * h) + ' = ' + n(-a * h * h) : '') + ': ' + fx(eqs(vform(a, h, 0) + K.plusK(-a * h * h) + K.plusK(c), vform(a, h, k))) + '.');
         return QP({ q: 'Complete the square to write ' + fx(pd(cf)) + ' in vertex form.', mc: mc(fx(vform(a, h, k)), w, function () { return fx(vform(a, h, k + rnz(-3, 3))); }), why: steps }, { t: 'eqexpr', f: pd(cf) });
       },
       function () {
@@ -141,9 +212,10 @@
         var a = pick([1, -1, 2, -2]), h = rnz(-4, 4), k = rnz(-5, 5);
         var fn = function (x) { return a * (x - h) * (x - h) + k; };
         var cor = [fx(vform(a, h, k)), fn];
+        var sd = h < 0 ? -1 : 1; // mark the second point on the side away from the y-axis, where its label has room
         var wr = [[fx(vform(a, -h, k)), function (x) { return a * (x + h) * (x + h) + k; }], [fx(vform(-a, h, k)), function (x) { return -a * (x - h) * (x - h) + k; }], [fx(vform(a, h, -k)), function (x) { return a * (x - h) * (x - h) - k; }]];
-        return QP({ q: 'Which function is graphed below? The vertex and one other point are marked.', graph: parab(a, h, k, { pts: [{ x: h, y: k, label: '(' + h + ', ' + k + ')' }, { x: h + 1, y: k + a, label: '(' + (h + 1) + ', ' + (k + a) + ')' }] }), mc: mcF(cor, wr),
-          why: ['The vertex is ' + K.pt(h, k) + ', so ' + fx('<i>a</i>' + sq('(' + dv(h) + ')') + K.plusK(k)) + '.', 'One unit to the right of the vertex, the graph is at ' + n(k + a) + ', which is ' + n(Math.abs(a)) + (a > 0 ? ' above' : ' below') + ' the vertex, so ' + m('<i>a</i> = ' + n(a)) + '.', 'So ' + fx(vform(a, h, k)) + '.'] }, { t: 'graph', fn: fn });
+        return QP({ q: 'Which function is graphed below? The vertex and one other point are marked.', graph: parab(a, h, k, { pts: [{ x: h, y: k, label: '(' + h + ', ' + k + ')' }, { x: h + sd, y: k + a, label: '(' + (h + sd) + ', ' + (k + a) + ')' }] }), mc: mcF(cor, wr),
+          why: ['The vertex is ' + K.pt(h, k) + ', so ' + fx('<i>a</i>' + sq('(' + dv(h) + ')') + K.plusK(k)) + '.', 'One unit to the ' + (sd > 0 ? 'right' : 'left') + ' of the vertex, the graph is at ' + n(k + a) + ', which is ' + n(Math.abs(a)) + (a > 0 ? ' above' : ' below') + ' the vertex, so ' + m('<i>a</i> = ' + n(a)) + '.', 'So ' + fx(vform(a, h, k)) + '.'] }, { t: 'graph', fn: fn });
       }
     ],
     [
@@ -151,7 +223,7 @@
         var j = ri(1, 4), s0 = pick([4, 5, 6, 8, 10, 12, 20, 32, 48]), v0 = 32 * j, H = 16 * j * j + s0;
         var sx = P([[-16, K.xp(2, 't')], [v0, '<i>t</i>'], [s0, '']]);
         var ans = function (t, h) { return 'After ' + n(t) + (t === 1 ? ' second' : ' seconds') + '; ' + K.comma(h) + ' feet'; };
-        return QP({ q: 'A ball is thrown upward from a ' + s0 + ' foot platform. Its height in feet after <i>t</i> seconds is ' + m('<i>s</i>(<i>t</i>) = ' + sx) + '. When does the ball reach its maximum height, and what is that height?',
+        return QP({ q: 'A ball is thrown upward from ' + art(s0) + ' ' + s0 + '-foot platform. Its height in feet after <i>t</i> seconds is ' + m('<i>s</i>(<i>t</i>) = ' + sx) + '. When does the ball reach its maximum height, and what is that height?',
           mc: mc(ans(j, H), [ans(2 * j, s0), ans(j, 16 * j * j), ans(j, 48 * j * j + s0)]),
           why: ['Since ' + m('<i>a</i> = ' + M + '16 &lt; 0') + ', the vertex is the highest point.', m('<i>t</i> = ' + fr(M + '<i>b</i>', '2<i>a</i>') + ' = ' + fr(M + v0, '2(' + M + '16)') + ' = ' + n(j)) + (j === 1 ? ' second.' : ' seconds.'), m('<i>s</i>(' + n(j) + ') = ' + M + '16(' + n(j) + ')<sup>2</sup> + ' + v0 + '(' + n(j) + ') + ' + s0 + ' = ' + K.comma(H)) + ' feet.'] }, { t: 'proj', f: sx });
       },
@@ -161,7 +233,7 @@
         var cor = river ? vals[0] : vals[1], wr = (river ? [vals[1], vals[2], vals[3]] : [vals[0], vals[2], vals[3]]).map(fmt);
         var q = river ? 'A farmer has ' + Pf + ' feet of fencing to enclose a rectangular pen along a straight river. No fence is needed along the river. What is the largest area the pen can have?' : 'A gardener has ' + Pf + ' feet of fencing to enclose a rectangular garden on all four sides. What is the largest area the garden can have?';
         var why = river ? ['Let <i>x</i> be each side perpendicular to the river. The side parallel to the river is ' + m(Pf + ' ' + M + ' 2<i>x</i>') + ', so ' + m('<i>A</i>(<i>x</i>) = <i>x</i>(' + Pf + ' ' + M + ' 2<i>x</i>) = ' + M + '2<i>x</i><sup>2</sup> + ' + Pf + '<i>x</i>') + '.', 'Vertex: ' + m(IX + ' = ' + fr(M + Pf, '2(' + M + '2)') + ' = ' + n(6 * mm)) + ' feet, so the parallel side is ' + n(12 * mm) + ' feet.', 'Largest area: ' + m(n(6 * mm) + ' · ' + n(12 * mm) + ' = ' + K.comma(vals[0])) + ' square feet.']
-          : ['Length plus width is half the perimeter: ' + n(12 * mm) + ' feet. So ' + m('<i>A</i>(<i>x</i>) = <i>x</i>(' + n(12 * mm) + ' ' + M + ' <i>x</i>) = ' + M + '<i>x</i><sup>2</sup> + ' + n(12 * mm) + '<i>x</i>') + '.', 'Vertex: ' + m(IX + ' = ' + fr(M + n(12 * mm), '2(' + M + '1)') + ' = ' + n(6 * mm)) + ', so the garden is a ' + n(6 * mm) + ' by ' + n(6 * mm) + ' square.', 'Largest area: ' + m(n(6 * mm) + ' · ' + n(6 * mm) + ' = ' + K.comma(vals[1])) + ' square feet.'];
+          : ['Length plus width is half the perimeter: ' + n(12 * mm) + ' feet. So ' + m('<i>A</i>(<i>x</i>) = <i>x</i>(' + n(12 * mm) + ' ' + M + ' <i>x</i>) = ' + M + '<i>x</i><sup>2</sup> + ' + n(12 * mm) + '<i>x</i>') + '.', 'Vertex: ' + m(IX + ' = ' + fr(M + n(12 * mm), '2(' + M + '1)') + ' = ' + n(6 * mm)) + ', so the garden is ' + art(6 * mm) + ' ' + n(6 * mm) + ' by ' + n(6 * mm) + ' square.', 'Largest area: ' + m(n(6 * mm) + ' · ' + n(6 * mm) + ' = ' + K.comma(vals[1])) + ' square feet.'];
         return QP({ q: q, mc: mc(fmt(cor), wr), why: why }, { t: 'fence', P: Pf, river: river });
       },
       function () {
@@ -170,7 +242,7 @@
         var ans = function (t, v) { return n(t) + ' items; ' + money(v); };
         return QP({ q: 'A company’s weekly profit, in dollars, from selling <i>x</i> items is ' + m('<i>P</i>(<i>x</i>) = ' + px) + '. How many items give the maximum profit, and what is that profit?',
           mc: mc(ans(h, best), [ans(2 * h, -c), ans(h, mx), ans(h, mx + c)]),
-          why: [m('<i>a</i> = ' + n(-a) + ' &lt; 0') + ', so the vertex is a maximum.', m(IX + ' = ' + fr(M + '<i>b</i>', '2<i>a</i>') + ' = ' + fr(M + b, '2(' + n(-a) + ')') + ' = ' + n(h)) + ' items.', m('<i>P</i>(' + n(h) + ') = ' + sv([-a, b, -c], h) + ' = ' + K.comma(best)) + ', so the maximum profit is ' + money(best) + '.'] }, { t: 'profit', f: px });
+          why: [m('<i>a</i> = ' + n(-a) + ' &lt; 0') + ', so the vertex is a maximum.', m(IX + ' = ' + fr(M + '<i>b</i>', '2<i>a</i>') + ' = ' + fr(M + b, '2(' + n(-a) + ')') + ' = ' + n(h)) + ' items.', m('<i>P</i>(' + n(h) + ') =') + ' ' + brk(sv([-a, b, -c], h) + ' = ' + K.comma(best)) + ', so the maximum profit is ' + money(best) + '.'] }, { t: 'profit', f: px });
       },
       function () {
         var h, k, d, a, x1, y1;
@@ -179,7 +251,7 @@
         var wr = [R(y1 - k, d)]; if (x1 + h !== 0) wr.push(R(y1 - k, (x1 + h) * (x1 + h))); wr.push(R(y1 + k, d * d)); wr.push(a.neg());
         return QP({ q: 'A parabola has vertex ' + K.pt(h, k) + ' and passes through ' + K.pt(x1, y1) + '. Its equation is ' + fx('<i>a</i>(<i>x</i> ' + M + ' <i>h</i>)<sup>2</sup> + <i>k</i>') + '. What is <i>a</i>?',
           mc: mc(a.html(), wr.map(function (v) { return v.html(); }), function (i) { return a.add(R(i % 2 ? i : -i, 2)).html(); }),
-          why: ['Use the vertex: ' + fx('<i>a</i>' + sq('(' + dv(h) + ')') + K.plusK(k)) + '.', 'Substitute the point ' + K.pt(x1, y1) + ': ' + m(n(y1) + ' = <i>a</i>(' + n(x1) + (h < 0 ? ' + ' + n(-h) : ' ' + M + ' ' + n(h)) + ')<sup>2</sup>' + K.plusK(k)) + ', so ' + m(n(y1 - k) + ' = ' + (d * d === 1 ? '' : n(d * d)) + '<i>a</i>') + '.', d * d === 1 ? 'So ' + m('<i>a</i> = ' + a.html()) + '.' : m('<i>a</i> = ' + fr(n(y1 - k), n(d * d)) + ' = ' + a.html()) + '.'] }, { t: 'findA', h: h, k: k, x1: x1, y1: y1 });
+          why: ['Use the vertex: ' + fx('<i>a</i>' + sq('(' + dv(h) + ')') + K.plusK(k)) + '.', 'Substitute the point ' + K.pt(x1, y1) + ': ' + m(n(y1) + ' = <i>a</i>(' + n(x1) + (h < 0 ? ' + ' + n(-h) : ' ' + M + ' ' + n(h)) + ')<sup>2</sup>' + K.plusK(k)) + ', so ' + m(n(y1 - k) + ' = ' + (d * d === 1 ? '' : n(d * d)) + '<i>a</i>') + '.', d * d === 1 ? 'So ' + m('<i>a</i> = ' + a.html()) + '.' : m('<i>a</i> = ' + eqs(frq(y1 - k, d * d), a.html())) + '.'] }, { t: 'findA', h: h, k: k, x1: x1, y1: y1 });
       }
     ]
   ];
@@ -200,7 +272,7 @@
       function () {
         var c = [pick([1, 2, -1, 3]), ri(-6, 6), ri(-9, 9), rnz(-9, 9)], k = rnz(-3, 3), r = peval(c, k), s = synth(c, k);
         return QP({ q: 'What is the remainder when ' + fx(pd(c)) + ' is divided by ' + m(dv(k)) + '?', mc: mc(n(r), [n(peval(c, -k)), n(peval(c, 1)), n(c[3])], function () { return n(r + rnz(-6, 6)); }),
-          why: ['By the remainder theorem, the remainder is ' + m('<i>f</i>(<i>k</i>)') + '. Since ' + m(dv(k) + ' = <i>x</i> ' + M + ' (' + n(k) + ')') + ', ' + m('<i>k</i> = ' + n(k)) + '.', m('<i>f</i>(' + n(k) + ') = ' + sv(c, k) + ' = ' + n(r)) + '.', 'Synthetic division agrees: the last number in the bottom row is ' + n(r) + '.' + synTable(k, c, s)] }, { t: 'rem', f: pd(c), k: k });
+          why: ['By the remainder theorem, the remainder is ' + m('<i>f</i>(<i>k</i>)') + ' when dividing by ' + m('<i>x</i> ' + M + ' <i>k</i>') + '. ' + (k < 0 ? 'Since ' + m(dv(k) + ' = <i>x</i> ' + M + ' (' + n(k) + ')') + ', ' : 'Here ') + m('<i>k</i> = ' + n(k)) + '.', m('<i>f</i>(' + n(k) + ') =') + ' ' + brk(eqs(sv(c, k), n(r))) + '.', 'Synthetic division agrees: the last number in the bottom row is ' + n(r) + '.' + synTable(k, c, s)] }, { t: 'rem', f: pd(c), k: k });
       },
       function () {
         var deg = pick([3, 3, 4]), c = randPoly(deg, K.coin()), k = rnz(-3, 3), s = synth(c, k);
@@ -304,13 +376,13 @@
         var vals = [-k]; divisors(c[3]).forEach(function (d) { [d, -d].forEach(function (v) { if (v !== k && vals.indexOf(v) < 0) vals.push(v); }); });
         vals = [vals[0]].concat(K.shuffle(vals.slice(1))).filter(function (v) { return peval(c, v) !== 0; });
         return QP({ q: 'Which binomial is a factor of ' + fx(pd(c)) + '?', mc: mc(m(dv(k)), vals.slice(0, 3).map(function (v) { return m(dv(v)); }), function (i) { return m(dv(k + 7 + i)); }),
-          why: ['Factor theorem: ' + m('<i>x</i> ' + M + ' <i>k</i>') + ' is a factor exactly when ' + m('<i>f</i>(<i>k</i>) = 0') + '.', m('<i>f</i>(' + n(k) + ') = ' + sv(c, k) + ' = 0') + ', so ' + m(dv(k)) + ' is a factor.', 'Watch the sign: ' + m(dv(-k)) + ' would need ' + m('<i>f</i>(' + n(-k) + ') = 0') + ', but ' + m('<i>f</i>(' + n(-k) + ') = ' + n(peval(c, -k))) + '.'] }, { t: 'factorOf', f: pd(c) });
+          why: ['Factor theorem: ' + m('<i>x</i> ' + M + ' <i>k</i>') + ' is a factor exactly when ' + m('<i>f</i>(<i>k</i>) = 0') + '.', m('<i>f</i>(' + n(k) + ') =') + ' ' + brk(sv(c, k) + ' = 0') + ', so ' + m(dv(k)) + ' is a factor.', 'Watch the sign: ' + m(dv(-k)) + ' would need ' + m('<i>f</i>(' + n(-k) + ') = 0') + ', but ' + m('<i>f</i>(' + n(-k) + ') = ' + n(peval(c, -k))) + '.'] }, { t: 'factorOf', f: pd(c) });
       },
       function () {
         var deg = pick([3, 4, 5]), c = randSignPoly(deg), pos = K.coin(), v = changes(c), w = changes(negX(c)), cnt = pos ? v : w;
         var all = []; for (var t = cnt; t >= 0; t--) all.push(t);
         var wr = [possStr(pos ? w : v), anyStr(all), possStr(cnt + 1)];
-        var why = pos ? ['Signs of the coefficients of ' + m(FX) + ': ' + signs(c).join(' ') + '. That is ' + v + ' sign change' + (v === 1 ? '' : 's') + '.'] : ['Find ' + m('<i>f</i>(' + M + '<i>x</i>) = ' + pd(negX(c))) + '. Its signs: ' + signs(negX(c)).join(' ') + ', which is ' + w + ' sign change' + (w === 1 ? '' : 's') + '.'];
+        var why = pos ? ['Signs of the coefficients of ' + m(FX) + ': ' + signs(c).join(' ') + '. That is ' + v + ' sign change' + (v === 1 ? '' : 's') + '.'] : ['Find ' + m('<i>f</i>(' + M + '<i>x</i>) =') + ' ' + brk(pd(negX(c))) + '. Its signs: ' + signs(negX(c)).join(' ') + ', which is ' + w + ' sign change' + (w === 1 ? '' : 's') + '.'];
         why.push('Descartes’ rule: the number of ' + (pos ? 'positive' : 'negative') + ' real zeros is ' + cnt + ' or less than that by an even number: ' + possStr(cnt).toLowerCase() + '.');
         return QP({ q: 'By Descartes’ rule of signs, how many ' + (pos ? 'positive' : 'negative') + ' real zeros could ' + fx(pd(c)) + ' have?', mc: mc(possStr(cnt), wr, function (i) { return possStr(cnt + 1 + i); }), why: why }, { t: 'desc', f: pd(c), pos: pos });
       }
@@ -331,17 +403,19 @@
         rs = sortV(rs).map(function (v) { return R(v).val(); });
         do { x0 = ri(-3, 3); } while (rs.indexOf(x0) >= 0);
         var base = fromRoots(rs, 1), v = a * peval(base, x0), cor = fromRoots(rs, a);
-        var cand = [fromRoots(rs, 1), fromRoots(rs.map(function (r) { return -r; }), a), fromRoots(rs, -a)].map(function (f) { return [fx(pd(f)), pfn(f)]; });
+        // wrong leading coefficients: never 0 and never the correct a
+        var leads = [1, -a, 2 * a, a + 1, a - 1, -2 * a, a + 2, a - 2].filter(function (L, i, arr) { return L !== 0 && L !== a && arr.indexOf(L) === i; });
+        var cand = [fromRoots(rs, leads[0]), fromRoots(rs.map(function (r) { return -r; }), a), fromRoots(rs, leads[1])].map(function (f) { return [fx(pd(f)), pfn(f)]; });
         return QP({ q: 'Find the cubic polynomial ' + m(FX) + ' that has zeros ' + list(rs.map(n)) + ' and satisfies ' + m('<i>f</i>(' + n(x0) + ') = ' + n(v)) + '. Write it in standard form.',
-          mc: mcF([fx(pd(cor)), pfn(cor)], cand, function (i) { var f = fromRoots(rs, a + i); return [fx(pd(f)), pfn(f)]; }),
-          why: ['Each zero <i>r</i> gives a factor ' + m('<i>x</i> ' + M + ' <i>r</i>') + ': ' + fx('<i>a</i>' + rs.map(function (r) { return fac(r); }).join('')) + '.', m('<i>f</i>(' + n(x0) + ') = <i>a</i>' + rs.map(function (r) { return '(' + n(x0 - r) + ')'; }).join('') + ' = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(a)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'fromZeros', zs: rs, x0: x0, v: v });
+          mc: mcF([fx(pd(cor)), pfn(cor)], cand, function (i) { var f = fromRoots(rs, leads[1 + i % (leads.length - 1)]); return [fx(pd(f)), pfn(f)]; }),
+          why: ['Each zero <i>r</i> gives a factor ' + m('<i>x</i> ' + M + ' <i>r</i>') + ': ' + fx('<i>a</i>' + rs.map(function (r) { return fac(r); }).join('')) + '.', brk('<i>f</i>(' + n(x0) + ') = <i>a</i>' + rs.map(function (r) { return '(' + n(x0 - r) + ')'; }).join('') + ' = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(a)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'fromZeros', zs: rs, x0: x0, v: v });
       },
       function () {
         var r = rnz(-4, 4), p = rnz(-3, 3), q = pick([1, 2, 3]), quad = [1, -2 * p, p * p + q * q], c = pmul([1, -r], quad);
         var cor = list([n(r), cx(p, q), cx(p, -q)]);
         var wr = [list([n(-r), cx(p, q), cx(p, -q)]), list([n(r), cx(p, q), cx(-p, -q)]), list([n(r), cx(p, q), cx(-p, q)])];
         return QP({ q: 'Given that ' + m(cx(p, q)) + ' is a zero of ' + fx(pd(c)) + ', find all zeros of <i>f</i>.', mc: mc(cor, wr),
-          why: ['The coefficients are real, so the conjugate ' + m(cx(p, -q)) + ' is also a zero.', 'Multiply the conjugate factors: ' + m('(<i>x</i> ' + M + ' (' + cx(p, q) + '))(<i>x</i> ' + M + ' (' + cx(p, -q) + ')) = ' + pd(quad)) + '.', 'Divide: ' + brk('(' + pd(c) + ') ÷ (' + pd(quad) + ') = ' + dv(r)) + ', so the third zero is ' + n(r) + '. Zeros: ' + cor + '.'] }, { t: 'zeros', f: pd(c) });
+          why: ['The coefficients are real, so the conjugate ' + m(cx(p, -q)) + ' is also a zero.', 'Multiply the conjugate factors: ' + brk('(<i>x</i> ' + M + ' (' + cx(p, q) + '))(<i>x</i> ' + M + ' (' + cx(p, -q) + ')) = ' + pd(quad)) + '.', 'Divide: ' + brk('(' + pd(c) + ') ÷ (' + pd(quad) + ') = ' + dv(r)) + ', so the third zero is ' + n(r) + '. Zeros: ' + cor + '.'] }, { t: 'zeros', f: pd(c) });
       }
     ],
     [
@@ -352,7 +426,7 @@
         var cand = [pmul([1, -r], [1, -2 * p, p * p - q * q]).map(function (t) { return cc * t; }), pmul([1, r], quad).map(function (t) { return cc * t; }), base].map(function (f) { return [fx(pd(f)), pfn(f)]; });
         return QP({ q: 'Find the cubic polynomial ' + m(FX) + ' with real coefficients that has zeros ' + n(r) + ' and ' + m(cx(p, q)) + ' and satisfies ' + m('<i>f</i>(' + n(x0) + ') = ' + n(v)) + '.',
           mc: mcF([fx(pd(cor)), pfn(cor)], cand, function (i) { var f = base.map(function (t) { return (cc + i) * t; }); return [fx(pd(f)), pfn(f)]; }),
-          why: ['Real coefficients, so ' + m(cx(p, -q)) + ' is also a zero.', 'The conjugate pair multiplies to ' + m(sq('(' + dv(p) + ')') + ' + ' + (q * q)) + ' = ' + m(pd(quad)) + ' (remember ' + m('<i>i</i><sup>2</sup> = ' + M + '1') + ').', fx('<i>a</i>' + fac(r) + '(' + pd(quad) + ')') + '; ' + m('<i>f</i>(' + n(x0) + ') = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(cc)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'cubicConj', r: r, p: p, q: q, x0: x0, v: v });
+          why: ['Real coefficients, so ' + m(cx(p, -q)) + ' is also a zero.', 'The conjugate pair multiplies to ' + m(sq(p === 0 ? IX : '(' + dv(p) + ')') + ' + ' + (q * q)) + (p === 0 ? '' : ' = ' + m(pd(quad))) + ' (remember ' + m('<i>i</i><sup>2</sup> = ' + M + '1') + ').', fx('<i>a</i>' + fac(r) + '(' + pd(quad) + ')') + '; ' + m('<i>f</i>(' + n(x0) + ') = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(cc)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'cubicConj', r: r, p: p, q: q, x0: x0, v: v });
       },
       function () {
         var r1, r2, p = ri(-3, 3), irr = K.coin(), d = pick([2, 3, 5, 6, 7]), q = pick([1, 2, 3]);
@@ -377,7 +451,7 @@
         var fmt = function (t) { return t[0] + ' positive, ' + t[1] + ' negative, ' + t[2] + ' nonreal'; };
         var cor = pick(valid), wr = K.sample(bad, 3);
         return QP({ q: 'For ' + fx(pd(c)) + ', which combination of positive real zeros, negative real zeros, and nonreal complex zeros is possible?', mc: mc(fmt(cor), wr.map(fmt)),
-          why: [m(FX) + ' has signs ' + signs(c).join(' ') + ': ' + v + ' sign change' + (v === 1 ? '' : 's') + ', so ' + possStr(v).toLowerCase() + ' positive real zeros.', m('<i>f</i>(' + M + '<i>x</i>)') + ' has signs ' + signs(negX(c)).join(' ') + ': ' + w + ' sign change' + (w === 1 ? '' : 's') + ', so ' + possStr(w).toLowerCase() + ' negative real zeros.', 'The total is ' + deg + ', and nonreal zeros come in conjugate pairs (an even number). Of the choices, only ' + fmt(cor) + ' fits every rule.'] }, { t: 'combo', f: pd(c) });
+          why: [m(FX) + ' has signs ' + signs(c).join(' ') + ': ' + v + ' sign change' + (v === 1 ? '' : 's') + ', so ' + possStr(v).toLowerCase() + ' positive real zero' + (v === 1 ? '' : 's') + '.', m('<i>f</i>(' + M + '<i>x</i>)') + ' has signs ' + signs(negX(c)).join(' ') + ': ' + w + ' sign change' + (w === 1 ? '' : 's') + ', so ' + possStr(w).toLowerCase() + ' negative real zero' + (w === 1 ? '' : 's') + '.', 'The total is ' + deg + ', and nonreal zeros come in conjugate pairs (an even number). Of the choices, only ' + fmt(cor) + ' fits every rule.'] }, { t: 'combo', f: pd(c) });
       }
     ]
   ];
@@ -415,7 +489,7 @@
         } else { deg = ri(3, 7); var c = [rnz(-6, 6)]; for (var i = 1; i <= deg; i++) c.push(ri(-9, 9)); f = pd(c); }
         var wr = [n(deg), n(deg + 1), deg >= 3 ? n(deg - 2) : n(deg + 2)]; if (dz !== null) wr.unshift(n(dz));
         return QP({ q: 'What is the greatest number of turning points the graph of ' + fx(f) + ' can have?', mc: mc(n(deg - 1), wr),
-          why: [dz !== null ? 'The degree is the sum of the exponents on the factors: ' + deg + '.' : 'The highest power of <i>x</i> is ' + deg + ', so the degree is ' + deg + '.', 'A polynomial of degree <i>n</i> has at most ' + m('<i>n</i> ' + M + ' 1') + ' turning points.', 'At most ' + m(deg + ' ' + M + ' 1 = ' + (deg - 1)) + ' turning points.'] }, { t: 'turn', f: f });
+          why: [dz !== null ? 'The degree is the sum of the exponents on the factors: ' + deg + '.' : 'The highest power of <i>x</i> is ' + deg + ', so the degree is ' + deg + '.', 'A polynomial of degree <i>n</i> has at most ' + m('<i>n</i> ' + M + ' 1') + ' turning points.', 'At most ' + m(deg + ' ' + M + ' 1 = ' + (deg - 1)) + ' turning point' + (deg - 1 === 1 ? '' : 's') + '.'] }, { t: 'turn', f: f });
       }
     ],
     [
@@ -463,18 +537,30 @@
       }
     ],
     [
-      function () {
-        var zs = distinctZeros(3, -5, 5), ms = K.shuffle([2, 1, 1]), s = pick([1, -1]), gt = K.coin(), want = gt ? 1 : -1;
-        var fn = factFn(s, zs, ms), lo = [-Infinity, zs[0], zs[1], zs[2]], hi = [zs[0], zs[1], zs[2], Infinity];
-        var tp = [zs[0] - 1, (zs[0] + zs[1]) / 2, (zs[1] + zs[2]) / 2, zs[2] + 1], sg = tp.map(function (t) { return fn(t) > 0 ? 1 : -1; });
-        var alt = [0, 1, 2, 3].map(function (i) { return s * ((3 - i) % 2 ? -1 : 1); });
-        var U = function (idx, cl) { return m(idx.map(function (i) { return iv(lo[i], hi[i], cl); }).join(' ∪ ')); };
-        var sel = [0, 1, 2, 3].filter(function (i) { return sg[i] === want; }), comp = [0, 1, 2, 3].filter(function (i) { return sg[i] === -want; }), altS = [0, 1, 2, 3].filter(function (i) { return alt[i] === want; });
-        var merged = [], cur = null; sel.forEach(function (i) { if (cur && cur[1] === lo[i]) cur[1] = hi[i]; else { cur = [lo[i], hi[i]]; merged.push(cur); } });
-        var mergedS = m(merged.map(function (t) { return iv(t[0], t[1]); }).join(' ∪ '));
-        var f = factored(s, zs, ms), te = zs[ms.indexOf(2)];
-        return QP({ q: 'Solve ' + m(f + (gt ? ' &gt; 0' : ' &lt; 0')) + '. Write the solution in interval notation.', mc: mc(U(sel, false), K.shuffle([U(comp, false), U(altS, false), U(sel, true), mergedS]), function (i) { return U(comp, true); }),
-          why: ['The zeros are ' + list(zs.map(n)) + '. They split the number line into four intervals. ' + n(te) + ' has even multiplicity, so the sign does not change there.', 'Test a point in each interval: ' + tp.map(function (t, i) { return m('<i>f</i>(' + n(t) + ')') + (sg[i] > 0 ? ' &gt; 0' : ' &lt; 0'); }).join(', ') + '.', 'Keep the intervals where ' + m(FX + (gt ? ' &gt; 0' : ' &lt; 0')) + ', with open endpoints because the zeros make ' + m(FX + ' = 0') + ': ' + U(sel, false) + '.'] }, { t: 'ineq', fn: fn, gt: gt, f: f });
+      function () { // zeros, multiplicities and end behavior → which function
+        var zs = distinctZeros(3, -4, 4), ms = K.shuffle([1, 2, pick([1, 3])]), s = pick([1, -1]);
+        var c1 = zs.filter(function (z, i) { return ms[i] === 1; }), revZ = K.coin() ? (c1.filter(function (z) { return z !== 0; })[0]) : undefined;
+        var degOf = function (mm) { return mm.reduce(function (a, b) { return a + b; }, 0); };
+        var sig = function (ss, zz, mm) { return beh(degOf(mm), ss) + '|' + zz.map(function (z, i) { return z + ':' + mm[i]; }).sort().join(','); };
+        var disp = function (ss, zz, mm, rz) { // true leading coefficient ss; one factor (rz − x) when rz is given
+          var body = zz.map(function (z, i) { return z === rz && mm[i] === 1 ? '' : fac(z, mm[i]); }).join('') + (rz !== undefined && zz.indexOf(rz) >= 0 && mm[zz.indexOf(rz)] === 1 ? '(' + n(rz) + ' ' + M + ' ' + IX + ')' : '');
+          var rv = rz !== undefined && zz.indexOf(rz) >= 0 && mm[zz.indexOf(rz)] === 1;
+          return fx(lead(rv ? -ss : ss) + body);
+        };
+        var cor = disp(s, zs, ms, revZ), want = sig(s, zs, ms), it = ms.indexOf(2);
+        var cands = [[-s, zs, ms], [s, zs.map(function (z) { return -z; }), ms], [s, zs, ms.map(function (v, i) { return i === it ? 1 : v === 1 && i === ms.indexOf(1) ? 2 : v; })], [s, zs, ms.map(function (v) { return v === 2 ? 1 : v; })], [s, zs, ms.map(function (v) { return v === 3 ? 1 : v; })]];
+        var wr = [];
+        cands.forEach(function (cd) { if (sig(cd[0], cd[1], cd[2]) !== want) wr.push(disp(cd[0], cd[1], cd[2], cd[1] === zs ? revZ : (revZ === undefined ? undefined : -revZ))); });
+        var cross = [], touch = [], flat = [];
+        zs.forEach(function (z, i) { (ms[i] === 1 ? cross : ms[i] === 2 ? touch : flat).push(n(z)); });
+        var dsc = [beh(degOf(ms), s).toLowerCase(), 'crosses the <i>x</i>-axis at ' + list(cross)];
+        if (flat.length) dsc.push('crosses and flattens out at ' + flat[0]);
+        dsc.push('touches it at ' + touch[0]);
+        var deg = degOf(ms), even = deg % 2 === 0, pos = s > 0;
+        return QP({ q: 'Which function could have a graph that ' + list(dsc) + ' (and has no other <i>x</i>-intercepts)?', mc: mc(cor, K.shuffle(wr).slice(0, 3)),
+          why: ['Each zero gives a factor, and the exponent matches what the graph does there: crosses → exponent 1, touches and turns → exponent 2, crosses and flattens → exponent 3. So the factors are ' + zs.map(function (z, i) { return m(fac(z, ms[i])); }).join(', ') + '.',
+            'The degree is ' + ms.join(' + ') + ' = ' + deg + ' (' + (even ? 'even' : 'odd') + '). The graph ' + beh(deg, s).toLowerCase() + ', so the leading coefficient must be ' + (pos ? 'positive' : 'negative') + '.' + (revZ !== undefined ? ' The factor ' + m('(' + n(revZ) + ' ' + M + ' ' + IX + ')') + ' contributes ' + m(M + IX) + ', which flips the sign, so the constant in front is ' + (pos ? 'negative' : 'positive') + '.' : ''),
+            'So ' + cor + ' fits every condition.'] }, { t: 'describe', f: cor });
       },
       function () {
         var r1, r2, a, v, fn, Mx, tries = 0;
@@ -486,7 +572,7 @@
         } while ((r1 === r2 || !v.isInt() || Math.abs(v.val()) > 9 || Mx > 9.5 || Mx < 2 || minBump(fn, [Math.min(r1, r2), Math.max(r1, r2)]) < 1) && tries++ < 2000);
         var cor = [fx(factored(a, [r1, r2], [1, 2])), fn];
         var wr = [[fx(factored(a, [r1, r2], [2, 1])), factFn(a, [r1, r2], [2, 1])], [fx(factored(a.neg(), [r1, r2], [1, 2])), factFn(a.neg(), [r1, r2], [1, 2])], [fx(factored(a.mul(2), [r1, r2], [1, 2])), factFn(a.mul(2), [r1, r2], [1, 2])], [fx(factored(a, [-r1, -r2], [1, 2])), factFn(a, [-r1, -r2], [1, 2])]];
-        return QP({ q: 'The graph of a polynomial <i>f</i> of degree 3 is shown, with its <i>y</i>-intercept labeled. Which is ' + m(FX) + '?', graph: K.plane({ x: [-5, 5], y: [-10, 10], h: 400, fns: [{ f: fn }], pts: [{ x: 0, y: v.val(), label: '(0, ' + v.val() + ')' }, { x: r1, y: 0 }, { x: r2, y: 0 }] }),
+        return QP({ q: 'The graph of a polynomial <i>f</i> of degree 3 is shown, with its <i>y</i>-intercept labeled. Which is ' + m(FX) + '?', graph: K.plane(place({ x: [-5, 5], y: [-10, 10], h: 400, fns: [{ f: fn }], pts: [{ x: 0, y: v.val(), label: '(0, ' + v.val() + ')' }, { x: r1, y: 0 }, { x: r2, y: 0 }] })),
           mc: mcF(cor, K.shuffle(wr)),
           why: ['The graph crosses at ' + n(r1) + ' (multiplicity 1) and touches at ' + n(r2) + ' (multiplicity 2): ' + fx('<i>a</i>' + fac(r1) + fac(r2, 2)) + '.', 'Use the <i>y</i>-intercept: ' + m('<i>f</i>(0) = <i>a</i>(' + n(-r1) + ')(' + n(-r2) + ')<sup>2</sup> = ' + lead(-r1 * r2 * r2) + '<i>a</i> = ' + v.html()) + ', so ' + m('<i>a</i> = ' + a.html()) + '.', 'So ' + fx(factored(a, [r1, r2], [1, 2])) + '.'] }, { t: 'graph', fn: fn });
       },
@@ -522,14 +608,16 @@
       function () {
         var cs = pick(['less', 'equal', 'more']), nD = pick([1, 2]), nN = cs === 'less' ? nD - 1 : cs === 'equal' ? nD : nD + 1;
         var num, den, aN, aD, cN, cD;
-        do { aN = rnz(-6, 6); aD = rnz(-6, 6); cN = rnz(-9, 9); cD = rnz(-9, 9); if (nN === 0) aN = cN; } while (R(cN, cD).eq(R(aN, aD)));
-        num = [aN]; for (var i = 1; i < nN; i++) num.push(ri(-6, 6)); if (nN > 0) num.push(cN);
-        den = [aD]; for (var j = 1; j < nD; j++) den.push(ri(-6, 6)); den.push(cD);
+        do {
+          aN = rnz(-6, 6); aD = rnz(-6, 6); cN = rnz(-9, 9); cD = rnz(-9, 9); if (nN === 0) aN = cN;
+          num = [aN]; for (var i = 1; i < nN; i++) num.push(ri(-6, 6)); if (nN > 0) num.push(cN);
+          den = [aD]; for (var j = 1; j < nD; j++) den.push(ri(-6, 6)); den.push(cD);
+        } while (R(cN, cD).eq(R(aN, aD)) || gcdDeg(num, den) > 0); // no common factor, so no hole and no reduced form
         var rat = R(aN, aD), f = fr(pd(num), pd(den)), none = 'No horizontal asymptote';
         var opts = [ye(0), ye(rat), ye(R(cN, cD)), none];
         var cor = cs === 'less' ? ye(0) : cs === 'equal' ? ye(rat) : none;
         var why = cs === 'less' ? ['The numerator has degree ' + nN + ' and the denominator has degree ' + nD + '.', 'When the denominator’s degree is larger, the horizontal asymptote is ' + ye(0) + '.']
-          : cs === 'equal' ? ['Both numerator and denominator have degree ' + nD + '.', 'Equal degrees: the horizontal asymptote is the ratio of leading coefficients, ' + m(IY + ' = ' + fr(n(aN), n(aD)) + ' = ' + rat.html()) + '.']
+          : cs === 'equal' ? ['Both numerator and denominator have degree ' + nD + '.', 'Equal degrees: the horizontal asymptote is the ratio of leading coefficients, ' + m(IY + ' = ' + eqs(frq(aN, aD), rat.html())) + '.']
             : ['The numerator has degree ' + nN + ', one more than the denominator’s degree ' + nD + '.', 'So there is no horizontal asymptote; the graph has an oblique (slanted) asymptote instead.'];
         return QP({ q: 'What is the horizontal asymptote of ' + fx(f) + '?', mc: mc(cor, opts.filter(function (o) { return o !== cor; })), why: why }, { t: 'ha', f: f });
       },
@@ -547,7 +635,7 @@
         var hv = function (hx, hyv, va) { return 'Hole at ' + K.pt(hx, hyv) + '; vertical asymptote ' + xe(va); };
         var lo = Math.min(a, c), hi = Math.max(a, c);
         return QP({ q: 'Find the hole and the vertical asymptote of ' + fx(f) + '.', mc: mc(hv(a, hy, c), ['No hole; vertical asymptotes ' + xe(lo) + ' and ' + xe(hi), hv(c, R(c - b, c - a), a), hv(a, hy, -c)]),
-          why: ['Factor: ' + fx(fr(fac(a) + fac(b), fac(a) + fac(c))) + '.', 'The factor ' + m(fac(a)) + ' cancels, leaving ' + m(fr(dv(b), dv(c))) + ' with ' + m(IX + ' ≠ ' + n(a)) + '. Substitute ' + n(a) + ': ' + m(fr(n(a - b), n(a - c)) + ' = ' + hy.html()) + ', so the hole is at ' + K.pt(a, hy) + '.', 'The remaining denominator gives the vertical asymptote ' + xe(c) + '.'] }, { t: 'hole', f: f });
+          why: ['Factor: ' + fx(fr(fac(a) + fac(b), fac(a) + fac(c))) + '.', 'The factor ' + m(fac(a)) + ' cancels, leaving ' + m(fr(dv(b), dv(c))) + ' with ' + m(IX + ' ≠ ' + n(a)) + '. Substitute ' + n(a) + ': ' + m(eqs(frq(a - b, a - c), hy.html())) + ', so the hole is at ' + K.pt(a, hy) + '.', 'The remaining denominator gives the vertical asymptote ' + xe(c) + '.'] }, { t: 'hole', f: f });
       },
       function () {
         var a, b, cc, d, rr; do { a = pick([1, 2, -1, 3]); b = ri(-6, 6); cc = ri(-9, 9); d = rnz(-4, 4); rr = a * d * d + b * d + cc; } while (rr === 0);
@@ -559,7 +647,7 @@
         var a = pick([1, -1, 2, -2]), h = rnz(-4, 4), k = rnz(-4, 4);
         var mk = function (aa, hh, kk) { return fx(sgnFrac(aa, dv(hh)) + K.plusK(kk)); };
         var fn = function (x) { return a / (x - h) + k; };
-        return QP({ q: 'Which function is graphed below? The dashed lines are asymptotes.', graph: ratGraph(fn, [h], k, { x: [-7, 7], y: [-7, 7], h: 340, pts: [{ x: h + 1, y: k + a, label: '(' + (h + 1) + ', ' + (k + a) + ')' }, { x: h - 1, y: k - a, label: '(' + (h - 1) + ', ' + (k - a) + ')', anchor: 'end' }] }),
+        return QP({ q: 'Which function is graphed below? The dashed lines are asymptotes.', graph: ratGraph(fn, [h], k, { x: [-7, 7], y: [-7, 7], h: 340, pts: [{ x: h + 1, y: k + a, label: '(' + (h + 1) + ', ' + (k + a) + ')' }, { x: h - 1, y: k - a, label: '(' + (h - 1) + ', ' + (k - a) + ')' }] }),
           mc: mc(mk(a, h, k), [mk(a, -h, k), mk(a, h, -k), mk(-a, h, k)]),
           why: ['The vertical asymptote is ' + m(IX + ' = ' + n(h)) + ', so the denominator is ' + m(dv(h)) + '.', 'The horizontal asymptote is ' + m(IY + ' = ' + n(k)) + ', so the graph is shifted ' + (k > 0 ? 'up ' : 'down ') + Math.abs(k) + '.', 'At ' + m(IX + ' = ' + n(h + 1)) + ' the graph is at ' + n(k + a) + ', which is ' + Math.abs(a) + (a > 0 ? ' above' : ' below') + ' the asymptote, so the numerator is ' + n(a) + ': ' + mk(a, h, k) + '.'] }, { t: 'graph', fn: fn, undef: [h] });
       },
@@ -568,7 +656,7 @@
         var xi = R(-b, a), yi = R(b, d), f = fr(P([[a, IX], [b, '']]), P([[1, IX], [d, '']]));
         var ans = function (xv, yv) { return '<i>x</i>-intercept ' + K.pt(xv, 0) + '; <i>y</i>-intercept ' + K.pt(0, yv); };
         return QP({ q: 'Find the intercepts of ' + fx(f) + '.', mc: mc(ans(xi, yi), [ans(-d, yi), ans(xi.neg(), yi), ans(xi, a)]),
-          why: ['<i>x</i>-intercept: set the numerator equal to 0. ' + m(P([[a, IX], [b, '']]) + ' = 0') + ' gives ' + m(IX + ' = ' + xi.html()) + '.', '<i>y</i>-intercept: ' + m('<i>f</i>(0) = ' + fr(n(b), n(d)) + ' = ' + yi.html()) + '.', 'Answer: ' + ans(xi, yi) + '. (' + m(IX + ' = ' + n(-d)) + ' is the vertical asymptote, not an intercept.)'] }, { t: 'intercepts', f: f });
+          why: ['<i>x</i>-intercept: set the numerator equal to 0. ' + m(P([[a, IX], [b, '']]) + ' = 0') + ' gives ' + m(IX + ' = ' + xi.html()) + '.', '<i>y</i>-intercept: ' + m('<i>f</i>(0) = ' + eqs(frq(b, d), yi.html())) + '.', 'Answer: ' + ans(xi, yi) + '. (' + m(IX + ' = ' + n(-d)) + ' is the vertical asymptote, not an intercept.)'] }, { t: 'intercepts', f: f });
       }
     ],
     [
@@ -586,7 +674,7 @@
         var ans = function (v, lim) { return '$' + K.comma(v) + ' per item; it approaches $' + K.comma(lim); };
         return QP({ q: 'A small business has fixed costs of $' + K.comma(F) + ' plus $' + c + ' per item, so its average cost per item is ' + m('<i>A</i>(<i>x</i>) = ' + fr(c + '<i>x</i> + ' + K.comma(F), IX)) + ' when it makes <i>x</i> items. What is the average cost when ' + K.comma(N) + ' items are made, and what value does the average cost approach as <i>x</i> grows?',
           mc: mc(ans(A2, c), [ans(A2, F), ans(c * N + F, c), '$' + K.comma(A2) + ' per item; it approaches $0']),
-          why: [m('<i>A</i>(' + K.comma(N) + ') = ' + fr(c + '(' + K.comma(N) + ') + ' + K.comma(F), K.comma(N)) + ' = ' + fr(K.comma(c * N + F), K.comma(N)) + ' = ' + A2) + ' dollars per item.', 'Numerator and denominator both have degree 1, so the horizontal asymptote is ' + m(IY + ' = ' + fr(String(c), '1') + ' = ' + c) + '.', 'As production grows, the fixed cost is spread thin and the average cost approaches $' + c + ' per item (it never goes below it).'] }, { t: 'avgcost', c: c, F: F, N: N });
+          why: [m('<i>A</i>(' + K.comma(N) + ') =') + ' ' + brk(fr(c + '(' + K.comma(N) + ') + ' + K.comma(F), K.comma(N)) + ' = ' + fr(K.comma(c * N + F), K.comma(N)) + ' = ' + A2) + ' dollars per item.', 'Numerator and denominator both have degree 1, so the horizontal asymptote is ' + m(IY + ' = ' + fr(String(c), '1') + ' = ' + c) + '.', 'As production grows, the fixed cost is spread thin and the average cost approaches $' + c + ' per item (it never goes below it).'] }, { t: 'avgcost', c: c, F: F, N: N });
       },
       function () {
         var c = pick([2, 3, 4, 5, 6]), d = pick([1, 2, 3, 4, 5]), T = c + d, x0 = pick([100, 150, 200, 250, 300, 400, 500, 600, 800, 1000]), F = x0 * d;
@@ -607,6 +695,7 @@
     var num = sig.filter(function (t) { return t[1] > 0; }).map(function (t) { return vterm(t[0], t[1]); }).join(''), den = sig.filter(function (t) { return t[1] < 0; }).map(function (t) { return vterm(t[0], t[1]); }).join('');
     return m(vv(dep) + ' = ' + (den ? fr('<i>k</i>' + num, den) : '<i>k</i>' + num));
   }
+  function ohms(v) { return nice(v) + (nice(v) === '1' ? ' ohm' : ' ohms'); }
   function nice(v) { return K.comma(K.round(v, 2)); }
   function rc(v) { v = R(v); return v.isInt() ? K.comma(v.val()) : v.html(); }
   function cn(v) { return K.comma(v); }
@@ -618,7 +707,7 @@
         var y1 = R(k).mul(x1).val(), y2 = R(k).mul(x2).val();
         return QP({ q: '<i>y</i> varies directly as <i>x</i>, and ' + m(IY + ' = ' + y1) + ' when ' + m(IX + ' = ' + x1) + '. Find <i>y</i> when ' + m(IX + ' = ' + x2) + '.',
           mc: mc(cn(y2), [rc(R(y1 * x1, x2)), cn(y1 + x2 - x1), cn(y1 * x2)], function (i) { return cn(y2 + i); }),
-          why: ['Direct variation: ' + m(IY + ' = <i>kx</i>') + '.', m(y1 + ' = <i>k</i>(' + x1 + ')') + ', so ' + m('<i>k</i> = ' + fr(String(y1), String(x1)) + ' = ' + R(k).html()) + '.', m(IY + ' = ' + R(k).html() + '(' + x2 + ') = ' + n(y2)) + '.'] }, { t: 'vary', e: [[1, x1, x2]], y1: y1 });
+          why: ['Direct variation: ' + m(IY + ' = <i>kx</i>') + '.', m(y1 + ' = <i>k</i>(' + x1 + ')') + ', so ' + m('<i>k</i> = ' + eqs(frq(y1, x1), R(k).html())) + '.', m(IY + ' = ' + R(k).html() + '(' + x2 + ') = ' + n(y2)) + '.'] }, { t: 'vary', e: [[1, x1, x2]], y1: y1 });
       },
       function () {
         var x1, y1, x2, kk;
@@ -699,10 +788,10 @@
         var L1, d1, R1, L2, d2, kq, R2, tries = 0;
         do { L1 = pick([50, 100, 150, 200, 250, 300]); d1 = ri(1, 5); R1 = ri(2, 40); L2 = pick([50, 100, 150, 200, 300, 400, 500]); d2 = ri(1, 6); kq = R(R1 * d1 * d1, L1); R2 = kq.mul(L2).div(d2 * d2); } while ((d1 === d2 || !R(R2.n * 100, R2.d).isInt()) && tries++ < 300);
         var v2 = R2.val(), wrv = [R1 * (L2 / L1) * (d1 / d2), R1 * (L1 / L2) * (d1 * d1) / (d2 * d2), R1 * (L2 / L1) * (d2 * d2) / (d1 * d1)];
-        var wr = wrv.filter(function (v) { return Math.abs(v - v2) >= 0.01; }).map(function (v) { return nice(v) + ' ohms'; });
+        var wr = wrv.filter(function (v) { return Math.abs(v - v2) >= 0.01; }).map(function (v) { return ohms(v); });
         return QP({ q: 'The resistance of a wire varies directly as its length and inversely as the square of its diameter. A wire ' + L1 + ' meters long with a diameter of ' + d1 + ' mm has a resistance of ' + R1 + ' ohms. Find the resistance of a wire of the same material that is ' + L2 + ' meters long with a diameter of ' + d2 + ' mm. Round to the nearest hundredth if necessary.',
-          mc: mc(nice(v2) + ' ohms', wr, function (i) { return nice(v2 + i) + ' ohms'; }),
-          why: [m('<i>R</i> = ' + fr('<i>kL</i>', '<i>d</i><sup>2</sup>')) + '.', m(R1 + ' = ' + fr('<i>k</i>(' + L1 + ')', d1 + '<sup>2</sup>')) + ', so ' + m('<i>k</i> = ' + fr(String(R1 * d1 * d1), String(L1)) + ' = ' + kq.html()) + '.', m('<i>R</i> = ' + fr(kq.html() + '(' + L2 + ')', d2 + '<sup>2</sup>') + ' = ' + nice(v2)) + ' ohms.'] }, { t: 'vary', e: [[1, L1, L2], [-2, d1, d2]], y1: R1, round: 2 });
+          mc: mc(ohms(v2), wr, function (i) { return ohms(v2 + i); }),
+          why: [m('<i>R</i> = ' + fr('<i>kL</i>', '<i>d</i><sup>2</sup>')) + '.', m(R1 + ' = ' + fr('<i>k</i>(' + L1 + ')', d1 + '<sup>2</sup>')) + ', so ' + m('<i>k</i> = ' + eqs(frq(R1 * d1 * d1, L1), kq.html())) + '.', m('<i>R</i> = ' + fr(kq.html() + '(' + L2 + ')', d2 + '<sup>2</sup>') + ' =') + ' ' + ohms(v2) + '.'] }, { t: 'vary', e: [[1, L1, L2], [-2, d1, d2]], y1: R1, round: 2 });
       }
     ]
   ];

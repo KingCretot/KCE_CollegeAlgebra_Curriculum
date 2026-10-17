@@ -25,6 +25,10 @@
   function d2txt(A) { return m(sub(A[0][0]) + '(' + rh(A[1][1]) + ') ' + M + ' ' + sub(A[0][1]) + '(' + rh(A[1][0]) + ')'); }
   function sy(v) { v = R(v); return '(' + v.n + (v.d !== 1 ? '/' + v.d : '') + ')'; }
   function pl(k, one, many) { return k + ' ' + (k === 1 ? one : many); }
+  // unreduced quotient num/den with the sign in front, never in the denominator (−18/6, not 18/−6)
+  function sfr(nu, de) { nu = R(nu); de = R(de); if (de.n < 0) { nu = nu.neg(); de = de.neg(); } return (nu.n < 0 ? M : '') + K.frx(nu.abs().html(), de.html()); }
+  // "v = num/den = value", skipping the middle step when it would repeat the value
+  function qeq(lhs, nu, de) { var v = R(nu).div(de), f = sfr(nu, de); return m(lhs + ' = ' + (K.strip(f) === K.strip(v.html()) ? '' : f + ' = ') + v.html()); }
 
   // multiple choice with raw values recorded for the verifier
   function mcR(c, w, fmt, extra) {
@@ -102,9 +106,9 @@
     var S = [[-mm, 1, b], [a, c, d]];
     return QQ({ q: 'Solve the system by substitution. Write the solution as an ordered pair.' + sys([yEq(mm, b), e2(a, c, d)]),
       mc: mcR([x, y], pairW(x, y), fPt, pEx(x, y)),
-      why: ['The first equation gives ' + Y + '. Substitute it into the second: ' + m(P([[a, X]]) + cp(c) + '(' + P([[mm, X], [b, '']]) + ') = ' + n(d)) + '.',
-        'Simplify: ' + m(P([[k, X], [c * b, '']]) + ' = ' + n(d)) + ', so ' + m(P([[k, X]]) + ' = ' + n(d - c * b)) + ' and ' + m('<i>x</i> = ' + n(x)) + '.',
-        'Then ' + m('<i>y</i> = ' + K.lin([[mm, n(x)]]) + K.plusK(b) + ' = ' + n(y)) + '. The solution is ' + K.pt(x, y) + '.'] }, { t: 'sol', eqs: S });
+      why: ['The first equation gives ' + Y + '. Substitute it into the second: ' + m(P([[a, X]]) + cp(c) + (b === 0 && mm > 0 && Math.abs(c) === 1 ? P([[mm, X]]) : '(' + P([[mm, X], [b, '']]) + ')') + ' = ' + n(d)) + '.',
+        'Simplify: ' + m(P([[k, X], [c * b, '']]) + ' = ' + n(d)) + (c * b === 0 ? '' : ', so ' + m(P([[k, X]]) + ' = ' + n(d - c * b))) + (k === 1 ? '.' : ' and ' + m('<i>x</i> = ' + n(x)) + '.'),
+        'Then ' + m('<i>y</i> = ' + (mm === 1 && b === 0 ? '' : (mm === 1 ? n(x) : K.lin([[mm, n(x)]])) + K.plusK(b) + ' = ') + n(y)) + '. The solution is ' + K.pt(x, y) + '.'] }, { t: 'sol', eqs: S });
   }
   // L1: elimination with opposite coefficients
   function g511b() {
@@ -216,7 +220,7 @@
     var fq = function (r) { return m('<i>y</i> = ' + P([[r[0], K.xp(2)], [r[1], X], [r[2], '']])); };
     var eq = function (t, v) { return m(P([[t * t, A], [t, B], [1, Cc]]) + ' = ' + n(v)); };
     var df = function (i, j) { return m(P([[xs[j] * xs[j] - xs[i] * xs[i], A], [xs[j] - xs[i], B]]) + ' = ' + n(ys[j] - ys[i])); };
-    return QQ({ q: 'Find the equation of the parabola ' + m('<i>y</i> = <i>ax</i><sup>2</sup> + <i>bx</i> + <i>c</i>') + ' that passes through ' + K.pt(xs[0], ys[0]) + ', ' + K.pt(xs[1], ys[1]) + ', and ' + K.pt(xs[2], ys[2]) + '.',
+    return QQ({ q: 'A parabola ' + m('<i>y</i> = <i>ax</i><sup>2</sup> + <i>bx</i> + <i>c</i>') + ' passes through ' + K.pt(xs[0], ys[0]) + ', ' + K.pt(xs[1], ys[1]) + ', and ' + K.pt(xs[2], ys[2]) + '. Substitute each point into ' + m('<i>y</i> = <i>ax</i><sup>2</sup> + <i>bx</i> + <i>c</i>') + ' to get a system of three equations in ' + A + ', ' + B + ', and ' + Cc + ', then solve the system. What is the equation of the parabola?',
       mc: mcR([a, b, c], [[a, -b, c], [-a, b, c], [a, b, -c], [b, a, c]].filter(function (r) { return r[0] !== 0; }), fq, function () { return [a, b + rnz(-2, 2), c + rnz(-2, 2)]; }),
       why: ['Substitute each point into ' + m('<i>y</i> = <i>ax</i><sup>2</sup> + <i>bx</i> + <i>c</i>') + ': ' + eq(xs[0], ys[0]) + ', ' + eq(xs[1], ys[1]) + ', and ' + eq(xs[2], ys[2]) + '.',
         'Subtract to eliminate ' + Cc + ': ' + df(0, 1) + ' and ' + df(1, 2) + '.',
@@ -252,7 +256,7 @@
     var fmt = nv === 2 ? fPt : fTri, rev = sol.slice().reverse(), fl = sol.slice(); fl[0] = -fl[0];
     var ones = sol.map(function () { return 1; });
     var names = nv === 2 ? [X, Y] : [X, Y, Z];
-    return QQ({ q: 'The augmented matrix of a system in ' + names.join(', ') + ' has been reduced by the Gauss-Jordan method. What is the solution of the system?' + ctr(K.mat(Mx, nv)),
+    return QQ({ q: 'The augmented matrix of a system in ' + (nv === 2 ? X + ' and ' + Y : X + ', ' + Y + ', and ' + Z) + ' has been reduced by the Gauss-Jordan method. What is the solution of the system?' + ctr(K.mat(Mx, nv)),
       mc: mcR(sol, [rev, fl, ones], fmt, nv === 2 ? pEx(sol[0], sol[1]) : tEx(sol)),
       why: ['Each row is an equation: ' + sol.map(function (v, i) { return 'row ' + (i + 1) + ' says ' + m(names[i] + ' = ' + n(v)); }).join(', ') + '.', 'Write the values in order: ' + fmt(sol) + '.'] }, { t: 'msol', mat: Mx });
   }
@@ -267,7 +271,7 @@
     var w = [T.map(function (v, j) { return v - k * S[j]; }), T.map(function (v, j) { return k * v + S[j]; }), T.map(function (v) { return v + k; }), S.map(function (v, j) { return v + k * T[j]; })];
     return QQ({ q: 'Replace row ' + t + ' of the matrix with ' + rowOp(t, k, s) + '. What is the new row ' + t + '?' + ctr(K.mat(Mx, nc - 1)),
       mc: mcR(row, w, fmt, function () { var r = row.slice(); r[ri(0, nc - 1)] += rnz(-2, 2); return r; }),
-      why: ['Multiply each entry of row ' + s + ' by ' + n(k) + ': ' + K.mat([sc], nc - 1) + '.', 'Add that to row ' + t + ' entry by entry: ' + K.mat([T], nc - 1) + ' + ' + K.mat([sc], nc - 1) + ' = ' + K.mat([row], nc - 1) + '.', 'Only row ' + t + ' changes; row ' + s + ' stays the same.'] },
+      why: [k === 1 ? 'Row ' + s + ' is ' + K.mat([sc], nc - 1) + '; it is used as is.' : 'Multiply each entry of row ' + s + ' by ' + n(k) + ': ' + K.mat([sc], nc - 1) + '.', (k === 1 ? 'Add row ' + s : 'Add that') + ' to row ' + t + ' entry by entry: ' + K.mat([T], nc - 1) + ' + ' + K.mat([sc], nc - 1) + ' = ' + K.mat([row], nc - 1) + '.', 'Only row ' + t + ' changes; row ' + s + ' stays the same.'] },
       { t: 'rowop', mat: Mx, op: [t, k, s] });
   }
   // L1: read the number of solutions from a row-echelon matrix
@@ -331,7 +335,7 @@
     return QQ({ q: 'Which row operation changes the entry in row ' + r + ', column 1 to 0?' + ctr(K.mat(Mx, nc - 1)),
       mc: mcR([r, c, 1], w, fmt, function () { var k; do { k = c + rnz(-2, 2); } while (k === 0 || k === c); return [r, k, 1]; }),
       why: ['The entry in row ' + r + ', column 1 is ' + n(ar1) + ', and the entry in row 1, column 1 is ' + n(a11) + '.',
-        'Adding ' + n(c) + ' times row 1 to row ' + r + ' gives ' + m(n(ar1) + K.lin([[c, n(a11)]], true) + ' = 0') + ' in that position.',
+        (c === 1 ? 'Adding row 1 to row ' + r : c === -1 ? 'Subtracting row 1 from row ' + r : 'Adding ' + n(c) + ' times row 1 to row ' + r) + ' gives ' + m(n(ar1) + (Math.abs(c) === 1 ? (c > 0 ? ' + ' : ' ' + M + ' ') + sub(a11) : K.lin([[c, n(a11)]], true)) + ' = 0') + ' in that position.',
         'So use ' + rowOp(r, c, 1) + '. It changes only row ' + r + '.'] }, { t: 'rowzero', mat: Mx, pos: [r, 1] });
   }
   // L3: classify a 3 × 3 system (and solve it if possible)
@@ -371,8 +375,8 @@
     var S = [[1, 1, 1, T], [pp, pc, pr, V], [1, 0, -k, 0]];
     return QQ({ q: c[0] + ' ' + c[1] + ' ($' + pp + ' per pound), ' + c[2] + ' ($' + pc + ' per pound), and ' + c[3] + ' ($' + pr + ' per pound) to make ' + T + ' pounds of ' + c[4] + ' worth $' + V + ' in all. The mix uses ' + (k === 2 ? 'twice' : 'three times') + ' as many pounds of ' + c[1] + ' as ' + c[3] + '. How many pounds of each go into the mix?',
       mc: mcR([a, b, r], [[r, b, a], [b, a, r], [a, r, b]], fmt, function () { var r2 = r + rnz(-2, 2); if (r2 < 1) r2 = r + 1; return [k * r2, T - k * r2 - r2, r2]; }),
-      why: ['Let ' + u + ', ' + v + ', and ' + w_ + ' be the pounds of ' + c[1] + ', ' + c[2] + ', and ' + c[3] + ': ' + m(u + ' + ' + v + ' + ' + w_ + ' = ' + T) + ', ' + m(pp + u + ' + ' + pc + v + ' + ' + pr + w_ + ' = ' + V) + ', ' + m(u + ' ' + M + ' ' + k + w_ + ' = 0') + '.',
-        'The augmented matrix is ' + K.mat(S, 3) + '. Row-reduce it, or substitute ' + m(u + ' = ' + k + w_) + ' to get ' + m(v + ' + ' + (k + 1) + w_ + ' = ' + T) + ' and ' + m(pc + v + ' + ' + (k * pp + pr) + w_ + ' = ' + V) + '.',
+      why: ['Let ' + u + ', ' + v + ', and ' + w_ + ' be the pounds of ' + c[1] + ', ' + c[2] + ', and ' + c[3] + ': ' + m(u + ' + ' + v + ' + ' + w_ + ' = ' + T) + ', ' + m(P([[pp, u], [pc, v], [pr, w_]]) + ' = ' + V) + ', and ' + m(u + ' ' + M + ' ' + k + w_ + ' = 0') + '.',
+        'The augmented matrix is ' + K.mat(S, 3) + '. Row-reduce it, or substitute ' + m(u + ' = ' + k + w_) + ' to get ' + m(v + ' + ' + (k + 1) + w_ + ' = ' + T) + ' and ' + m(P([[pc, v], [k * pp + pr, w_]]) + ' = ' + V) + '.',
         'Solving gives ' + m(w_ + ' = ' + r) + ' and ' + m(v + ' = ' + b) + ', so ' + m(u + ' = ' + k + '(' + r + ') = ' + a) + '.',
         'Check: ' + m(pp + '(' + a + ') + ' + pc + '(' + b + ') + ' + pr + '(' + r + ') = ' + V) + '.'] }, { t: 'sol', eqs: S });
   }
@@ -454,7 +458,7 @@
       mc: mcR([x, y], [[y, x], [R(D, Dx), R(D, Dy)], [Dx, Dy], [x.neg(), y.neg()]], fPt, pEx(x, y)),
       why: [m('<i>D</i>') + ' = ' + K.mat([[a1, b1], [a2, b2]], null, true) + ' = ' + d2txt([[a1, b1], [a2, b2]]) + ' = ' + n(D) + '.',
         m('<i>D</i><sub><i>x</i></sub>') + ' = ' + K.mat([[c1, b1], [c2, b2]], null, true) + ' = ' + n(Dx) + ' and ' + m('<i>D</i><sub><i>y</i></sub>') + ' = ' + K.mat([[a1, c1], [a2, c2]], null, true) + ' = ' + n(Dy) + '.',
-        m('<i>x</i> = ' + K.frx(n(Dx), n(D)) + ' = ' + x.html()) + ' and ' + m('<i>y</i> = ' + K.frx(n(Dy), n(D)) + ' = ' + y.html()) + '. The solution is ' + K.pt(x, y) + '.'] }, { t: 'sol', eqs: [[a1, b1, c1], [a2, b2, c2]] });
+        qeq('<i>x</i>', Dx, D) + ' and ' + qeq('<i>y</i>', Dy, D) + '. The solution is ' + K.pt(x, y) + '.'] }, { t: 'sol', eqs: [[a1, b1, c1], [a2, b2, c2]] });
   }
   // L2: Cramer's rule, one variable of a 3 × 3 system
   function g532c() {
@@ -466,32 +470,48 @@
       mc: mcR(ans, [Dv, others[0], others[1], -ans, R(D).div(Dv === 0 ? 1 : Dv)], fNum, nEx(ans, 4)),
       why: ['The coefficient determinant is ' + m('<i>D</i>') + ' = ' + K.mat(A, null, true) + ' = ' + n(D) + '.',
         m('<i>D</i><sub><i>' + vn + '</i></sub>') + ' replaces the ' + iv(vn) + '-column with the constants: ' + K.mat(Av, null, true) + ' = ' + n(Dv) + '.',
-        m(iv(vn) + ' = ' + K.frx(n(Dv), n(D)) + ' = ' + n(ans)) + '.'] }, { t: 'solvar', eqs: S, v: vi });
+        qeq(iv(vn), Dv, D) + '.'] }, { t: 'solvar', eqs: S, v: vi });
   }
-  // L3: solve a determinant equation
+  // L3: the value of k that makes D = 0, and what the system does for that k
+  var SOLN = { one: 'exactly one solution', none: 'no solution', inf: 'infinitely many solutions' };
   function g533a() {
-    var r1, r2, B, M11, M12, M13, x0, k;
-    do { r1 = rnz(-4, 4); r2 = rnz(-4, 4); B = [[ri(-4, 4), ri(-4, 4), ri(-4, 4)], [ri(-4, 4), ri(-4, 4), ri(-4, 4)]]; M11 = B[0][1] * B[1][2] - B[0][2] * B[1][1]; M12 = B[0][0] * B[1][2] - B[0][2] * B[1][0]; M13 = B[0][0] * B[1][1] - B[0][1] * B[1][0]; } while (M11 === 0 || M12 === 0);
-    x0 = rnz(-6, 6); k = x0 * M11 - r1 * M12 + r2 * M13;
-    var rest = -r1 * M12 + r2 * M13;
-    return QQ({ q: 'Solve the equation for ' + X + '.' + ctr(K.mat([[X, r1, r2], B[0], B[1]], null, true) + ' ' + m('= ' + n(k))),
-      mc: mcR(x0, [-x0, R(k).div(M11), R(k - r1 * M12 - r2 * M13).div(M11), R(k + r1 * M12 + r2 * M13).div(M11)], fNum, nEx(x0, 4)),
-      why: ['Expand along row 1 with signs +, ' + M + ', +: ' + m('<i>x</i>(' + n(M11) + ') ' + M + ' ' + sub(r1) + '(' + n(M12) + ') + ' + sub(r2) + '(' + n(M13) + ')') + ', using the 2 × 2 minors ' + n(M11) + ', ' + n(M12) + ', and ' + n(M13) + '.',
-        'Set it equal to ' + n(k) + ': ' + m(P([[M11, X], [rest, '']]) + ' = ' + n(k)) + '.',
-        'So ' + m(P([[M11, X]]) + ' = ' + n(k - rest)) + ' and ' + m('<i>x</i> = ' + n(x0)) + '.'] }, { t: 'detx', mat: [[null, r1, r2], B[0], B[1]], k: k });
+    var a, t, k0, c1, c2, d, dep = K.coin(), Kk = iv('k');
+    do { a = rnz(-5, 5); t = pick([2, 3, -2, -3]); k0 = rnz(-5, 5); c1 = rnz(-9, 9); } while (Math.abs(t * a) > 12);
+    d = t * k0; c2 = dep ? t * c1 : t * c1 + rnz(-6, 6);
+    var kind = dep ? 'inf' : 'none', other = dep ? 'none' : 'inf';
+    var fmt = function (r) { return m(Kk + ' = ' + rh(r[0])) + '; ' + SOLN[r[1]]; };
+    return QQ({ q: 'For which value of ' + Kk + ' is the determinant ' + m('<i>D</i>') + ' of this system equal to 0 (so Cramer’s rule cannot be used), and how many solutions does the system have for that value of ' + Kk + '?' + sys([m(P([[a, X]]) + ' + ' + Kk + Y + ' = ' + n(c1)), e2(t * a, d, c2)]),
+      mc: mcR([k0, kind], [[k0, other], [k0, 'one'], [-k0, kind], [d, kind]], fmt, function () { return [k0 + rnz(-3, 3), kind]; }),
+      why: [m('<i>D</i> = ') + K.mat([[a, Kk], [t * a, d]], null, true) + ' = ' + m(sub(a) + '(' + n(d) + ') ' + M + ' ' + Kk + '(' + n(t * a) + ') = ' + P([[a * d, ''], [-t * a, Kk]])) + '.',
+        'Set ' + m('<i>D</i> = 0') + ': ' + m(P([[t * a, Kk]]) + ' = ' + n(a * d)) + ', so ' + m(Kk + ' = ' + n(k0)) + '. For every other value of ' + Kk + ', ' + m('<i>D</i> ≠ 0') + ' and the system has exactly one solution.',
+        'With ' + m(Kk + ' = ' + n(k0)) + ', multiply the first equation by ' + n(t) + ': ' + e2(t * a, d, t * c1) + '. ' + (dep ? 'That is exactly the second equation, so both equations describe the same line: infinitely many solutions.' : 'The second equation has the same left side but equals ' + n(c2) + ', so the lines are parallel: no solution.')] },
+      { t: 'kD0f', a: a, ta: t * a, d: d, c1: c1, c2: c2 });
   }
-  // L3: area of a triangle
+  // L3: area of a triangle with one corner at the origin: ½|ad − bc|
+  var LAND = [['A surveyor maps a triangular plot of land from GPS points', 'meters'], ['A farmer marks off a triangular pasture with a GPS unit', 'meters'], ['A park planner lays out a triangular flower bed on a site plan', 'feet']];
   function g533b() {
-    var p, D;
-    do { p = [[ri(-6, 6), ri(-6, 6)], [ri(-6, 6), ri(-6, 6)], [ri(-6, 6), ri(-6, 6)]]; D = dv(p.map(function (q) { return [q[0], q[1], 1]; })); } while (D === 0 || Math.abs(D) < 6);
-    var area = R(Math.abs(D), 2), x1 = p[0][0], y1 = p[0][1], x2 = p[1][0], y2 = p[1][1], x3 = p[2][0], y3 = p[2][1];
-    var Dw = x1 * (y2 - y3) + y1 * (x2 - x3) + (x2 * y3 - x3 * y2);
-    var fmt = function (v) { return n(R(v).val()) + ' square units'; };
-    return QQ({ q: 'Use a determinant to find the area of the triangle with vertices ' + K.pt(x1, y1) + ', ' + K.pt(x2, y2) + ', and ' + K.pt(x3, y3) + '.',
-      mc: mcR(area, [Math.abs(D), R(Math.abs(Dw), 2), area.add(R(1, 2)), R(Math.abs(D), 4)], fmt, function () { return area.add(rnz(-3, 3)); }),
-      why: ['The area is ' + m(K.f(1, 2) + '|<i>D</i>|') + ', where ' + m('<i>D</i> = ') + K.mat(p.map(function (q) { return [q[0], q[1], 1]; }), null, true) + '.',
-        'Expand along row 1: ' + m(sub(x1) + '(' + n(y2 - y3) + ') ' + M + ' ' + sub(y1) + '(' + n(x2 - x3) + ') + 1(' + n(x2 * y3 - x3 * y2) + ') = ' + n(D)) + '.',
-        'Area = ' + m(K.f(1, 2) + '|' + n(D) + '| = ' + n(area.val())) + ' square units.'] }, { t: 'area', pts: p });
+    var mpt = function (x, y) { return m(K.pt(x, y)); };
+    var shift = ri(1, 3) === 1, a, b, c, d, D, p0 = 0, q0 = 0, ctx = pick(LAND), unit, q;
+    if (shift) {
+      do { a = ri(-6, 6); b = ri(-6, 6); c = ri(-6, 6); d = ri(-6, 6); D = a * d - b * c; } while (Math.abs(D) < 4 || (a === 0 && b === 0) || (c === 0 && d === 0));
+      do { p0 = ri(-5, 5); q0 = ri(-5, 5); } while (p0 === 0 && q0 === 0);
+      unit = 'square units';
+    } else {
+      do { a = ri(10, 60); b = ri(-20, 40); c = ri(-20, 40); d = ri(10, 60); D = a * d - b * c; } while (Math.abs(D) < 20 || b === 0 || c === 0);
+      unit = 'square ' + ctx[1];
+    }
+    var pts = [[p0, q0], [p0 + a, q0 + b], [p0 + c, q0 + d]], area = R(Math.abs(D), 2);
+    var unit1 = unit.replace('units', 'unit').replace('meters', 'meter').replace('feet', 'foot');
+    var fmt = function (v) { return K.comma(R(v).val()) + ' ' + (R(v).eq(1) ? unit1 : unit); };
+    if (shift) q = 'A triangle has vertices ' + mpt(pts[0][0], pts[0][1]) + ', ' + mpt(pts[1][0], pts[1][1]) + ', and ' + mpt(pts[2][0], pts[2][1]) + '. Translate it so that ' + mpt(pts[0][0], pts[0][1]) + ' moves to the origin (' + [[p0, X], [q0, Y]].filter(function (u) { return u[0] !== 0; }).map(function (u) { return (u[0] > 0 ? 'subtract ' + u[0] + ' from' : 'add ' + (-u[0]) + ' to') + ' every ' + u[1] + '-coordinate'; }).join(' and ') + '), then use a determinant to find the area of the triangle.';
+    else q = ctx[0] + '. With one corner at the origin ' + mpt(0, 0) + ', the other two corners are at ' + mpt(a, b) + ' and ' + mpt(c, d) + ', in ' + ctx[1] + '. Use a determinant to find the area.';
+    var why = [];
+    if (shift) why.push('Translating a triangle does not change its area. Subtracting ' + mpt(p0, q0) + ' from each vertex gives ' + mpt(0, 0) + ', ' + mpt(a, b) + ', and ' + mpt(c, d) + '.');
+    why.push('A triangle with corners ' + mpt(0, 0) + ', ' + m('(<i>a</i>, <i>b</i>)') + ', and ' + m('(<i>c</i>, <i>d</i>)') + ' has area ' + m(K.f(1, 2) + '|<i>ad</i> ' + M + ' <i>bc</i>|') + ', half the absolute value of the determinant ' + K.mat([[iv('a'), iv('b')], [iv('c'), iv('d')]], null, true) + '.');
+    why.push('Here ' + K.mat([[a, b], [c, d]], null, true) + ' = ' + d2txt([[a, b], [c, d]]) + ' = ' + m(n(a * d) + ' ' + M + ' ' + sub(b * c) + ' = ' + n(D)) + '.');
+    why.push('Area = ' + m(K.f(1, 2) + '|' + n(D) + '| = ' + K.comma(area.val())) + ' ' + unit + '.' + (D < 0 ? ' The absolute value matters: an area is never negative.' : ''));
+    return QQ({ q: q, mc: mcR(area, [Math.abs(D), R(Math.abs(a * d + b * c), 2), R(Math.abs(a * c - b * d), 2), R(Math.abs(D), 4)].filter(function (v) { return R(v).n !== 0; }), fmt, function () { var v; do { v = area.add(rnz(-5, 5)); } while (v.val() <= 0); return v; }), why: why },
+      { t: 'area', pts: pts });
   }
   // L3: value of k that blocks Cramer's rule
   function g533c() {
@@ -513,7 +533,7 @@
       mc: mcR(t, triW(t).concat([Dk]), fTri, tEx(t)),
       why: ['The coefficient determinant is ' + m('<i>D</i>') + ' = ' + K.mat(A, null, true) + ' = ' + n(D) + ', which is not 0.',
         'Replacing each column in turn with the constants gives ' + m('<i>D</i><sub><i>x</i></sub> = ' + n(Dk[0])) + ', ' + m('<i>D</i><sub><i>y</i></sub> = ' + n(Dk[1])) + ', and ' + m('<i>D</i><sub><i>z</i></sub> = ' + n(Dk[2])) + '.',
-        m('<i>x</i> = ' + K.frx(n(Dk[0]), n(D)) + ' = ' + n(t[0])) + ', ' + m('<i>y</i> = ' + K.frx(n(Dk[1]), n(D)) + ' = ' + n(t[1])) + ', ' + m('<i>z</i> = ' + K.frx(n(Dk[2]), n(D)) + ' = ' + n(t[2])) + '. The solution is ' + fTri(t) + '.'] }, { t: 'sol', eqs: S });
+        qeq('<i>x</i>', Dk[0], D) + ', ' + qeq('<i>y</i>', Dk[1], D) + ', and ' + qeq('<i>z</i>', Dk[2], D) + '. The solution is ' + fTri(t) + '.'] }, { t: 'sol', eqs: S });
   }
   K.lesson('5.3', { title: 'Determinant Solution of Linear Systems', std: 'Lial 12e · Section 5.3', levels: [[g531a, g531b, g531c], [g532a, g532b, g532c], [g533a, g533b, g533c, g533d]] });
 
@@ -542,6 +562,7 @@
       var nm = t[0].slice(); while (nm.length > 1 && nm[0] === 0) nm.shift();
       var den = powH(t[1], t[2]);
       if (nm.length === 1) { var v = R(nm[0]); parts.push(m((first ? (v.n < 0 ? M : '') : (v.n < 0 ? M + ' ' : '+ ')) + K.frx(v.abs().html(), den))); }
+      else if (nm[0] < 0) parts.push(m((first ? M : M + ' ') + K.frx(pFmt(psc(nm, -1)), den)));   // − (4x + 1)/(x² + 9), never + −4x…
       else parts.push(m((first ? '' : '+ ') + K.frx(pFmt(nm), den)));
       first = false;
     });
@@ -582,7 +603,7 @@
       mc: mcR(ans, [which === 'A' ? B : A, nv, -ans, R(root - other, nv === 0 ? 1 : nv)], fNum, nEx(ans, 4)),
       why: ['Multiply both sides by ' + m(fpar(r) + fpar(s)) + ': ' + m(pFmt(num) + ' = <i>A</i>' + fpar(s) + ' + <i>B</i>' + fpar(r)) + '.',
         'Let ' + m('<i>x</i> = ' + n(root)) + ', which makes the ' + iv(which === 'A' ? 'B' : 'A') + '-term 0: ' + m(n(nv) + ' = ' + iv(which) + '(' + n(root - other) + ')') + '.',
-        'So ' + m(iv(which) + ' = ' + K.frx(n(nv), n(root - other)) + ' = ' + n(ans)) + '.'] },
+        'So ' + qeq(iv(which), nv, root - other) + '.'] },
       { t: 'pconst', num: num, den: pmul(lf(r), lf(s)), root: root });
   }
   // L1: proper or improper
@@ -606,7 +627,7 @@
       mc: mcR(cor, [mk(B, A), mk(A * (r - s), B * (s - r)), mk(A, -B), dec(null, [[[A], lf(-r), 1], [[B], lf(-s), 1]])], decF(cor), decEx(cor)),
       why: ['Factor the denominator: ' + m(pFmt(den) + ' = ' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), facH(lf(s)))) + '.',
         'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(s), '<i>B</i>' + fpar(r)]) + '.',
-        m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s - r) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '.',
+        m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + P([[r - s, '<i>A</i>']])) + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + P([[s - r, '<i>B</i>']])) + ', so ' + m('<i>B</i> = ' + n(B)) + '.',
         'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L2: repeated linear factor
@@ -628,7 +649,7 @@
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 1], [qf(k), 1]])),
       mc: mcR(cor, [mk(A, Cc, B), mk(A, -B, Cc), mk(n0, B, Cc), mk(A, B, -Cc), mk(-A, B, Cc)], decF(cor), decEx(cor)),
       why: ['Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx('<i>Bx</i> + <i>C</i>', facH(qf(k)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>(' + facH(qf(k)) + ')', '(<i>Bx</i> + <i>C</i>)' + fpar(r)]) + '.',
-        'Let ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(n0) + ' = ' + n(r * r + k) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
+        'Let ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(n0) + ' = ' + P([[r * r + k, '<i>A</i>']])) + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'Match coefficients. ' + m(X + '<sup>2</sup>') + ': ' + m('<i>A</i> + <i>B</i> = ' + n(num[0])) + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + X + ': ' + m('<i>C</i> ' + M + ' (' + n(r) + ')(' + n(B) + ') = ' + n(num[1])) + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
@@ -642,7 +663,7 @@
       mc: mcR(cor, [mk(B, A, Cc), mk(A, Cc, B), mk(A, B, -Cc), mk(-A, B, Cc)], decF(cor), decEx(cor)),
       why: ['Factor out ' + X + ', then factor the quadratic: ' + m(pFmt(den) + ' = <i>x</i>' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), X)) + ' ' + m('+ ' + K.frx(iv('B'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + '.',
         'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>Bx</i>' + fpar(s), '<i>Cx</i>' + fpar(r)]) + '.',
-        m('<i>x</i> = 0') + ': ' + m(n(pev(num, 0)) + ' = ' + n(r * s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r * (r - s)) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
+        m('<i>x</i> = 0') + ': ' + m(n(pev(num, 0)) + ' = ' + P([[r * s, '<i>A</i>']])) + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + P([[r * (r - s), '<i>B</i>']])) + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + P([[s * (s - r), '<i>C</i>']])) + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L3: improper fraction: divide first
@@ -666,14 +687,14 @@
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 2], [lf(s), 1]])),
       mc: mcR(cor, [mk(B, A, Cc), mk(A, B, -Cc), mk(Cc, B, A), mk(A, -B, Cc)], decF(cor), decEx(cor)),
       why: ['Write ' + m(K.frx(iv('A'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('B'), powH(lf(r), 2))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>B</i>' + fpar(s), '<i>C</i>' + powH(lf(r), 2)]) + '.',
-        m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n((s - r) * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
+        m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + P([[r - s, '<i>B</i>']])) + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + P([[(s - r) * (s - r), '<i>C</i>']])) + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'Match the ' + m(X + '<sup>2</sup>') + '-coefficients: ' + m('<i>A</i> + <i>C</i> = ' + n(num[0])) + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   K.lesson('5.4', { title: 'Partial Fractions', std: 'Lial 12e · Section 5.4', levels: [[g541a, g541b, g541c], [g542a, g542b, g542c], [g543a, g543b, g543c]] });
 
   /* ================= 5.5 Nonlinear Systems of Equations ================= */
-  function sortPts(pts) { return pts.slice().sort(function (u, v) { var a = R(v[0]).sub(u[0]).val(); if (a !== 0) return a; return R(v[1]).sub(u[1]).val(); }); }
+  function sortPts(pts) { return pts.slice().sort(function (u, v) { var a = R(u[0]).sub(v[0]).val(); if (a !== 0) return a; return R(u[1]).sub(v[1]).val(); }); }   // increasing x, then y
   function fSet(pts) { if (!pts.length) return 'No real solutions'; var s = sortPts(pts).map(fPt); return s.length === 1 ? s[0] : s.length === 2 ? s[0] + ' and ' + s[1] : s.slice(0, -1).join(', ') + ', and ' + s[s.length - 1]; }
   function setEx(pts) { return function () { var u = pts.map(function (p) { return p.slice(); }), i = ri(0, u.length - 1); u[i] = [R(u[i][0]).add(rnz(-2, 2)), R(u[i][1]).add(rnz(-2, 2))]; return u; }; }
   var CPAIRS = (function () {
@@ -770,7 +791,7 @@
     var sq = function (c, v) { return [c, '<i>' + v + '</i><sup>2</sup>']; };
     return QQ({ q: 'Solve the system.' + sys([m(P([sq(a1, 'x'), sq(b1, 'y')]) + ' = ' + c1), m(P([sq(a2, 'x'), sq(b2, 'y')]) + ' = ' + n(c2))]),
       mc: mcR(pts, [[[x0, y0]], swapPts(pts), [[x0, y0], [-x0, -y0]], [[X0, Y0], [X0, -Y0], [-X0, Y0], [-X0, -Y0]]], fSet, function () { var t = y0 + ri(1, 2); return [[x0, t], [x0, -t], [-x0, t], [-x0, -t]]; }),
-      why: [(k1 === 1 && k2 === 1 ? 'Add the equations' : k1 === 1 && k2 === -1 ? 'Subtract the second equation from the first' : k1 === -1 && k2 === 1 ? 'Subtract the first equation from the second' : 'Multiply the first equation by ' + n(k1) + ' and the second by ' + n(k2) + ', then add') + ' to eliminate ' + m('<i>y</i><sup>2</sup>') + ': ' + m(P([sq(cx, 'x')]) + ' = ' + n(cc)) + '.',
+      why: [(k1 === 1 && k2 === 1 ? 'Add the equations' : k1 === 1 && k2 === -1 ? 'Subtract the second equation from the first' : k1 === -1 && k2 === 1 ? 'Subtract the first equation from the second' : k2 === 1 ? 'Multiply the first equation by ' + n(k1) + ', then add the second equation' : k1 === 1 ? 'Multiply the second equation by ' + n(k2) + ', then add the first equation' : 'Multiply the first equation by ' + n(k1) + ' and the second by ' + n(k2) + ', then add') + ' to eliminate ' + m('<i>y</i><sup>2</sup>') + ': ' + m(P([sq(cx, 'x')]) + ' = ' + n(cc)) + '.',
         'So ' + m('<i>x</i><sup>2</sup> = ' + X0) + ' and ' + m('<i>x</i> = ±' + x0) + '. Substitute into the first equation: ' + m(n(a1 * X0) + ' + ' + P([sq(b1, 'y')]) + ' = ' + c1) + ', so ' + m('<i>y</i><sup>2</sup> = ' + Y0) + ' and ' + m('<i>y</i> = ±' + y0) + '.',
         'Only squares appear, so every combination of signs works: ' + fSet(pts) + '.'] },
       { t: 'nl', eqs: [sy(a1) + '*x**2 + ' + sy(b1) + '*y**2 - ' + sy(c1), sy(a2) + '*x**2 + ' + sy(b2) + '*y**2 - ' + sy(c2)] });
@@ -823,7 +844,7 @@
     var fmt = function (r) { return rh(r[0]) + ' ' + u + ' by ' + rh(r[1]) + ' ' + u; };
     var w = kind === 'area' ? [[L + 1, W - 1], [L - 1, W + 1], [L + 2, W - 2], [L + 3, W - 3]] : [[L + 1, W - 1], [L - 1, W + 1], [D, P2 / 2 - D], [L + 2, W - 2]];
     w = w.filter(function (r) { return r[0] > 0 && r[1] > 0 && R(r[0]).val() >= R(r[1]).val(); });
-    return QQ({ q: q, mc: mcR([L, W], w, fmt, function () { var dd = rnz(-3, 3); return [L + dd, W - dd]; }), why: why }, { t: 'rect', kind: kind, A: Ar, P: P2, D: D });
+    return QQ({ q: q, mc: mcR([L, W], w, fmt, function (i) { var dd, ee; do { dd = rnz(-3, 3); ee = i > 6 ? ri(-2, 2) : -dd; } while (W + ee <= 0 || L + dd < W + ee); return [L + dd, W + ee]; }), why: why }, { t: 'rect', kind: kind, A: Ar, P: P2, D: D });
   }
   // L3: circle and parabola
   function g553c() {
@@ -1151,7 +1172,7 @@
     return QQ({ q: 'Find ' + m('<i>A</i><sup>' + M + '1</sup>') + ' for the matrix below.' + ctr(mlab('A', A)),
       mc: mcR(Ai, w, fMat, mEx(Ai)),
       why: ['The determinant is ' + d2txt(A) + ' = ' + n(d) + ', which is not 0, so the inverse exists.', 'Swap ' + n(A[0][0]) + ' and ' + n(A[1][1]) + ', and change the signs of ' + n(A[0][1]) + ' and ' + n(A[1][0]) + ': ' + K.mat(ad) + '.',
-        (d === 1 ? 'Dividing by 1 changes nothing: ' : 'Divide every entry by ' + M + '1: ') + m('<i>A</i><sup>' + M + '1</sup> = ') + K.mat(Ai) + '. Check: ' + m('<i>AA</i><sup>' + M + '1</sup> = <i>I</i>') + '.'] }, { t: 'inv', A: A });
+        (d === 1 ? 'Since the determinant is 1, that matrix is already the inverse: ' : 'Divide every entry by the determinant, ' + M + '1, which changes every sign: ') + m('<i>A</i><sup>' + M + '1</sup> = ') + K.mat(Ai) + '. Check: ' + m('<i>AA</i><sup>' + M + '1</sup> = <i>I</i>') + '.'] }, { t: 'inv', A: A });
   }
   // L1: which matrix has no inverse
   function g581b() {
@@ -1185,7 +1206,7 @@
     var w = [ad, scl([[A[0][0], -A[0][1]], [-A[1][0], A[1][1]]], R(1, d)), scl([[A[1][1], A[0][1]], [A[1][0], A[0][0]]], R(1, d)), scl(Ai, -1)];
     return QQ({ q: 'Find ' + m('<i>A</i><sup>' + M + '1</sup>') + ' for the matrix below.' + ctr(mlab('A', A)),
       mc: mcR(Ai, w, fMat, mEx(Ai)),
-      why: ['The determinant is ' + d2txt(A) + ' = ' + n(d) + '.', 'Swap the diagonal entries and change the signs of the other two: ' + K.mat(ad) + '.', 'Multiply by ' + m(K.frx('1', n(d))) + ': ' + m('<i>A</i><sup>' + M + '1</sup> = ') + K.mat(Ai) + '.'] }, { t: 'inv', A: A });
+      why: ['The determinant is ' + d2txt(A) + ' = ' + n(d) + '.', 'Swap the diagonal entries and change the signs of the other two: ' + K.mat(ad) + '.', 'Multiply by ' + m(sfr(1, d)) + ': ' + m('<i>A</i><sup>' + M + '1</sup> = ') + K.mat(Ai) + '.'] }, { t: 'inv', A: A });
   }
   // L2: solve using a given inverse
   function g582b() {

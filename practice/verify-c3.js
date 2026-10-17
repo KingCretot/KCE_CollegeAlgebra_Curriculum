@@ -67,7 +67,8 @@ const POLY = {
   pow: (a, e) => { let r = [1]; for (let i = 0; i < e; i++) r = POLY.mul(r, a); return r; },
   neg: (a) => a.map((x) => -x), sqrt: (a) => [Math.sqrt(a[0])]
 };
-const plain = (h) => K.plain(h);
+// exponents are converted before K.plain so they survive inside stacked fractions (K.plain strips tags there)
+const plain = (h) => K.plain(String(h).replace(/<sup>(.*?)<\/sup>/g, "^$1"));
 const rhs = (s) => { const i = s.lastIndexOf('='); return (i >= 0 ? s.slice(i + 1) : s).trim(); };
 const ev = (s, x, extra) => parse(s, NUM(Object.assign({ x: x }, extra || {})));
 const poly = (s) => parse(s, POLY); // ascending coefficients
@@ -166,6 +167,14 @@ const J = {
   touch(q) { const f = rhs(plain(q.p.f)); return (s) => { const z = nums(s)[0]; if (Math.abs(ev(f, z)) > 1e-9) return false; return Math.sign(ev(f, z - 1e-3)) === Math.sign(ev(f, z + 1e-3)); }; },
   turn(q) { const c = poly(rhs(plain(q.p.f))); return (s) => nums(s)[0] === deg(c) - 1; },
   degEnd(q) { const c = poly(rhs(plain(q.p.f))), b = behOf(c); return (s) => { const mm = s.match(/^Degree (\d+); (.+)$/); if (!mm) return false; const key = Object.keys(BEHS).find((k) => k.toLowerCase() === mm[2]); return +mm[1] === deg(c) && key && BEHS[key][0] === b[0] && BEHS[key][1] === b[1]; }; },
+  describe(q) { // read the conditions from the question text; check each choice's zeros, multiplicities (by repeated division) and end behavior
+    const t = plain(q.q), bm = Object.keys(BEHS).find((k) => t.toLowerCase().includes(k.toLowerCase())); if (!bm) throw new Error('no end behavior in ' + t);
+    const grab = (re) => { const mm = t.match(re); return mm ? listItems(mm[1]).map((x) => ev(x, 0)) : []; };
+    const want = {}; grab(/crosses the x-axis at (.*?)(?:, crosses and|, and touches|,? touches)/).forEach((z) => { want[z] = 1; }); grab(/flattens out at (.*?)(?:,|$)/).forEach((z) => { want[z] = 3; }); grab(/touches it at (.*?) \(/).forEach((z) => { want[z] = 2; });
+    const total = Object.values(want).reduce((a, b) => a + b, 0); if (Object.keys(want).length !== 3) throw new Error('describe parse ' + JSON.stringify(want));
+    const mult = (c, z) => { let k = 0, cur = c.slice(); for (;;) { if (Math.abs(pval(cur, z)) > 1e-9 || cur.length < 2) return k; const d = cur.slice().reverse(), qq = [d[0]]; for (let i = 1; i < d.length - 1; i++) qq.push(d[i] + qq[i - 1] * z); cur = qq.reverse(); k++; } };
+    return (s) => { const c = poly(rhs(s)); if (deg(c) !== total) return false; const b = behOf(c); if (b[0] !== BEHS[bm][0] || b[1] !== BEHS[bm][1]) return false; return Object.keys(want).every((z) => mult(c, +z) === want[z]); };
+  },
   ivt(q) { const f = rhs(plain(q.p.f)); return (s) => { const [a, b] = nums(s); let ch = 0; for (let i = 0; i < 4000; i++) { const x1 = a + (b - a) * i / 4000, x2 = a + (b - a) * (i + 1) / 4000; if (ev(f, x1) * ev(f, x2) <= 0) ch++; } if (ch && ev(f, a) * ev(f, b) >= 0) throw new Error('interval with zero but no sign change'); return ev(f, a) * ev(f, b) < 0; }; },
   ineq(q) { const f = rhs(plain(q.p.f)); for (let x = -7.3; x < 7; x += 0.41) if (!close(ev(f, x), q.p.fn(x))) throw new Error('ineq fn mismatch'); if (!plain(q.q).includes(q.p.gt ? '> 0' : '< 0')) throw new Error('sign missing');
     return (s) => { const U = intervals(s); for (let k = -800; k <= 800; k++) { const x = k / 100, v = ev(f, x), want = q.p.gt ? v > 0 : v < 0; if (inU(U, x) !== want) return false; } return true; }; },

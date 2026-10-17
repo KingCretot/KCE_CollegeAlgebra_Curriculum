@@ -192,7 +192,9 @@ def c_tbl(o):
 def c_linv(o):
     p = o['p']; f = lambda t: p['a'] * t + p['b']
     def good(c):
-        g = rhs(c); return all(abs(float(f(g.subs(X, v))) - float(v)) < 1e-9 for v in rpts())
+        g = rhs(c)
+        try: return all(abs(float(f(g.subs(X, v))) - float(v)) < 1e-9 for v in rpts())
+        except TypeError: return False   # a distractor such as 1/(4x - 2) can have a pole at a test point: it is not the inverse
     return correct_only(o, good)
 def c_gread(o):
     p = o['p']
@@ -465,24 +467,36 @@ def c_halfk(o):
 def c_dbl(o):
     p = o['p']; t = bisect(lambda t: math.exp(p['k'] * t) - 2, 0, 1000); return check_rounded(o, t, 2)
 def hund(h): return disp_num(h, 0)
+def k4(k): return round(k, 4)
+def also_k4(o, res, v_true, v_k4, d):
+    """The stem says to keep k unrounded; the marked answer must also survive a student rounding k to 4 places (as the lesson displays it)."""
+    ok, info = res
+    same = fmt(v_true, d) == fmt(v_k4, d)
+    say = 'unrounded' in text(o['q'])
+    return ok and same and say, info + ('' if same else ' | k rounded to 4 places gives ' + fmt(v_k4, d)) + ('' if say else ' | stem lacks keep-k-unrounded note')
 def c_predict(o):
     p = o['p']; k = bisect(lambda k: p['P0'] * math.exp(k * p['t1']) - p['P1'], -1, 1)
-    v = p['P0'] * math.exp(k * p['t2']); return check_rounded(o, round(v / 100) * 100, 0)
+    v = p['P0'] * math.exp(k * p['t2']); v4 = p['P0'] * math.exp(k4(k) * p['t2'])
+    return also_k4(o, check_rounded(o, round(v / 100) * 100, 0), round(v / 100) * 100, round(v4 / 100) * 100, 0)
 def c_carbon(o):
     p = o['p']; k = bisect(lambda k: math.exp(k * 5730) - 0.5, -1, 0); t = bisect(lambda t: math.exp(k * t) - p['f'], 0, 100000)
-    return check_rounded(o, round(t / 100) * 100, 0)
+    ok, info = check_rounded(o, round(t / 100) * 100, 0)
+    return ok and 'unrounded' in text(o['q']), info
 def c_halfleft(o):
-    p = o['p']; k = bisect(lambda k: math.exp(k * p['h']) - 0.5, -5, 0); return check_rounded(o, p['A0'] * math.exp(k * p['tt']), 1)
+    p = o['p']; k = bisect(lambda k: math.exp(k * p['h']) - 0.5, -5, 0)
+    return also_k4(o, check_rounded(o, p['A0'] * math.exp(k * p['tt']), 1), p['A0'] * math.exp(k * p['tt']), p['A0'] * math.exp(k4(k) * p['tt']), 1)
 def c_reach(o):
     p = o['p']; k = bisect(lambda k: p['P0'] * math.exp(k * p['t1']) - p['P1'], 0, 5); t = bisect(lambda t: p['P0'] * math.exp(k * t) - p['T'], 0, 1000)
-    return check_rounded(o, t, 1)
+    t4 = math.log(p['T'] / p['P0']) / k4(k)
+    return also_k4(o, check_rounded(o, t, 1), t, t4, 1)
 def c_cool(o):
     p = o['p']; Ts, T0 = p['Ts'], p['T0']
     k = bisect(lambda k: Ts + (T0 - Ts) * math.exp(k * p['t1']) - p['T1'], -5, 0)
-    return check_rounded(o, Ts + (T0 - Ts) * math.exp(k * p['t2']), 0)
+    v = Ts + (T0 - Ts) * math.exp(k * p['t2']); v4 = Ts + (T0 - Ts) * math.exp(k4(k) * p['t2'])
+    return also_k4(o, check_rounded(o, v, 0), v, v4, 0)
 def c_halfdata(o):
     p = o['p']; k = bisect(lambda k: p['A0'] * math.exp(k * p['t1']) - p['A1'], -5, 0); h = bisect(lambda t: math.exp(k * t) - 0.5, 0, 10000)
-    return check_rounded(o, h, 1)
+    return also_k4(o, check_rounded(o, h, 1), h, -math.log(2) / k4(k), 1)
 
 CHK = {k[2:]: v for k, v in globals().items() if k.startswith('c_')}
 
