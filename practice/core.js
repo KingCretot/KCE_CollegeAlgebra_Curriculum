@@ -152,6 +152,8 @@
   K.strip = function (h) { return String(h).replace(/<span class="nu">(.*?)<\/span><span class="de">(.*?)<\/span>/g, '[$1]/[$2]').replace(/<sup[^>]*>(.*?)<\/sup>/g, '^$1').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim(); };
   // Plain-text version for reports: fractions as a/b, exponents as ^.
   K.plain = function (h) {
+    var w0 = function (s) { s = s.replace(/<[^>]+>/g, '').trim(); return /[\s+\u2212-]/.test(s.replace(/^\u2212/, '')) ? '(' + s + ')' : s; };
+    h = String(h).replace(/<span class="nu">(.*?)<\/span><span class="de">(.*?)<\/span>/g, function (m, a, b) { return w0(a) + '/' + w0(b); });
     return K.strip(String(h).replace(/<\/li>/g, ' ').replace(/<\/tr>/g, ' ; ').replace(/<br\s*\/?>/g, ' ; ').replace(/<div[^>]*>/g, ' ').replace(/<\/div>/g, ' ').replace(/<\/t[dh]>/g, ' ')).replace(/\[([^\]]+)\]\/\[([^\]]+)\]/g, function (m, a, b) { var w = function (t) { return /[\s+\u2212-]/.test(t.trim().replace(/^\u2212/, '')) ? '(' + t + ')' : t; }; return w(a) + '/' + w(b); });
   };
   function dropMath(h) {   // replace every <span class="mth">…</span> (nested spans allowed) with an ellipsis
