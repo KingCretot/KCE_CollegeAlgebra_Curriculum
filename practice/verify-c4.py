@@ -148,7 +148,9 @@ def roots_scan(f, lo, hi, N=4000, dom=lambda v: True):
         v = lo + (hi - lo) * i / N
         if not dom(v): prev = None; continue
         fv = f(v)
-        if fv == 0: out.append(v)
+        if fv == 0:
+            if not out or abs(out[-1] - v) > 1e-9: out.append(v)
+            prev, pv = None, None; continue
         elif prev is not None and (fv > 0) != (pv > 0): out.append(bisect(f, prev, v))
         prev, pv = v, fv
     return out
@@ -266,8 +268,8 @@ def eq_from_q(o):
     mth = first_math(o['q']); L, Rr = pre(mth).split('=')
     Le = parse_expr(L.strip(), local_dict=LOC, transformations=TR); Re = parse_expr(Rr.strip(), local_dict=LOC, transformations=TR)
     def good(c):
-        xv = ratval(c); l = sp.N(Le.subs(X, xv), 50); r = sp.N(Re.subs(X, xv), 50)
-        return abs(l - r) <= 1e-30 * max(1, abs(l))
+        xv = ratval(c); l = sp.N(Le.subs(X, xv), 60); r = sp.N(Re.subs(X, xv), 60)
+        return abs(l - r) <= 1e-40 * max(abs(l), abs(r))   # relative: values can be tiny
     return good
 def c_mb1(o): return correct_only(o, eq_from_q(o))
 def c_mbase(o): return correct_only(o, eq_from_q(o))

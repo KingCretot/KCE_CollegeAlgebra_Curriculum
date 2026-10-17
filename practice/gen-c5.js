@@ -532,8 +532,10 @@
   function fpar(r) { return r === 0 ? X : '(' + K.minusH(X, r) + ')'; }
   function tkey(t) { var f = t[1]; return [f.length, f.length === 2 ? -f[1] : f[2], t[2]]; }
   // decomposition {q: quotient coeffs or null, t: [[numerator coeffs, factor coeffs, power], ...]} → canonical html
-  function decH(dc) {
-    var ts = dc.t.slice().sort(function (u, v) { var a = tkey(u), b = tkey(v); for (var i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; });
+  function decH(dc, ord) {
+    ord = ord || [];
+    var key = function (t) { var i = ord.indexOf(JSON.stringify(t[1])), k = tkey(t); return [i < 0 ? 1000 : i].concat(k); };
+    var ts = dc.t.slice().sort(function (u, v) { var a = key(u), b = key(v); for (var i = 0; i < 4; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; });
     var parts = [], first = true;
     if (dc.q) { parts.push(m(pFmt(dc.q))); first = false; }
     ts.forEach(function (t) {
@@ -546,6 +548,8 @@
     return parts.join(' ');
   }
   function dec(q, terms) { return { q: q, t: terms }; }
+  // formatter that lists factors in the order of the correct decomposition (same order for every choice)
+  function decF(cor) { var ord = []; cor.t.forEach(function (t) { var k = JSON.stringify(t[1]); if (ord.indexOf(k) < 0) ord.push(k); }); return function (dc) { return decH(dc, ord); }; }
   function eqSplit(lhs, terms) { return m(lhs + ' =') + ' ' + terms.map(function (t, i) { return m((i ? '+ ' : '') + t); }).join(' '); }
   function bigFrac(num, denH) { return ctr(m(K.frx(pFmt(num), denH))); }
   var LET = ['A', 'B', 'C', 'D'];
@@ -599,11 +603,11 @@
     var num = padd(psc(lf(s), A), psc(lf(r), B)), den = pmul(lf(r), lf(s));
     var mk = function (a, b) { return dec(null, [[[a], lf(r), 1], [[b], lf(s), 1]]); }, cor = mk(A, B);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
-      mc: mcR(cor, [mk(B, A), mk(A * (r - s), B * (s - r)), mk(A, -B), dec(null, [[[A], lf(-r), 1], [[B], lf(-s), 1]])], decH, decEx(cor)),
+      mc: mcR(cor, [mk(B, A), mk(A * (r - s), B * (s - r)), mk(A, -B), dec(null, [[[A], lf(-r), 1], [[B], lf(-s), 1]])], decF(cor), decEx(cor)),
       why: ['Factor the denominator: ' + m(pFmt(den) + ' = ' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), facH(lf(s)))) + '.',
         'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(s), '<i>B</i>' + fpar(r)]) + '.',
         m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s - r) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L2: repeated linear factor
   function g542b() {
@@ -611,10 +615,10 @@
     var num = [A, B - A * r], den = pmul(lf(r), lf(r)), fact = K.coin();
     var mk = function (a, b) { return dec(null, [[[a], lf(r), 1], [[b], lf(r), 2]]); }, cor = mk(A, B);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, fact ? powH(lf(r), 2) : pFmt(den)),
-      mc: mcR(cor, [mk(B, A), mk(A, B - A * r), mk(A, -B), mk(-A, B)], decH, decEx(cor)),
+      mc: mcR(cor, [mk(B, A), mk(A, B - A * r), mk(A, -B), mk(-A, B)], decF(cor), decEx(cor)),
       why: [(fact ? '' : 'The denominator is ' + m(powH(lf(r), 2)) + '. ') + 'A repeated factor needs a term for each power: ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), powH(lf(r), 2))) + '. Multiply by ' + m(powH(lf(r), 2)) + ': ' + m(pFmt(num) + ' = <i>A</i>' + fpar(r) + ' + <i>B</i>') + '.',
         'Match the ' + X + '-coefficients: ' + m('<i>A</i> = ' + n(A)) + '. Let ' + m('<i>x</i> = ' + n(r)) + ': ' + m('<i>B</i> = ' + n(B)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L2: irreducible quadratic factor
   function g542c() {
@@ -622,11 +626,11 @@
     var num = padd(psc(qf(k), A), pmul([B, Cc], lf(r))), den = pmul(lf(r), qf(k)), n0 = pev(num, r);
     var mk = function (a, b, c) { return dec(null, [[[a], lf(r), 1], [[b, c], qf(k), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 1], [qf(k), 1]])),
-      mc: mcR(cor, [mk(A, Cc, B), mk(A, -B, Cc), mk(n0, B, Cc), mk(A, B, -Cc), mk(-A, B, Cc)], decH, decEx(cor)),
+      mc: mcR(cor, [mk(A, Cc, B), mk(A, -B, Cc), mk(n0, B, Cc), mk(A, B, -Cc), mk(-A, B, Cc)], decF(cor), decEx(cor)),
       why: ['Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx('<i>Bx</i> + <i>C</i>', facH(qf(k)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>(' + facH(qf(k)) + ')', '(<i>Bx</i> + <i>C</i>)' + fpar(r)]) + '.',
         'Let ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(n0) + ' = ' + n(r * r + k) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'Match coefficients. ' + m(X + '<sup>2</sup>') + ': ' + m('<i>A</i> + <i>B</i> = ' + n(num[0])) + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + X + ': ' + m('<i>C</i> ' + M + ' (' + n(r) + ')(' + n(B) + ') = ' + n(num[1])) + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L3: three distinct linear factors (factor the cubic first)
   function g543a() {
@@ -635,11 +639,11 @@
     var num = padd(padd(psc(pmul(lf(r), lf(s)), A), psc(pmul([1, 0], lf(s)), B)), psc(pmul([1, 0], lf(r)), Cc));
     var mk = function (a, b, c) { return dec(null, [[[a], lf(0), 1], [[b], lf(r), 1], [[c], lf(s), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
-      mc: mcR(cor, [mk(B, A, Cc), mk(A, Cc, B), mk(A, B, -Cc), mk(-A, B, Cc)], decH, decEx(cor)),
+      mc: mcR(cor, [mk(B, A, Cc), mk(A, Cc, B), mk(A, B, -Cc), mk(-A, B, Cc)], decF(cor), decEx(cor)),
       why: ['Factor out ' + X + ', then factor the quadratic: ' + m(pFmt(den) + ' = <i>x</i>' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), X)) + ' ' + m('+ ' + K.frx(iv('B'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + '.',
         'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>Bx</i>' + fpar(s), '<i>Cx</i>' + fpar(r)]) + '.',
         m('<i>x</i> = 0') + ': ' + m(n(pev(num, 0)) + ' = ' + n(r * s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r * (r - s)) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L3: improper fraction: divide first
   function g543b() {
@@ -647,11 +651,11 @@
     var den = pmul(lf(r), lf(s)), rem = padd(psc(lf(s), A), psc(lf(r), B)), num = padd(pmul([1, t], den), rem);
     var mk = function (q, a, b) { return dec(q, [[[a], lf(r), 1], [[b], lf(s), 1]]); }, cor = mk([1, t], A, B);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
-      mc: mcR(cor, [mk(null, A, B), mk([1, -t], A, B), mk([1, t], B, A), mk([1, t], -A, -B)], decH, decEx(cor)),
+      mc: mcR(cor, [mk(null, A, B), mk([1, -t], A, B), mk([1, t], B, A), mk([1, t], -A, -B)], decF(cor), decEx(cor)),
       why: ['The numerator has the higher degree, so divide first: ' + m('(' + pFmt(num) + ') ÷ (' + pFmt(den) + ')') + ' gives the quotient ' + m(pFmt([1, t])) + ' and the remainder ' + m(pFmt(rem)) + '.',
         'Decompose the remainder: ' + eqSplit(K.frx(pFmt(rem), fpar(r) + fpar(s)), [K.frx(iv('A'), facH(lf(r))), K.frx(iv('B'), facH(lf(s)))]) + ', so ' + eqSplit(pFmt(rem), ['<i>A</i>' + fpar(s), '<i>B</i>' + fpar(r)]) + '.',
         m('<i>x</i> = ' + n(r)) + ' gives ' + m('<i>A</i> = ' + n(A)) + ', and ' + m('<i>x</i> = ' + n(s)) + ' gives ' + m('<i>B</i> = ' + n(B)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   // L3: repeated and distinct linear factors
   function g543c() {
@@ -660,11 +664,11 @@
     var num = padd(padd(psc(pmul(lf(r), lf(s)), A), psc(lf(s), B)), psc(pmul(lf(r), lf(r)), Cc));
     var mk = function (a, b, c) { return dec(null, [[[a], lf(r), 1], [[b], lf(r), 2], [[c], lf(s), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 2], [lf(s), 1]])),
-      mc: mcR(cor, [mk(B, A, Cc), mk(A, B, -Cc), mk(Cc, B, A), mk(A, -B, Cc)], decH, decEx(cor)),
+      mc: mcR(cor, [mk(B, A, Cc), mk(A, B, -Cc), mk(Cc, B, A), mk(A, -B, Cc)], decF(cor), decEx(cor)),
       why: ['Write ' + m(K.frx(iv('A'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('B'), powH(lf(r), 2))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>B</i>' + fpar(s), '<i>C</i>' + powH(lf(r), 2)]) + '.',
         m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n((s - r) * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'Match the ' + m(X + '<sup>2</sup>') + '-coefficients: ' + m('<i>A</i> + <i>C</i> = ' + n(num[0])) + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
-        'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
+        'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
   K.lesson('5.4', { title: 'Partial Fractions', std: 'Lial 12e · Section 5.4', levels: [[g541a, g541b, g541c], [g542a, g542b, g542c], [g543a, g543b, g543c]] });
 
@@ -720,7 +724,7 @@
       mc: mcR(pts, [[[s, d]], swapPts(pts), [[s * s, d], [-s * s, d]], [[s, -d], [-s, -d]]], fSet, function () { var t = s + rnz(-2, 2); if (t <= 0) t = s + 1; return [[t, d], [-t, d]]; }),
       why: ['Substitute ' + m('<i>y</i> = ' + n(d)) + ' into the first equation: ' + m(n(d) + ' = ' + P([[a, K.xp(2)], [c, '']])) + '.',
         'Then ' + m(P([[a, K.xp(2)]]) + ' = ' + n(d - c)) + ', so ' + m('<i>x</i><sup>2</sup> = ' + (s * s)) + ' and ' + m('<i>x</i> = ±' + s) + '. Do not forget the negative root.',
-        'Both x-values pair with ' + m('<i>y</i> = ' + n(d)) + ': ' + fSet(pts) + '.'] }, { t: 'nl', eqs: ['y - (' + sy(a) + '*x**2 + ' + sy(c) + ')', 'y - ' + sy(d)] });
+        'Both ' + X + '-values pair with ' + m('<i>y</i> = ' + n(d)) + ': ' + fSet(pts) + '.'] }, { t: 'nl', eqs: ['y - (' + sy(a) + '*x**2 + ' + sy(c) + ')', 'y - ' + sy(d)] });
   }
   // L1: number of real solutions
   function g551c() {
@@ -745,7 +749,7 @@
   }
   // L2: line and circle by substitution
   function g552a() {
-    var c = pick(CPAIRS.filter(function (o) { return o.m.d === 1 && o.b.d === 1 && Math.abs(o.m.val()) <= 3 && Math.abs(o.b.val()) <= 7; }));
+    var c = pick(CPAIRS.filter(function (o) { return o.m.d === 1 && o.b.d === 1 && o.m.n !== 0 && Math.abs(o.m.val()) <= 3 && Math.abs(o.b.val()) <= 7; }));
     var mm = c.m.val(), b = c.b.val(), pts = c.p, x1 = pts[0][0], x2 = pts[1][0];
     var A2 = 1 + mm * mm, B2 = 2 * mm * b, C2 = b * b - c.r2, g = K.gcd(K.gcd(A2, B2), C2), L = A2 / g;
     return QQ({ q: 'Solve the system.' + sys([circEq(c.r2), yEq(mm, b)]),
@@ -766,7 +770,7 @@
     var sq = function (c, v) { return [c, '<i>' + v + '</i><sup>2</sup>']; };
     return QQ({ q: 'Solve the system.' + sys([m(P([sq(a1, 'x'), sq(b1, 'y')]) + ' = ' + c1), m(P([sq(a2, 'x'), sq(b2, 'y')]) + ' = ' + n(c2))]),
       mc: mcR(pts, [[[x0, y0]], swapPts(pts), [[x0, y0], [-x0, -y0]], [[X0, Y0], [X0, -Y0], [-X0, Y0], [-X0, -Y0]]], fSet, function () { var t = y0 + ri(1, 2); return [[x0, t], [x0, -t], [-x0, t], [-x0, -t]]; }),
-      why: [(k1 === 1 && k2 === 1 ? 'Add the equations' : 'Multiply the first equation by ' + n(k1) + ' and the second by ' + n(k2) + ', then add') + ' to eliminate ' + m('<i>y</i><sup>2</sup>') + ': ' + m(P([sq(cx, 'x')]) + ' = ' + n(cc)) + '.',
+      why: [(k1 === 1 && k2 === 1 ? 'Add the equations' : k1 === 1 && k2 === -1 ? 'Subtract the second equation from the first' : k1 === -1 && k2 === 1 ? 'Subtract the first equation from the second' : 'Multiply the first equation by ' + n(k1) + ' and the second by ' + n(k2) + ', then add') + ' to eliminate ' + m('<i>y</i><sup>2</sup>') + ': ' + m(P([sq(cx, 'x')]) + ' = ' + n(cc)) + '.',
         'So ' + m('<i>x</i><sup>2</sup> = ' + X0) + ' and ' + m('<i>x</i> = ±' + x0) + '. Substitute into the first equation: ' + m(n(a1 * X0) + ' + ' + P([sq(b1, 'y')]) + ' = ' + c1) + ', so ' + m('<i>y</i><sup>2</sup> = ' + Y0) + ' and ' + m('<i>y</i> = ±' + y0) + '.',
         'Only squares appear, so every combination of signs works: ' + fSet(pts) + '.'] },
       { t: 'nl', eqs: [sy(a1) + '*x**2 + ' + sy(b1) + '*y**2 - ' + sy(c1), sy(a2) + '*x**2 + ' + sy(b2) + '*y**2 - ' + sy(c2)] });
@@ -893,7 +897,7 @@
     var b0 = w[0], f1 = !sat(I1, b0[0], b0[1]);
     return QQ({ q: 'Which point is a solution of the system?' + sys([e1, istd(I2)]), mc: mcR(cor, w, fPt, function () { return pick(bad1.concat(bad2)); }),
       why: ['A solution must make both inequalities true.',
-        'For ' + fPt(cor) + ': in the first, ' + m(n(cor[1]) + ' ' + SYM[I1[2]] + ' ' + K.lin([[mm1, n(cor[0])]]) + K.plusK(I1[3]) + ' = ' + rh(mm1.mul(cor[0]).add(I1[3]))) + ' is true; in the second, ' + tst(I2, cor) + '.',
+        'For ' + fPt(cor) + ': in the first, the right side is ' + m(K.lin([[mm1, n(cor[0])]]) + K.plusK(I1[3]) + ' = ' + rh(mm1.mul(cor[0]).add(I1[3]))) + ', and ' + m(n(cor[1]) + ' ' + SYM[I1[2]] + ' ' + rh(mm1.mul(cor[0]).add(I1[3]))) + ' is true; in the second, ' + tst(I2, cor) + '.',
         'Each other point fails at least one inequality. For example, ' + fPt(b0) + (f1 ? ' gives ' + m(n(b0[1]) + ' ' + SYM[I1[2]] + ' ' + rh(mm1.mul(b0[0]).add(I1[3]))) + ' in the first inequality, which is false.' : ' fails the second: ' + tst(I2, b0) + '.')] },
       { t: 'ineqpt', ineqs: [I1, I2] });
   }
@@ -965,21 +969,24 @@
       { t: 'ineqsys', shade: [shadeOf(I1), shadeOf(I2)].map(function (s) { return [s.a, s.b, s.c]; }) });
   }
   // L3: maximize profit (word problem)
-  var LPC = [['A furniture shop', 'tables', 'table', 'chairs', 'chair', 'labor'], ['A bakery', 'cakes', 'cake', 'pies', 'pie', 'oven'], ['A tutor', 'group lessons', 'group lesson', 'private lessons', 'private lesson', 'teaching']];
+  var LPC = [{ who: 'A furniture shop', v: 'make', vs: 'makes', x: ['table', 'tables'], y: ['chair', 'chairs'], res: 'labor', u: 'pieces', per: 'week', pro: 'it' },
+    { who: 'A bakery', v: 'bake', vs: 'bakes', x: ['cake', 'cakes'], y: ['pie', 'pies'], res: 'oven', u: 'items', per: 'day', pro: 'it' },
+    { who: 'A tutor', v: 'teach', vs: 'teaches', x: ['group lesson', 'group lessons'], y: ['private lesson', 'private lessons'], res: 'teaching', u: 'lessons', per: 'week', pro: 'she' }];
   function g563a() {
     var c = pick(LPC), px, py, T, a, b, H, cs, o, v;
     do { px = ri(1, 8); py = ri(1, 8); T = px + py; a = ri(2, 4); b = ri(1, a - 1); H = a * px + b * py; } while (H % a !== 0 || H / a >= T || H / b <= T);
     cs = [[0, 0], [H / a, 0], [px, py], [0, T]];
     do { o = [5 * ri(4, 18), 5 * ri(3, 14)]; v = objVals(cs, o); } while (new Set(v).size !== 4);
     var L = lpChoices(cs, o, 'max');
-    var fmt = function (r) { return pl(R(r[1]).val(), c[2], c[1]) + ' and ' + pl(R(r[2]).val(), c[4], c[3]) + ' ($' + R(r[0]).val() + ')'; };
+    var fmt = function (r) { return pl(R(r[1]).val(), c.x[0], c.x[1]) + ' and ' + pl(R(r[2]).val(), c.y[0], c.y[1]) + ' ($' + R(r[0]).val() + ')'; };
     var w = L.w.slice(); var ex = [px - 1, py + 1]; if (ex[0] >= 0 && ex[0] + ex[1] <= T && a * ex[0] + b * ex[1] <= H) w.push([o[0] * ex[0] + o[1] * ex[1], ex[0], ex[1]]);
-    return QQ({ q: c[0] + ' makes ' + c[1] + ' and ' + c[3] + '. It can make at most ' + T + ' items a week in all. Each ' + c[2] + ' takes ' + a + ' hours of ' + c[5] + ' time and each ' + c[4] + ' takes ' + pl(b, 'hour', 'hours') + ', and ' + H + ' hours are available. Each ' + c[2] + ' earns $' + o[0] + ' profit and each ' + c[4] + ' earns $' + o[1] + '. How many of each should it make each week to maximize profit?',
+    var Pro = c.pro.charAt(0).toUpperCase() + c.pro.slice(1);
+    return QQ({ q: c.who + ' ' + c.vs + ' ' + c.x[1] + ' and ' + c.y[1] + '. ' + Pro + ' can ' + c.v + ' at most ' + T + ' ' + c.u + ' a ' + c.per + ' in all. Each ' + c.x[0] + ' takes ' + a + ' hours of ' + c.res + ' time and each ' + c.y[0] + ' takes ' + pl(b, 'hour', 'hours') + ', and ' + H + ' hours of ' + c.res + ' time are available each ' + c.per + '. Each ' + c.x[0] + ' earns $' + o[0] + ' and each ' + c.y[0] + ' earns $' + o[1] + '. How many of each should ' + c.pro + ' ' + c.v + ' each ' + c.per + ' to earn the most?',
       mc: mcR(L.cor, w, fmt),
-      why: ['Let ' + X + ' = ' + c[1] + ' and ' + Y + ' = ' + c[3] + '. Maximize ' + objH('P', o) + ' subject to ' + m('<i>x</i> + <i>y</i> ≤ ' + T) + ', ' + m(P([[a, X], [b, Y]]) + ' ≤ ' + H) + ', ' + m('<i>x</i> ≥ 0') + ', ' + m('<i>y</i> ≥ 0') + '.',
+      why: ['Let ' + X + ' = number of ' + c.x[1] + ' and ' + Y + ' = number of ' + c.y[1] + '. Maximize ' + objH('P', o) + ' subject to ' + m('<i>x</i> + <i>y</i> ≤ ' + T) + ', ' + m(P([[a, X], [b, Y]]) + ' ≤ ' + H) + ', ' + m('<i>x</i> ≥ 0') + ', ' + m('<i>y</i> ≥ 0') + '.',
         'The corners are ' + cs.map(function (p) { return K.pt(p[0], p[1]); }).join(', ') + '; the corner ' + K.pt(px, py) + ' solves ' + m('<i>x</i> + <i>y</i> = ' + T) + ' and ' + m(P([[a, X], [b, Y]]) + ' = ' + H) + ' together.',
-        'Profit at each corner: ' + valList('P', cs, L.v) + '.',
-        'The maximum profit is $' + L.cor[0] + ', with ' + pl(L.cor[1], c[2], c[1]) + ' and ' + pl(L.cor[2], c[4], c[3]) + '.'] },
+        'Earnings at each corner: ' + valList('P', cs, L.v) + '.',
+        'The maximum is $' + L.cor[0] + ', with ' + pl(L.cor[1], c.x[0], c.x[1]) + ' and ' + pl(L.cor[2], c.y[0], c.y[1]) + '.'] },
       { t: 'lp', cons: [[1, 1, '<=', T], [a, b, '<=', H], [1, 0, '>=', 0], [0, 1, '>=', 0]], obj: o, goal: 'max' });
   }
   // L3: minimize cost (unbounded region)
@@ -993,7 +1000,8 @@
     var L = lpChoices(cs, o, 'min');
     var fmt = function (r) { return pl(R(r[1]).val(), c[4], c[3]) + ' of ' + c[1] + ' and ' + pl(R(r[2]).val(), c[4], c[3]) + ' of ' + c[2] + ' ($' + R(r[0]).val() + ')'; };
     var w = L.w.slice(); w.push([o[0] * (px + 1) + o[1] * (py + 1), px + 1, py + 1]); w.push([0, 0, 0]);
-    return QQ({ q: c[0] + '. Each ' + c[4] + ' of ' + c[1] + ' provides ' + a1 + ' units of ' + c[5] + ' and ' + a2 + ' units of ' + c[6] + '. Each ' + c[4] + ' of ' + c[2] + ' provides ' + b1 + ' units of ' + c[5] + ' and ' + b2 + ' units of ' + c[6] + '. The mix must contain at least ' + c1 + ' units of ' + c[5] + ' and at least ' + c2 + ' units of ' + c[6] + '. ' + c[1] + ' costs $' + o[0] + ' per ' + c[4] + ' and ' + c[2] + ' costs $' + o[1] + ' per ' + c[4] + '. How many of each minimize the cost?',
+    var un = function (k) { return pl(k, 'unit', 'units'); };
+    return QQ({ q: c[0] + '. Each ' + c[4] + ' of ' + c[1] + ' provides ' + un(a1) + ' of ' + c[5] + ' and ' + un(a2) + ' of ' + c[6] + '. Each ' + c[4] + ' of ' + c[2] + ' provides ' + un(b1) + ' of ' + c[5] + ' and ' + un(b2) + ' of ' + c[6] + '. The mix must contain at least ' + c1 + ' units of ' + c[5] + ' and at least ' + c2 + ' units of ' + c[6] + '. ' + c[1] + ' costs $' + o[0] + ' per ' + c[4] + ' and ' + c[2] + ' costs $' + o[1] + ' per ' + c[4] + '. How many of each minimize the cost?',
       mc: mcR(L.cor, w, fmt),
       why: ['Let ' + X + ' and ' + Y + ' be the numbers of ' + c[3] + ' of ' + c[1] + ' and ' + c[2] + '. Minimize ' + objH('C', o) + ' subject to ' + m(P([[a1, X], [b1, Y]]) + ' ≥ ' + c1) + ', ' + m(P([[a2, X], [b2, Y]]) + ' ≥ ' + c2) + ', ' + m('<i>x</i> ≥ 0') + ', ' + m('<i>y</i> ≥ 0') + '.',
         'The feasible region is unbounded, with corners ' + cs.map(function (p) { return K.pt(p[0], p[1]); }).join(', ') + '. The middle corner solves the two boundary equations together.',
@@ -1083,14 +1091,14 @@
       { t: 'entry', mats: { A: A, B: B }, expr: 'A@B', i: i, j: j });
   }
   // L3: application: quantities times prices
-  var SALES = [['Two stores', 'Store 1', 'Store 2', ['notebooks', 'pens', 'folders']], ['Two food trucks', 'Truck 1', 'Truck 2', ['tacos', 'burritos', 'drinks']], ['Two school clubs', 'Club 1', 'Club 2', ['T-shirts', 'mugs', 'caps']]];
+  var SALES = [['Two stores', 'Store 1', 'Store 2', ['notebooks', 'pens', 'folders'], 'store'], ['Two food trucks', 'Truck 1', 'Truck 2', ['tacos', 'burritos', 'drinks'], 'truck'], ['Two school clubs', 'Club 1', 'Club 2', ['T-shirts', 'mugs', 'caps'], 'club']];
   function g573a() {
     var c = pick(SALES), Qm = rmat(2, 3, 2, 15), Pc = [[ri(2, 12)], [ri(2, 12)], [ri(2, 12)]];
     while (Pc[0][0] === Pc[2][0]) Pc[2][0] = ri(2, 12);
     var cor = mmul(Qm, Pc), rev = mmul(Qm, [Pc[2], Pc[1], Pc[0]]), two = mmul(Qm.map(function (r) { return [r[0], r[1]]; }), [Pc[0], Pc[1]]);
     var odd = [[cor[0][0]], [cor[1][0] - Qm[1][0] * Pc[0][0]]];
     var pv = function (r) { return r.map(function (v) { return v[0]; }); };
-    return QQ({ q: c[0] + ' sell ' + c[3].join(', ').replace(/, ([^,]*)$/, ', and $1') + '. Matrix ' + iv('Q') + ' gives the number of each item sold (row 1: ' + c[1] + ', row 2: ' + c[2] + '; columns in the order ' + c[3].join(', ') + '). Column matrix ' + iv('P') + ' gives each item’s price in dollars. Find ' + m('<i>QP</i>') + ', the total sales of each.' + ctr(mlab('Q', Qm) + mlab('P', Pc)),
+    return QQ({ q: c[0] + ' sell ' + c[3].join(', ').replace(/, ([^,]*)$/, ', and $1') + '. Matrix ' + iv('Q') + ' gives the number of each item sold (row 1: ' + c[1] + ', row 2: ' + c[2] + '; columns in the order ' + c[3].join(', ') + '). Column matrix ' + iv('P') + ' gives each item’s price in dollars. Find ' + m('<i>QP</i>') + ', the total sales for each ' + c[4] + '.' + ctr(mlab('Q', Qm) + mlab('P', Pc)),
       mc: mcR(cor, [rev, two, odd], fMat, mEx(cor)),
       why: [m('<i>QP</i>') + ' is ' + m('(2 × 3)(3 × 1) = 2 × 1') + ': one total for each row of ' + iv('Q') + '.', c[1] + ': ' + dot(Qm[0], pv(Pc)) + '.', c[2] + ': ' + dot(Qm[1], pv(Pc)) + '.', 'So ' + m('<i>QP</i> = ') + K.mat(cor) + ': $' + cor[0][0] + ' and $' + cor[1][0] + '.'] },
       { t: 'matexpr', mats: { A: Qm, B: Pc }, expr: 'A@B' });

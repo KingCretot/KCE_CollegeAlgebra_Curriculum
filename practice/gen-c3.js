@@ -334,7 +334,7 @@
         var cand = [fromRoots(rs, 1), fromRoots(rs.map(function (r) { return -r; }), a), fromRoots(rs, -a)].map(function (f) { return [fx(pd(f)), pfn(f)]; });
         return QP({ q: 'Find the cubic polynomial ' + m(FX) + ' that has zeros ' + list(rs.map(n)) + ' and satisfies ' + m('<i>f</i>(' + n(x0) + ') = ' + n(v)) + '. Write it in standard form.',
           mc: mcF([fx(pd(cor)), pfn(cor)], cand, function (i) { var f = fromRoots(rs, a + i); return [fx(pd(f)), pfn(f)]; }),
-          why: ['Each zero <i>r</i> gives a factor ' + m('<i>x</i> ' + M + ' <i>r</i>') + ': ' + fx('<i>a</i>' + rs.map(function (r) { return fac(r); }).join('')) + '.', m('<i>f</i>(' + n(x0) + ') = <i>a</i>' + rs.map(function (r) { return '(' + n(x0 - r) + ')'; }).join('') + ' = ' + n(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(a)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'fromZeros', zs: rs, x0: x0, v: v });
+          why: ['Each zero <i>r</i> gives a factor ' + m('<i>x</i> ' + M + ' <i>r</i>') + ': ' + fx('<i>a</i>' + rs.map(function (r) { return fac(r); }).join('')) + '.', m('<i>f</i>(' + n(x0) + ') = <i>a</i>' + rs.map(function (r) { return '(' + n(x0 - r) + ')'; }).join('') + ' = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(a)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'fromZeros', zs: rs, x0: x0, v: v });
       },
       function () {
         var r = rnz(-4, 4), p = rnz(-3, 3), q = pick([1, 2, 3]), quad = [1, -2 * p, p * p + q * q], c = pmul([1, -r], quad);
@@ -352,7 +352,7 @@
         var cand = [pmul([1, -r], [1, -2 * p, p * p - q * q]).map(function (t) { return cc * t; }), pmul([1, r], quad).map(function (t) { return cc * t; }), base].map(function (f) { return [fx(pd(f)), pfn(f)]; });
         return QP({ q: 'Find the cubic polynomial ' + m(FX) + ' with real coefficients that has zeros ' + n(r) + ' and ' + m(cx(p, q)) + ' and satisfies ' + m('<i>f</i>(' + n(x0) + ') = ' + n(v)) + '.',
           mc: mcF([fx(pd(cor)), pfn(cor)], cand, function (i) { var f = base.map(function (t) { return (cc + i) * t; }); return [fx(pd(f)), pfn(f)]; }),
-          why: ['Real coefficients, so ' + m(cx(p, -q)) + ' is also a zero.', 'The conjugate pair multiplies to ' + m(sq('(' + dv(p) + ')') + ' + ' + (q * q)) + ' = ' + m(pd(quad)) + ' (remember ' + m('<i>i</i><sup>2</sup> = ' + M + '1') + ').', fx('<i>a</i>' + fac(r) + '(' + pd(quad) + ')') + '; ' + m('<i>f</i>(' + n(x0) + ') = ' + n(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(cc)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'cubicConj', r: r, p: p, q: q, x0: x0, v: v });
+          why: ['Real coefficients, so ' + m(cx(p, -q)) + ' is also a zero.', 'The conjugate pair multiplies to ' + m(sq('(' + dv(p) + ')') + ' + ' + (q * q)) + ' = ' + m(pd(quad)) + ' (remember ' + m('<i>i</i><sup>2</sup> = ' + M + '1') + ').', fx('<i>a</i>' + fac(r) + '(' + pd(quad) + ')') + '; ' + m('<i>f</i>(' + n(x0) + ') = ' + lead(peval(base, x0)) + '<i>a</i> = ' + n(v)) + ', so ' + m('<i>a</i> = ' + n(cc)) + '.', 'Multiply out: ' + fx(pd(cor)) + '.'] }, { t: 'cubicConj', r: r, p: p, q: q, x0: x0, v: v });
       },
       function () {
         var r1, r2, p = ri(-3, 3), irr = K.coin(), d = pick([2, 3, 5, 6, 7]), q = pick([1, 2, 3]);
@@ -488,7 +488,7 @@
         var wr = [[fx(factored(a, [r1, r2], [2, 1])), factFn(a, [r1, r2], [2, 1])], [fx(factored(a.neg(), [r1, r2], [1, 2])), factFn(a.neg(), [r1, r2], [1, 2])], [fx(factored(a.mul(2), [r1, r2], [1, 2])), factFn(a.mul(2), [r1, r2], [1, 2])], [fx(factored(a, [-r1, -r2], [1, 2])), factFn(a, [-r1, -r2], [1, 2])]];
         return QP({ q: 'The graph of a polynomial <i>f</i> of degree 3 is shown, with its <i>y</i>-intercept labeled. Which is ' + m(FX) + '?', graph: K.plane({ x: [-5, 5], y: [-10, 10], h: 400, fns: [{ f: fn }], pts: [{ x: 0, y: v.val(), label: '(0, ' + v.val() + ')' }, { x: r1, y: 0 }, { x: r2, y: 0 }] }),
           mc: mcF(cor, K.shuffle(wr)),
-          why: ['The graph crosses at ' + n(r1) + ' (multiplicity 1) and touches at ' + n(r2) + ' (multiplicity 2): ' + fx('<i>a</i>' + fac(r1) + fac(r2, 2)) + '.', 'Use the <i>y</i>-intercept: ' + m('<i>f</i>(0) = <i>a</i>(' + n(-r1) + ')(' + n(-r2) + ')<sup>2</sup> = ' + n(-r1 * r2 * r2) + '<i>a</i> = ' + v.html()) + ', so ' + m('<i>a</i> = ' + a.html()) + '.', 'So ' + fx(factored(a, [r1, r2], [1, 2])) + '.'] }, { t: 'graph', fn: fn });
+          why: ['The graph crosses at ' + n(r1) + ' (multiplicity 1) and touches at ' + n(r2) + ' (multiplicity 2): ' + fx('<i>a</i>' + fac(r1) + fac(r2, 2)) + '.', 'Use the <i>y</i>-intercept: ' + m('<i>f</i>(0) = <i>a</i>(' + n(-r1) + ')(' + n(-r2) + ')<sup>2</sup> = ' + lead(-r1 * r2 * r2) + '<i>a</i> = ' + v.html()) + ', so ' + m('<i>a</i> = ' + a.html()) + '.', 'So ' + fx(factored(a, [r1, r2], [1, 2])) + '.'] }, { t: 'graph', fn: fn });
       },
       function () {
         var W = pick([8, 10, 12, 14, 16]), L = W + 2 * ri(1, 5), d = pick([1, 2]);
