@@ -284,7 +284,7 @@
         var Pp, r, nn, t, A;
         do { Pp = 500 * ri(2, 20); r = pick([2, 2.5, 3, 3.5, 4, 4.5, 5, 6]); nn = pick([1, 2, 4, 12, 365]); t = ri(2, 12); A = Pp * Math.pow(1 + r / 100 / nn, nn * t); } while (!safe(A, 2));
         var rd = r / 100;
-        var ws = [Pp * Math.pow(1 + rd, nn * t), Pp * Math.pow(1 + rd / nn, t), Pp * (1 + rd * t), Pp * Math.exp(rd * t)];
+        var ws = [Pp * Math.pow(1 + rd, nn * t), Pp * Math.pow(1 + rd / nn, t), Pp * (1 + rd * t), Pp * Math.exp(rd * t)].filter(function (w) { return w > Pp && w < 2 * A; });  // keep only believable balances
         return QP({ q: moneyW(Pp) + ' is invested at ' + n(r) + '% interest compounded ' + names[nn] + ' for ' + t + ' years. Find the balance to the nearest cent.', mc: mcN(A, ws, money),
           why: ['Use ' + m('<i>A</i> = <i>P</i>(1 + ' + fr('<i>r</i>', '<i>n</i>') + ')' + K.sup('<i>nt</i>')) + ' with ' + m('<i>P</i> = ' + n(Pp) + ', <i>r</i> = ' + n(rd) + ', <i>n</i> = ' + nn + ', <i>t</i> = ' + t) + '.', m('<i>A</i> = ' + n(Pp) + '(1 + ' + (nn === 1 ? n(rd) : fr(n(rd), nn)) + ')' + K.sup(nn * t)) + (nn > 1 ? '. Divide the rate by ' + m('<i>n</i>') + ' and multiply the time by ' + m('<i>n</i>') + '.' : '.'), m('<i>A</i> ≈ ' + money(A)) + '.'] },
           { t: 'compound', P: Pp, r: rd, n: nn, yrs: t });

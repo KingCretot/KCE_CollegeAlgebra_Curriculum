@@ -562,7 +562,7 @@
         var w1 = trim([a * a + b * c, 2 * a + b + c]);                 // minus reached only x²
         var w2 = trim([a * a - b * c, -(b + c)]);                       // (x + a)² taken as x² + a²
         var w3 = trim([a * a - b * c, 2 * a - b - c, 2]);               // added the x² terms
-        return attach(Q({ q: 'Simplify ' + m(eh) + '.', mc: mcF([m(ph(r)), pf(r)], [[m(ph(w1)), pf(w1)], [m(ph(w2)), pf(w2)], [m(ph(w3)), pf(w3)]], function () { var z = r.slice(); z[0] += rnz(-4, 4); return [m(ph(z)), pf(z)]; }), why: ['Square the binomial: ' + m(bin(1, a) + '<sup>2</sup> = ' + ph(sq)) + '.', 'FOIL the product: ' + m(bin(1, b) + bin(1, c) + ' = ' + ph(pr)) + '.', 'Subtract <b>every</b> term of the product: ' + m(ph(sq) + ' ' + M + ' ' + P([[1, xp(2)], [-(b + c), X], [-b * c, '']]).replace(/^/, '') + ' = ' + ph(r)) + '. (The minus sign changes every sign in the product.)'] }), { t: 'expr', eh: eh });
+        return attach(Q({ q: 'Simplify ' + m(eh) + '.', mc: mcF([m(ph(r)), pf(r)], [[m(ph(w1)), pf(w1)], [m(ph(w2)), pf(w2)], [m(ph(w3)), pf(w3)]], function () { var z = r.slice(); z[0] += rnz(-4, 4); return [m(ph(z)), pf(z)]; }), why: ['Square the binomial: ' + m(bin(1, a) + '<sup>2</sup> = ' + ph(sq)) + '.', 'FOIL the product: ' + m(bin(1, b) + bin(1, c) + ' = ' + ph(pr)) + '.', 'Subtract <b>every</b> term of the product: ' + m(ph(sq)) + ' ' + m(M + ' ' + P([[1, xp(2)], [-(b + c), X], [-b * c, '']])) + ' ' + m('= ' + ph(r)) + '. (The minus sign changes every sign in the product.)'] }), { t: 'expr', eh: eh });
       }
     ]
   ];
