@@ -546,6 +546,7 @@
     return parts.join(' ');
   }
   function dec(q, terms) { return { q: q, t: terms }; }
+  function eqSplit(lhs, terms) { return m(lhs + ' =') + ' ' + terms.map(function (t, i) { return m((i ? '+ ' : '') + t); }).join(' '); }
   function bigFrac(num, denH) { return ctr(m(K.frx(pFmt(num), denH))); }
   var LET = ['A', 'B', 'C', 'D'];
   // L1: choose the form
@@ -600,7 +601,7 @@
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
       mc: mcR(cor, [mk(B, A), mk(A * (r - s), B * (s - r)), mk(A, -B), dec(null, [[[A], lf(-r), 1], [[B], lf(-s), 1]])], decH, decEx(cor)),
       why: ['Factor the denominator: ' + m(pFmt(den) + ' = ' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), facH(lf(s)))) + '.',
-        'Multiply by the denominator: ' + m(pFmt(num) + ' = <i>A</i>' + fpar(s) + ' + <i>B</i>' + fpar(r)) + '.',
+        'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(s), '<i>B</i>' + fpar(r)]) + '.',
         m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s - r) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '.',
         'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
@@ -622,7 +623,7 @@
     var mk = function (a, b, c) { return dec(null, [[[a], lf(r), 1], [[b, c], qf(k), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 1], [qf(k), 1]])),
       mc: mcR(cor, [mk(A, Cc, B), mk(A, -B, Cc), mk(n0, B, Cc), mk(A, B, -Cc), mk(-A, B, Cc)], decH, decEx(cor)),
-      why: ['Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx('<i>Bx</i> + <i>C</i>', facH(qf(k)))) + ' and multiply: ' + m(pFmt(num) + ' = <i>A</i>(' + facH(qf(k)) + ') + (<i>Bx</i> + <i>C</i>)' + fpar(r)) + '.',
+      why: ['Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx('<i>Bx</i> + <i>C</i>', facH(qf(k)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>(' + facH(qf(k)) + ')', '(<i>Bx</i> + <i>C</i>)' + fpar(r)]) + '.',
         'Let ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(n0) + ' = ' + n(r * r + k) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'Match coefficients. ' + m(X + '<sup>2</sup>') + ': ' + m('<i>A</i> + <i>B</i> = ' + n(num[0])) + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + X + ': ' + m('<i>C</i> ' + M + ' (' + n(r) + ')(' + n(B) + ') = ' + n(num[1])) + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
@@ -635,8 +636,8 @@
     var mk = function (a, b, c) { return dec(null, [[[a], lf(0), 1], [[b], lf(r), 1], [[c], lf(s), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
       mc: mcR(cor, [mk(B, A, Cc), mk(A, Cc, B), mk(A, B, -Cc), mk(-A, B, Cc)], decH, decEx(cor)),
-      why: ['Factor out ' + X + ', then factor the quadratic: ' + m(pFmt(den) + ' = <i>x</i>' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), X) + ' + ' + K.frx(iv('B'), facH(lf(r))) + ' + ' + K.frx(iv('C'), facH(lf(s)))) + '.',
-        'Multiply by the denominator: ' + m(pFmt(num) + ' = <i>A</i>' + fpar(r) + fpar(s) + ' + <i>Bx</i>' + fpar(s) + ' + <i>Cx</i>' + fpar(r)) + '.',
+      why: ['Factor out ' + X + ', then factor the quadratic: ' + m(pFmt(den) + ' = <i>x</i>' + fpar(r) + fpar(s)) + '. Write ' + m(K.frx(iv('A'), X)) + ' ' + m('+ ' + K.frx(iv('B'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + '.',
+        'Multiply by the denominator: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>Bx</i>' + fpar(s), '<i>Cx</i>' + fpar(r)]) + '.',
         m('<i>x</i> = 0') + ': ' + m(n(pev(num, 0)) + ' = ' + n(r * s) + '<i>A</i>') + ', so ' + m('<i>A</i> = ' + n(A)) + '. ' + m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r * (r - s)) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n(s * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
@@ -648,7 +649,7 @@
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, pFmt(den)),
       mc: mcR(cor, [mk(null, A, B), mk([1, -t], A, B), mk([1, t], B, A), mk([1, t], -A, -B)], decH, decEx(cor)),
       why: ['The numerator has the higher degree, so divide first: ' + m('(' + pFmt(num) + ') ÷ (' + pFmt(den) + ')') + ' gives the quotient ' + m(pFmt([1, t])) + ' and the remainder ' + m(pFmt(rem)) + '.',
-        'Decompose the remainder: ' + m(K.frx(pFmt(rem), fpar(r) + fpar(s)) + ' = ' + K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), facH(lf(s)))) + ', so ' + m(pFmt(rem) + ' = <i>A</i>' + fpar(s) + ' + <i>B</i>' + fpar(r)) + '.',
+        'Decompose the remainder: ' + eqSplit(K.frx(pFmt(rem), fpar(r) + fpar(s)), [K.frx(iv('A'), facH(lf(r))), K.frx(iv('B'), facH(lf(s)))]) + ', so ' + eqSplit(pFmt(rem), ['<i>A</i>' + fpar(s), '<i>B</i>' + fpar(r)]) + '.',
         m('<i>x</i> = ' + n(r)) + ' gives ' + m('<i>A</i> = ' + n(A)) + ', and ' + m('<i>x</i> = ' + n(s)) + ' gives ' + m('<i>B</i> = ' + n(B)) + '.',
         'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
@@ -660,7 +661,7 @@
     var mk = function (a, b, c) { return dec(null, [[[a], lf(r), 1], [[b], lf(r), 2], [[c], lf(s), 1]]); }, cor = mk(A, B, Cc);
     return QQ({ q: 'Find the partial fraction decomposition.' + bigFrac(num, facProd([[lf(r), 2], [lf(s), 1]])),
       mc: mcR(cor, [mk(B, A, Cc), mk(A, B, -Cc), mk(Cc, B, A), mk(A, -B, Cc)], decH, decEx(cor)),
-      why: ['Write ' + m(K.frx(iv('A'), facH(lf(r))) + ' + ' + K.frx(iv('B'), powH(lf(r), 2)) + ' + ' + K.frx(iv('C'), facH(lf(s)))) + ' and multiply: ' + m(pFmt(num) + ' = <i>A</i>' + fpar(r) + fpar(s) + ' + <i>B</i>' + fpar(s) + ' + <i>C</i>' + powH(lf(r), 2)) + '.',
+      why: ['Write ' + m(K.frx(iv('A'), facH(lf(r)))) + ' ' + m('+ ' + K.frx(iv('B'), powH(lf(r), 2))) + ' ' + m('+ ' + K.frx(iv('C'), facH(lf(s)))) + ' and multiply: ' + eqSplit(pFmt(num), ['<i>A</i>' + fpar(r) + fpar(s), '<i>B</i>' + fpar(s), '<i>C</i>' + powH(lf(r), 2)]) + '.',
         m('<i>x</i> = ' + n(r)) + ': ' + m(n(pev(num, r)) + ' = ' + n(r - s) + '<i>B</i>') + ', so ' + m('<i>B</i> = ' + n(B)) + '. ' + m('<i>x</i> = ' + n(s)) + ': ' + m(n(pev(num, s)) + ' = ' + n((s - r) * (s - r)) + '<i>C</i>') + ', so ' + m('<i>C</i> = ' + n(Cc)) + '.',
         'Match the ' + m(X + '<sup>2</sup>') + '-coefficients: ' + m('<i>A</i> + <i>C</i> = ' + n(num[0])) + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'The decomposition is ' + decH(cor) + '.'] }, { t: 'pfd', num: num, den: den });

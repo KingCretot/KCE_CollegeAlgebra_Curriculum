@@ -317,12 +317,29 @@ def canon(p, raw):
     if t == 'improper': return str(sp.cancel(poly(raw[0]) / poly(raw[1])))
     return json.dumps(raw, default=str, sort_keys=True)
 
+def fmtnum(v):
+    v = Fr(v)
+    sgn = '−' if v < 0 else ''
+    v = abs(v)
+    return sgn + (str(v.numerator) if v.denominator == 1 else '[%d]/[%d]' % (v.numerator, v.denominator))
+
+def fmt_lin(row):
+    """The equation as the page should show it, built independently of the JS formatter."""
+    out, first = '', True
+    for c, v in zip(row[:-1], 'xyz'):
+        c = Fr(c)
+        if c == 0: continue
+        body = ('' if abs(c) == 1 else fmtnum(abs(c))) + v
+        out += (('−' if c < 0 else '') + body) if first else ((' − ' if c < 0 else ' + ') + body)
+        first = False
+    return out + ' = ' + fmtnum(row[-1])
+
 def main():
     res = subprocess.run(['node', '-e', DUMP, str(N)], cwd=HERE, capture_output=True, text=True)
     if res.returncode:
         print(res.stderr); sys.exit(1)
     data = json.loads(res.stdout)
-    fails, per = [], Counter()
+    fails, per, shown, disp = [], Counter(), Counter(), Counter()
     for c in data:
         key = (c['id'], c['lv'], c['gi'])
         per[key] += 1
@@ -335,6 +352,9 @@ def main():
             cs = [canon(p, r) for r in raws]
             if len(set(cs)) != len(cs): fails.append((key, 'TWO CHOICES MATHEMATICALLY EQUAL', c['q'][:110], ' | '.join(c['ch'])))
             if any(r is None for r in raws): fails.append((key, 'MISSING RAW', c['q'][:110], ''))
+            if 'eqs' in p and p['t'] in ('sol', 'count', 'linset', 'cat3', 'aug', 'solvar', 'mateq', 'solinv'):
+                shown[key] += 1
+                if all(fmt_lin(r) in c['q'] for r in p['eqs']): disp[key] += 1
         except Exception as e:
             fails.append((key, 'ERROR ' + repr(e), c['q'][:110], ' | '.join(c['ch'])))
     gens = sorted(per)
@@ -342,6 +362,8 @@ def main():
     for g in gens: by_lesson[g[0]] += 1
     print('generators checked:', len(gens), '| cases:', len(data), '| cases per generator:', min(per.values()))
     print('generators per lesson:', dict(by_lesson))
+    print('display cross-check (system in p found verbatim in the question text):')
+    for k in sorted(shown): print('   ', k, '%d/%d' % (disp[k], shown[k]))
     shown = Counter()
     for f in fails:
         shown[f[0]] += 1

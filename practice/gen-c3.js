@@ -6,7 +6,21 @@
   var ri = K.ri, rnz = K.rnz, pick = K.pick, n = K.n, P = K.poly, Q = K.Q, mc = K.mc, M = K.MINUS, m = K.m, fr = K.frx, R = K.R, COL = K.COL;
   var FX = '<i>f</i>(<i>x</i>)', IX = '<i>x</i>', IY = '<i>y</i>', II = '<i>i</i>';
   function QP(o, p) { var q = Q(o); q.p = p; return q; }
-  function fx(s) { return m(FX + ' = ' + s); }
+  // math that may wrap between top-level terms or factors (never inside parentheses or a fraction)
+  function brk(s) {
+    var chunks = [], seps = [], cur = '', dp = 0, ds = 0, i = 0;
+    while (i < s.length) {
+      if (s.substr(i, 5) === '<span') ds++; else if (s.substr(i, 6) === '</span') ds--;
+      var ch = s.charAt(i), op = s.substr(i, 3);
+      if (dp === 0 && ds === 0 && cur.trim() && (op === ' + ' || op === ' ' + M + ' ' || op === ' = ' || op === ' ÷ ')) { chunks.push(cur.trim()); seps.push(' '); cur = ''; }
+      if (ch === '(') dp++; else if (ch === ')') dp--;
+      cur += ch; i++;
+      if (dp === 0 && ds === 0 && ch === ')' && s.charAt(i) === '(') { chunks.push(cur.trim()); seps.push('<wbr>'); cur = ''; }
+    }
+    if (cur.trim()) chunks.push(cur.trim());
+    return chunks.map(function (c, j) { return (j ? seps[j - 1] : '') + m(c); }).join('');
+  }
+  function fx(s) { return m(FX + ' =') + ' ' + brk(s); }
   function xe(v) { return m(IX + ' = ' + R(v).html()); }
   function ye(v) { return m(IY + ' = ' + R(v).html()); }
   function rh(v) { return R(v).html(); }
@@ -180,7 +194,7 @@
   }
   function qr(qc, r, k) { return r === 0 ? pd(qc) : pd(qc) + (r > 0 ? ' + ' : ' ' + M + ' ') + fr(n(Math.abs(r)), dv(k)); }
   function qrFn(qc, r, k) { return function (x) { return peval(qc, x) + r / (x - k); }; }
-  function setup(k, c) { return m('<b>' + n(k) + '</b> in the box; coefficients ' + c.map(n).join(', ')); }
+  function setup(k, c) { return m('<b>' + n(k) + '</b>') + ' in the box; coefficients ' + m(c.map(n).join(', ')); }
   var c32 = [
     [
       function () {
@@ -190,7 +204,7 @@
       },
       function () {
         var deg = pick([3, 3, 4]), c = randPoly(deg, K.coin()), k = rnz(-3, 3), s = synth(c, k);
-        var ans = function (qc, r) { return 'Quotient ' + m(pd(qc)) + '; remainder ' + m(n(r)); };
+        var ans = function (qc, r) { return 'Quotient ' + brk(pd(qc)) + '; remainder ' + m(n(r)); };
         var wr = [ans(s.q.concat([0]), s.r), ans(s.bottom, 0)]; if (s.r !== 0) wr.push(ans(s.q, -s.r));
         return QP({ q: 'The synthetic division below divides ' + m(pd(c)) + ' by ' + m(dv(k)) + '. What are the quotient and the remainder?' + synTable(k, c, s),
           mc: mc(ans(s.q, s.r), wr, function (i) { var q2 = s.q.slice(); q2[q2.length - 1] += (i % 2 ? i : -i); return ans(q2, s.r); }),
@@ -208,10 +222,10 @@
         var deg, c, k, s;
         do { deg = pick([3, 4]); c = randPoly(deg, true); k = rnz(-3, 3); s = synth(c, k); } while (s.r === 0);
         var nz = c.filter(function (v) { return v !== 0; }), s2 = synth(c, -k), s3 = synth(nz, k);
-        var cor = [m(qr(s.q, s.r, k)), qrFn(s.q, s.r, k)];
-        var wr = [[m(qr(s2.q, s2.r, k)), qrFn(s2.q, s2.r, k)], [m(qr(s3.q, s3.r, k)), qrFn(s3.q, s3.r, k)], [m(qr(s.q.concat([0]), s.r, k)), qrFn(s.q.concat([0]), s.r, k)]];
-        return QP({ q: 'Use synthetic division to divide: ' + m('(' + pd(c) + ') ÷ (' + dv(k) + ')') + '.', mc: mcF(cor, wr, function (i) { var q2 = s.q.slice(); q2[0] += (i % 2 ? i : -i); return [m(qr(q2, s.r, k)), qrFn(q2, s.r, k)]; }),
-          why: ['Use ' + m('<i>k</i> = ' + n(k)) + ' and the coefficients ' + c.map(n).join(', ') + ' (0 holds the place of the missing term).' + synTable(k, c, s), 'The bottom row gives quotient ' + m(pd(s.q)) + ' and remainder ' + n(s.r) + '.', 'Answer: ' + m(qr(s.q, s.r, k)) + '.'] }, { t: 'divexpr', f: pd(c), k: k });
+        var cor = [brk(qr(s.q, s.r, k)), qrFn(s.q, s.r, k)];
+        var wr = [[brk(qr(s2.q, s2.r, k)), qrFn(s2.q, s2.r, k)], [brk(qr(s3.q, s3.r, k)), qrFn(s3.q, s3.r, k)], [brk(qr(s.q.concat([0]), s.r, k)), qrFn(s.q.concat([0]), s.r, k)]];
+        return QP({ q: 'Use synthetic division to divide: ' + m('(' + pd(c) + ') ÷ (' + dv(k) + ')') + '.', mc: mcF(cor, wr, function (i) { var q2 = s.q.slice(); q2[0] += (i % 2 ? i : -i); return [brk(qr(q2, s.r, k)), qrFn(q2, s.r, k)]; }),
+          why: ['Use ' + m('<i>k</i> = ' + n(k)) + ' and the coefficients ' + c.map(n).join(', ') + ' (0 holds the place of the missing term).' + synTable(k, c, s), 'The bottom row gives quotient ' + m(pd(s.q)) + ' and remainder ' + n(s.r) + '.', 'Answer: ' + brk(qr(s.q, s.r, k)) + '.'] }, { t: 'divexpr', f: pd(c), k: k });
       },
       function () {
         var c = randPoly(4, true), k = pick([-3, -2, -1, 2, 3]), s = synth(c, k), nz = c.filter(function (v) { return v !== 0; });
@@ -327,7 +341,7 @@
         var cor = list([n(r), cx(p, q), cx(p, -q)]);
         var wr = [list([n(-r), cx(p, q), cx(p, -q)]), list([n(r), cx(p, q), cx(-p, -q)]), list([n(r), cx(p, q), cx(-p, q)])];
         return QP({ q: 'Given that ' + m(cx(p, q)) + ' is a zero of ' + fx(pd(c)) + ', find all zeros of <i>f</i>.', mc: mc(cor, wr),
-          why: ['The coefficients are real, so the conjugate ' + m(cx(p, -q)) + ' is also a zero.', 'Multiply the conjugate factors: ' + m('(<i>x</i> ' + M + ' (' + cx(p, q) + '))(<i>x</i> ' + M + ' (' + cx(p, -q) + ')) = ' + pd(quad)) + '.', 'Divide: ' + m('(' + pd(c) + ') ÷ (' + pd(quad) + ') = ' + dv(r)) + ', so the third zero is ' + n(r) + '. Zeros: ' + cor + '.'] }, { t: 'zeros', f: pd(c) });
+          why: ['The coefficients are real, so the conjugate ' + m(cx(p, -q)) + ' is also a zero.', 'Multiply the conjugate factors: ' + m('(<i>x</i> ' + M + ' (' + cx(p, q) + '))(<i>x</i> ' + M + ' (' + cx(p, -q) + ')) = ' + pd(quad)) + '.', 'Divide: ' + brk('(' + pd(c) + ') ÷ (' + pd(quad) + ') = ' + dv(r)) + ', so the third zero is ' + n(r) + '. Zeros: ' + cor + '.'] }, { t: 'zeros', f: pd(c) });
       }
     ],
     [
@@ -430,9 +444,9 @@
         var f = lead(c) + zs.map(function (z, i) { return fac(z, ms[i]); }).join('') + (rev ? '(' + n(sR) + ' ' + M + ' ' + IX + ')' : '');
         var ans = function (d, b) { return 'Degree ' + d + '; ' + b.toLowerCase(); };
         var wr = [ans(nf === deg ? deg + 1 : nf, beh(deg, sg)), ans(deg, beh(deg, -sg)), ans(deg, beh(deg + 1, sg))];
-        var lt = 'The leading term is ' + (c === 1 ? '' : n(c) + ' · ') + zs.map(function (z, i) { return K.xp(ms[i]); }).join(' · ') + (rev ? ' · (' + M + IX + ')' : '');
+        var lt = 'The leading term is ' + [c === 1 ? '' : m(n(c))].concat(zs.map(function (z, i) { return m(K.xp(ms[i])); })).concat(rev ? [m('(' + M + IX + ')')] : []).filter(Boolean).join(' · ');
         return QP({ q: 'What are the degree and the end behavior of ' + fx(f) + '?', mc: mc(ans(deg, beh(deg, sg)), wr),
-          why: [m(lt + ' = ' + P([[sg * Math.abs(c), K.xp(deg)]])) + '.' + (rev ? ' The factor ' + m('(' + n(sR) + ' ' + M + ' ' + IX + ')') + ' contributes ' + m(M + IX) + ', which flips the sign.' : ''), 'Degree ' + deg + ' (' + (deg % 2 ? 'odd' : 'even') + ') with a ' + (sg > 0 ? 'positive' : 'negative') + ' leading coefficient.', ans(deg, beh(deg, sg)) + '.'] }, { t: 'degEnd', f: f });
+          why: [lt + ' = ' + m(P([[sg * Math.abs(c), K.xp(deg)]])) + '.' + (rev ? ' The factor ' + m('(' + n(sR) + ' ' + M + ' ' + IX + ')') + ' contributes ' + m(M + IX) + ', which flips the sign.' : ''), 'Degree ' + deg + ' (' + (deg % 2 ? 'odd' : 'even') + ') with a ' + (sg > 0 ? 'positive' : 'negative') + ' leading coefficient.', ans(deg, beh(deg, sg)) + '.'] }, { t: 'degEnd', f: f });
       },
       function () {
         var a, b, c, d, cf, lo, tries = 0;

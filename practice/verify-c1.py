@@ -57,7 +57,7 @@ def to_text(h, cx=False):
         prev = s
         s = re.sub(r'<sup>([^<]*)</sup>', r'**(\1)', s)
         s = re.sub(r'<span class="fr"><span class="nu">([^<]*)</span><span class="de">([^<]*)</span></span>', r'((\1)/(\2))', s)
-        s = re.sub(r'<span class="rad">√<span class="rc">([^<]*)</span></span>', r' sqrt(\1) ', s)
+        s = re.sub(r'<span class="rad">√<span class="rc"[^>]*>([^<]*)</span></span>', r' sqrt(\1) ', s)
     s = strip_tags(s)
     s = H.unescape(s)
     s = (s.replace('−', '-').replace('·', '*').replace('×', '*').replace('π', ' pi ').replace('∞', 'oo')

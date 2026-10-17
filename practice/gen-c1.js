@@ -20,7 +20,7 @@
   function dec2(v) { return Math.abs(v * 100 - Math.round(v * 100)) < 1e-7; }  // at most 2 decimals
   function dol(v) { return nint(v) ? '$' + K.comma(Math.round(v)) : K.money(v); }
   function L(s) { return s.replace(/[A-Za-z]/g, '<i>$&</i>').replace(/\^2/g, '<sup>2</sup>'); } // italic letters
-  function nlWhy(o) { return K.numberLine(o).replace('<svg ', '<svg style="max-width:100%;height:auto" '); }
+  function sqrtF(h) { return '<span class="rad">√<span class="rc" style="display:inline-block;vertical-align:middle;padding-top:1px">' + h + '</span></span>'; } // radical over a stacked fraction
 
   // value-keyed multiple choice: c and wrong items are [html, values]; values are numbers, R, or [re, im]
   function cv(v) { return Array.isArray(v) ? v : (typeof v === 'number' ? [v, 0] : [R(v).val(), 0]); }
@@ -236,7 +236,7 @@
       function () { // simple interest: solve A = P(1 + rt) for t numerically
         var Pp = ri(10, 90) * 100, r = ri(2, 8), t = ri(2, 12), A = Pp + Pp * r * t / 100, I = A - Pp;
         var yr = function (v) { return [m(n(v) + ' years'), [v]]; };
-        return withP(Q({ q: 'Use ' + m(L('A = P(1 + rt)')) + '. How many years does it take ' + dol(Pp) + ' invested at ' + r + '% simple interest to grow to ' + dol(A) + '?', mc: mcV(yr(t), [yr(t / 100), yr(I / r), yr(t + 1)], function () { return yr(t + rnz(-3, 3)); }), why: ['Substitute: ' + m(K.comma(A) + ' = ' + K.comma(Pp) + '(1 + ' + n(r / 100) + L('t') + ')') + '. Write the rate as a decimal: ' + r + '% = ' + n(r / 100) + '.', 'Distribute and subtract ' + K.comma(Pp) + ': ' + m(K.comma(I) + ' = ' + K.comma(Pp * r / 100) + L('t')) + '.', 'Divide: ' + m(L('t = ') + n(t)) + ' years.'] }), { k: 'word', w: 'interestT', A: A, P: Pp, r: r });
+        return withP(Q({ q: 'Use ' + m(L('A = P(1 + rt)')) + '. How many years does it take ' + dol(Pp) + ' invested at ' + r + '% simple interest to grow to ' + dol(A) + '?', mc: mcV(yr(t), [yr(t / 100), dec2(A / (Pp * r / 100)) ? yr(A / (Pp * r / 100)) : null, yr(t + 1)], function () { return yr(t + rnz(-3, 3)); }), why: ['Substitute: ' + m(K.comma(A) + ' = ' + K.comma(Pp) + '(1 + ' + n(r / 100) + L('t') + ')') + '. Write the rate as a decimal: ' + r + '% = ' + n(r / 100) + '.', 'Distribute and subtract ' + K.comma(Pp) + ': ' + m(K.comma(I) + ' = ' + K.comma(Pp * r / 100) + L('t')) + '.', 'Divide: ' + m(L('t = ') + n(t)) + ' years.'] }), { k: 'word', w: 'interestT', A: A, P: Pp, r: r });
       }
     ]
   ];
@@ -284,7 +284,7 @@
         do { x = ri(1, T / 500 - 1) * 500; } while (x === T - x);
         var I = (r1 * x + r2 * (T - x)) / 100;
         var dv = function (v) { return [dol(v), [v]]; };
-        return withP(Q({ q: dol(T) + ' is split between two accounts paying ' + r1 + '% and ' + r2 + '% simple interest. The total interest after one year is ' + dol(I) + '. How much is invested at ' + r1 + '%?', mc: mcV(dv(x), [dv(T - x)], function () { var z = x + 500 * rnz(-4, 4); return z > 0 && z < T ? dv(z) : null; }), why: ['Let ' + X + ' be the amount at ' + r1 + '%; then ' + m(K.comma(T) + ' ' + M + ' ' + X) + ' is at ' + r2 + '%.', 'Interest equation: ' + m(n(r1 / 100) + X + ' + ' + n(r2 / 100) + '(' + K.comma(T) + ' ' + M + ' ' + X + ') = ' + K.comma(I)) + '.', 'Simplify: ' + m(K.comma(r2 * T / 100) + ' ' + M + ' ' + n((r2 - r1) / 100) + X + ' = ' + K.comma(I)) + ', so ' + xeq(x) + '. ' + dol(x) + ' is at ' + r1 + '% and ' + dol(T - x) + ' at ' + r2 + '%.'] }), { k: 'word', w: 'split', T: T, r1: r1, r2: r2, I: I });
+        return withP(Q({ q: dol(T) + ' is split between two accounts paying ' + r1 + '% and ' + r2 + '% simple interest. The total interest after one year is ' + dol(I) + '. How much is invested at ' + r1 + '%?', mc: mcV(dv(x), [dv(T - x)], function () { var z = x + 500 * rnz(-4, 4); return z > 0 && z < T ? dv(z) : null; }), why: ['Let ' + X + ' be the amount at ' + r1 + '%; then ' + m(K.comma(T) + ' ' + M + ' ' + X) + ' is at ' + r2 + '%.', 'Interest equation: ' + m(n(r1 / 100) + X + ' + ' + n(r2 / 100) + '(' + K.comma(T) + ' ' + M + ' ' + X + ') = ' + K.comma(I)) + '.', 'Simplify: ' + m(K.comma(r2 * T / 100) + ' ' + M + ' ' + n((r2 - r1) / 100) + X + ' = ' + K.comma(I)) + ', so ' + m('<i>x</i> = ' + K.comma(x)) + '. ' + dol(x) + ' is at ' + r1 + '% and ' + dol(T - x) + ' at ' + r2 + '%.'] }), { k: 'word', w: 'split', T: T, r1: r1, r2: r2, I: I });
       },
       function () { // mixture: add x L of p1% to V L of p2%
         var p1, p2, p3, V, x, dil = K.coin();
@@ -325,13 +325,13 @@
         do { c2 = ri(2, 9); c1 = c2 + ri(1, 6); F1 = ri(0, 10) * 5; x = ri(4, 30); F2 = F1 + (c1 - c2) * x; } while (F2 > 300);
         var mo = function (v) { return [m(n(v) + ' months'), [v]]; }, w = [];
         [(F2 + F1) / (c1 + c2), F2 / c1, (F2 - F1) / c2].forEach(function (v) { if (nint(v) && v > 0) w.push(mo(v)); });
-        return withP(Q({ q: 'Gym A charges a ' + dol(F1) + ' sign-up fee plus ' + dol(c1) + ' per month. Gym B charges a ' + dol(F2) + ' sign-up fee plus ' + dol(c2) + ' per month. After how many months is the total cost the same?', mc: mcV(mo(x), w, function () { var z = x + rnz(-4, 4); return z > 0 ? mo(z) : null; }), why: ['Costs after ' + X + ' months: A = ' + m(c1 + X + (F1 ? ' + ' + F1 : '')) + ', B = ' + m(c2 + X + ' + ' + F2) + '.', 'Set them equal: ' + m(c1 + X + (F1 ? ' + ' + F1 : '') + ' = ' + c2 + X + ' + ' + F2) + ', so ' + m((c1 - c2) + X + ' = ' + (F2 - F1)) + '.', xeq(x) + ' months (both cost ' + dol(F1 + c1 * x) + ').'] }), { k: 'word', w: 'plans', F1: F1, c1: c1, F2: F2, c2: c2 });
+        return withP(Q({ q: 'Gym A charges a ' + dol(F1) + ' sign-up fee plus ' + dol(c1) + ' per month. Gym B charges a ' + dol(F2) + ' sign-up fee plus ' + dol(c2) + ' per month. After how many months is the total cost the same?', mc: mcV(mo(x), w, function () { var z = x + rnz(-4, 4); return z > 0 ? mo(z) : null; }), why: ['Costs after ' + X + ' months: A = ' + m(c1 + X + (F1 ? ' + ' + F1 : '')) + ', B = ' + m(c2 + X + ' + ' + F2) + '.', 'Set them equal: ' + m(c1 + X + (F1 ? ' + ' + F1 : '') + ' = ' + c2 + X + ' + ' + F2) + ', so ' + m(P([[c1 - c2, X]]) + ' = ' + (F2 - F1)) + '.', xeq(x) + ' months (both cost ' + dol(F1 + c1 * x) + ').'] }), { k: 'word', w: 'plans', F1: F1, c1: c1, F2: F2, c2: c2 });
       },
       function () { // overall rate
         var A, r1, r2, r3, y;
         do { r1 = ri(2, 5); r3 = r1 + ri(1, 3); r2 = r3 + ri(1, 4); A = ri(2, 20) * 1000; y = A * (r3 - r1) / (r2 - r3); } while (!nint(y) || y % 100 !== 0 || y === A);
         var dv = function (v) { return [dol(v), [v]]; };
-        return withP(Q({ q: 'An investor has ' + dol(A) + ' earning ' + r1 + '% simple interest. How much more must be invested at ' + r2 + '% so that the total investment earns ' + r3 + '% overall per year?', mc: mcV(dv(y), [dv(y + A), dv(A * (r3 - r1) / (r2 - r1)), dv(A)], function () { var z = y + 500 * rnz(-4, 4); return z > 0 ? dv(z) : null; }), why: ['Let ' + X + ' be the new amount. Interest: ' + m(n(r1 / 100) + '(' + K.comma(A) + ') + ' + n(r2 / 100) + X + ' = ' + n(r3 / 100) + '(' + K.comma(A) + ' + ' + X + ')') + '.', 'Multiply by 100: ' + m(K.comma(r1 * A) + ' + ' + r2 + X + ' = ' + K.comma(r3 * A) + ' + ' + r3 + X) + '.', m((r2 - r3) + X + ' = ' + K.comma((r3 - r1) * A)) + ', so ' + X + ' = ' + dol(y) + '.'] }), { k: 'word', w: 'overall', A: A, r1: r1, r2: r2, r3: r3 });
+        return withP(Q({ q: 'An investor has ' + dol(A) + ' earning ' + r1 + '% simple interest. How much more must be invested at ' + r2 + '% so that the total investment earns ' + r3 + '% overall per year?', mc: mcV(dv(y), [dv(y + A), dv(A * (r3 - r1) / (r2 - r1)), dv(A)], function () { var z = y + 500 * rnz(-4, 4); return z > 0 ? dv(z) : null; }), why: ['Let ' + X + ' be the new amount. Interest: ' + m(n(r1 / 100) + '(' + K.comma(A) + ') + ' + n(r2 / 100) + X + ' = ' + n(r3 / 100) + '(' + K.comma(A) + ' + ' + X + ')') + '.', 'Multiply by 100: ' + m(K.comma(r1 * A) + ' + ' + r2 + X + ' = ' + K.comma(r3 * A) + ' + ' + r3 + X) + '.', m(P([[r2 - r3, X]]) + ' = ' + K.comma((r3 - r1) * A)) + ', so ' + X + ' = ' + dol(y) + '.'] }), { k: 'word', w: 'overall', A: A, r1: r1, r2: r2, r3: r3 });
       }
     ]
   ];
@@ -360,7 +360,7 @@
         var e = ri(5, 99), v = iPow(e), idx = ((e % 4) + 4) % 4;
         var cor = [cxv(1, 0), cxv(0, 1), cxv(-1, 0), cxv(0, -1)][idx];
         var ex = m('i<sup>' + e + '</sup>');
-        return withP(Q({ q: 'Simplify ' + ex + '.', mc: mcV(cor, IP), why: ['Powers of i repeat every 4: ' + m('i<sup>1</sup> = i, i<sup>2</sup> = ' + M + '1, i<sup>3</sup> = ' + M + 'i, i<sup>4</sup> = 1') + '.', e + ' ÷ 4 = ' + Math.floor(e / 4) + ' remainder ' + idx + ', so ' + m(ex + ' = (i<sup>4</sup>)<sup>' + Math.floor(e / 4) + '</sup> · i<sup>' + idx + '</sup> = ' + (idx === 0 ? '1' : 'i<sup>' + idx + '</sup>')) + '.', 'Answer: ' + m(cx(v[0], v[1])) + '.'] }), { k: 'cx', e: ex });
+        return withP(Q({ q: 'Simplify ' + ex + '.', mc: mcV(cor, IP), why: ['Powers of i repeat every 4: ' + m('i<sup>1</sup> = i, i<sup>2</sup> = ' + M + '1, i<sup>3</sup> = ' + M + 'i, i<sup>4</sup> = 1') + '.', e + ' ÷ 4 = ' + Math.floor(e / 4) + ' remainder ' + idx + ', so ' + m(ex + ' = (i<sup>4</sup>)<sup>' + Math.floor(e / 4) + '</sup> · i<sup>' + idx + '</sup> = ' + (idx === 0 ? '1' : idx === 1 ? 'i' : 'i<sup>' + idx + '</sup>')) + '.', 'Answer: ' + m(cx(v[0], v[1])) + '.'] }), { k: 'cx', e: ex });
       }
     ],
     [
@@ -508,11 +508,11 @@
       },
       function () { // solve a formula for a variable (square root)
         var F = pick([
-          [L('A = ') + 'π' + L('r^2'), 'r', K.sqrt(fr(L('A'), 'π')), [fr(L('A'), 'π'), fr(K.sqrt(L('A')), 'π'), K.sqrt(L('A') + 'π')], 'Divide by π, then take the positive square root (a radius is positive).'],
-          [L('s = ') + fr(1, 2) + L('gt^2'), 't', K.sqrt(fr(L('2s'), L('g'))), [K.sqrt(fr(L('s'), L('2g'))), fr(L('2s'), L('g')), fr(K.sqrt(L('2s')), L('g'))], 'Multiply by 2, divide by ' + m(L('g')) + ', then take the positive square root (time is positive).'],
+          [L('A = ') + 'π' + L('r^2'), 'r', sqrtF(fr(L('A'), 'π')), [fr(L('A'), 'π'), fr(K.sqrt(L('A')), 'π'), K.sqrt(L('A') + 'π')], 'Divide by π, then take the positive square root (a radius is positive).'],
+          [L('s = ') + fr(1, 2) + L('gt^2'), 't', sqrtF(fr(L('2s'), L('g'))), [sqrtF(fr(L('s'), L('2g'))), fr(L('2s'), L('g')), fr(K.sqrt(L('2s')), L('g'))], 'Multiply by 2, divide by ' + m(L('g')) + ', then take the positive square root (time is positive).'],
           [L('a^2 + b^2 = c^2'), 'b', K.sqrt(L('c^2 − a^2')), [L('c − a'), K.sqrt(L('c^2 + a^2')), L('c^2 − a^2')], 'Subtract ' + m(L('a^2')) + ', then take the positive square root (a length is positive). Note that ' + m(K.sqrt(L('c^2 − a^2'))) + ' is not ' + m(L('c − a')) + '.'],
-          [L('V = ') + 'π' + L('r^2h'), 'r', K.sqrt(fr(L('V'), 'π' + L('h'))), [fr(L('V'), 'π' + L('h')), K.sqrt(L('V') + 'π' + L('h')), fr(K.sqrt(L('V')), 'π' + L('h'))], 'Divide by ' + m('π' + L('h')) + ', then take the positive square root (a radius is positive).'],
-          [L('E = mc^2'), 'c', K.sqrt(fr(L('E'), L('m'))), [fr(L('E'), L('m')), K.sqrt(L('Em')), fr(K.sqrt(L('E')), L('m'))], 'Divide by ' + m(L('m')) + ', then take the positive square root (' + m(L('c')) + ' is a positive speed).']
+          [L('V = ') + 'π' + L('r^2h'), 'r', sqrtF(fr(L('V'), 'π' + L('h'))), [fr(L('V'), 'π' + L('h')), K.sqrt(L('V') + 'π' + L('h')), fr(K.sqrt(L('V')), 'π' + L('h'))], 'Divide by ' + m('π' + L('h')) + ', then take the positive square root (a radius is positive).'],
+          [L('E = mc^2'), 'c', sqrtF(fr(L('E'), L('m'))), [fr(L('E'), L('m')), K.sqrt(L('Em')), fr(K.sqrt(L('E')), L('m'))], 'Divide by ' + m(L('m')) + ', then take the positive square root (' + m(L('c')) + ' is a positive speed).']
         ]);
         var v = L(F[1]);
         return withP(Q({ q: 'Solve ' + m(F[0]) + ' for ' + m(v) + ', where all variables are positive.', mc: mc(m(v + ' = ' + F[2]), F[3].map(function (w) { return m(v + ' = ' + w); })), why: ['Isolate ' + m(v + '<sup>2</sup>') + ' first. ' + F[4], 'Result: ' + m(v + ' = ' + F[2]) + '.', 'Check by squaring: substituting back gives the original formula.'] }), { k: 'formula', e: m(F[0]), v: F[1], pos: 1 });
@@ -523,7 +523,7 @@
 
   /* ================= 1.5 Applications & Modeling with Quadratic Equations ================= */
   var TRIP = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 12, 15]];
-  function sec(v) { return [m(L('t = ') + n(v)) + ' seconds', [v]]; }
+  function sec(v) { return [m(L('t = ') + n(v)) + (v === 1 ? ' second' : ' seconds'), [v]]; }
   var c15 = [
     [
       function () { // ladder
@@ -606,14 +606,14 @@
         var x0, k, eD, A, B, C;
         do { x0 = rnz(-9, 9); k = ri(2, 6); eD = rnz(-5, 5); A = x0 * eD / k; } while (!nint(A) || A === 0);
         B = rnz(-5, 5); C = B + eD;
-        var e = m(fr(n(A), X) + (B > 0 ? ' + ' : ' ' + M + ' ') + R(Math.abs(B), k).html() + ' = ' + R(C, k).html());
+        var e = m((A < 0 ? M : '') + fr(n(Math.abs(A)), X) + (B > 0 ? ' + ' : ' ' + M + ' ') + R(Math.abs(B), k).html() + ' = ' + R(C, k).html());
         var w = [setH([-x0]), setH([R(A, eD)])]; if (C + B !== 0) w.push(setH([R(k * A, C + B)]));
         return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([x0]), w, function () { var z = x0 + rnz(-4, 4); return z ? setH([z]) : null; }), why: ['Note ' + m('<i>x</i> ≠ 0') + '. Multiply every term by ' + m(k + X) + ': ' + m(n(k * A) + (B > 0 ? ' + ' : ' ' + M + ' ') + (Math.abs(B) === 1 ? '' : Math.abs(B)) + X + ' = ' + P([[C, X]])) + '.', 'Collect the ' + X + '-terms: ' + m(n(k * A) + ' = ' + P([[eD, X]])) + ', so ' + xeq(x0) + '.', n(x0) + ' is not excluded, so the solution set is ' + setH([x0])[0] + '.'] }), { k: 'solve', e: e });
       },
       function () { // √(ax + b) = c
         var a = ri(1, 5), x0 = ri(-5, 12), c = ri(1, 9), b = c * c - a * x0, neg = ri(1, 5) === 1;
         var cc = neg ? -c : c, e = m(K.sqrt(lin(a, b)) + ' = ' + n(cc)), xs = R(c * c - b, a);
-        if (!neg) return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([xs]), [setH([R(c - b, a)]), setH([R(c * c + b, a)]), EMPTY], function () { return setH([xs.add(rnz(-3, 3))]); }), why: ['Square both sides: ' + m(lin(a, b) + ' = ' + c * c) + '.', 'Solve: ' + m(P([[a, X]]) + ' = ' + n(c * c - b)) + ', so ' + xeq(xs) + '.', 'Check: ' + m(K.sqrt(n(a * xs.val() + b)) + ' = ' + c) + ' ✓. Solution set ' + setH([xs])[0] + '.'] }), { k: 'solve', e: e });
+        if (!neg) return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([xs]), [setH([R(c - b, a)]), setH([R(c * c + b, a)]), EMPTY], function () { return setH([xs.add(rnz(-3, 3))]); }), why: ['Square both sides: ' + m(lin(a, b) + ' = ' + c * c) + '.', (a === 1 ? 'Solve: ' + xeq(xs) + '.' : 'Solve: ' + m(P([[a, X]]) + ' = ' + n(c * c - b)) + ', so ' + xeq(xs) + '.'), 'Check: ' + m(K.sqrt(n(a * xs.val() + b)) + ' = ' + c) + ' ✓. Solution set ' + setH([xs])[0] + '.'] }), { k: 'solve', e: e });
         return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(EMPTY, [setH([xs]), setH([R(-c - b, a)]), setH([R(-c * c - b, a)])], function () { return setH([xs.add(rnz(-4, 4))]); }), why: ['A principal square root is never negative, so it cannot equal ' + n(cc) + '.', 'Squaring gives ' + xeq(xs) + ', but the check fails: ' + m(K.sqrt(n(a * xs.val() + b)) + ' = ' + c + ' ≠ ' + n(cc)) + '.', 'The solution set is ∅.'] }), { k: 'solve', e: e });
       },
       function () { // work together
@@ -693,7 +693,7 @@
       },
       function () { // quadratic in form
         if (K.coin()) {
-          var u1, u2; do { u1 = rnz(-4, 4); u2 = rnz(-4, 4); } while (u1 === u2 || (Math.abs(u1) === 1 && Math.abs(u2) === 1));
+          var u1, u2; do { u1 = rnz(-4, 4); u2 = rnz(-4, 4); } while (u1 === u2 || u1 + u2 === 0 || (Math.abs(u1) === 1 && Math.abs(u2) === 1));
           var e = m(X + '<sup>2/3</sup>' + cont([[-(u1 + u2), X + '<sup>1/3</sup>'], [u1 * u2, '']]) + ' = 0');
           var cub = function (z) { return z * z * z; };
           return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([cub(u1), cub(u2)]), [setH([u1, u2]), setH([-cub(u1), -cub(u2)]), setH([u1 * u1, u2 * u2])], function () { return setH([cub(u1) + rnz(-3, 3), cub(u2)]); }), why: ['Let ' + m('<i>u</i> = ' + X + '<sup>1/3</sup>') + ', so ' + m('<i>u</i><sup>2</sup> = ' + X + '<sup>2/3</sup>') + ': ' + m(P([[1, '<i>u</i><sup>2</sup>'], [-(u1 + u2), '<i>u</i>'], [u1 * u2, '']]) + ' = 0') + '.', 'Factor: ' + m('(<i>u</i>' + K.plusK(-u1) + ')(<i>u</i>' + K.plusK(-u2) + ') = 0') + ', so ' + m('<i>u</i> = ' + n(u1)) + ' or ' + m('<i>u</i> = ' + n(u2)) + '.', 'Cube to undo ' + m(X + '<sup>1/3</sup>') + ': ' + m('<i>x</i> = ' + n(cub(u1))) + ' or ' + m('<i>x</i> = ' + n(cub(u2))) + '. Both check, so the solution set is ' + setH([cub(u1), cub(u2)])[0] + '.'] }), { k: 'ratexp2', u1: u1, u2: u2, e: e });
@@ -707,7 +707,7 @@
       function () { // work: unknown time, or fill and drain
         var hr = function (v) { return [m(n(v) + ' hours'), [v]]; };
         if (K.coin()) {
-          var a, B, T; do { a = ri(2, 12); B = ri(2, 20); T = a * B / (a + B); } while (a === B || !dec2(T));
+          var a, B, T; do { a = ri(2, 12); B = ri(2, 20); T = a * B / (a + B); } while (a === B || !nint(T * 10));
           var w = []; [a - T, 2 * T, a + T].forEach(function (v) { if (v > 0 && dec2(v)) w.push(hr(v)); });
           return withP(Q({ q: 'Working together, two pumps empty a pool in ' + n(T) + ' hours. The first pump alone takes ' + a + ' hours. How long would the second pump take alone?', mc: mcV(hr(B), w, function () { var z = B + rnz(-4, 4); return z > 0 ? hr(z) : null; }), why: ['Let ' + X + ' be the second pump’s time. Rates add: ' + m(fr(1, a) + ' + ' + fr(1, X) + ' = ' + fr(1, n(T))) + '.', m(fr(1, X) + ' = ' + fr(1, n(T)) + ' ' + M + ' ' + fr(1, a) + ' = ' + R(1, B).html()) + '.', 'So ' + xeq(B) + ' hours.'] }), { k: 'word', w: 'workB', a: a, T: T });
         }
@@ -801,7 +801,7 @@
         var e = m(fr(lin(1, a), lin(1, -b)) + ' ' + SYM[sym] + ' ' + n(k)), cor = ivSet(orig(sym), [z, b]);
         var cross = ivSet(function (x) { return cmp(x.add(a).sub(x.sub(b).mul(k)), sym); }, [z]);
         var w = [cross, ivSet(orig(sym, true), [z, b]), ivSet(orig(OPP[sym]), [z, b]), ivSet(orig(STR[sym]), [z, b])];
-        return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, w), why: ['Do not multiply by ' + m(lin(1, -b)) + ' (its sign is unknown). Subtract ' + n(k) + ' instead: ' + m(fr(lin(1, a), lin(1, -b)) + ' ' + M + ' ' + sub(k) + ' ' + SYM[sym] + ' 0') + '.', 'Common denominator: ' + m(fr(lin(1 - k, a + k * b), lin(1, -b)) + ' ' + SYM[sym] + ' 0') + '. Critical values: ' + xeq(z) + ' and ' + xeq(b) + '.', 'Test intervals: ' + intervalTests([z, b], orig(sym)) + '. ' + n(b) + ' is excluded (denominator 0). Answer: ' + cor + '.'] }), { k: 'ineq', e: e });
+        return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, w), why: ['Do not multiply by ' + m(lin(1, -b)) + ' (its sign is unknown). ' + (k > 0 ? 'Subtract ' + k : 'Add ' + (-k)) + ' on both sides instead: ' + m(fr(lin(1, a), lin(1, -b)) + (k > 0 ? ' ' + M + ' ' + k : ' + ' + (-k)) + ' ' + SYM[sym] + ' 0') + '.', 'Common denominator: ' + m(fr(lin(1 - k, a + k * b), lin(1, -b)) + ' ' + SYM[sym] + ' 0') + '. Critical values: ' + xeq(z) + ' and ' + xeq(b) + '.', 'Test intervals: ' + intervalTests([z, b], orig(sym)) + '. ' + n(b) + ' is excluded (denominator 0). Answer: ' + cor + '.'] }), { k: 'ineq', e: e });
       },
       function () { // x² sym k (irrational) or no real zeros
         var sym = pick(['<', '<=', '>', '>=']), cl = sym.length === 2, lt = sym.charAt(0) === '<';
@@ -810,7 +810,7 @@
           var r = radH(sqf(k)[0], sqf(k)[1]), e = m(X2 + ' ' + SYM[sym] + ' ' + k);
           var ins = function (c) { return m((c ? '[' : '(') + M + r + ', ' + r + (c ? ']' : ')')); }, out = function (c) { return m(NEGINF + ', ' + M + r + (c ? ']' : ')') + ' ∪ ' + (c ? '[' : '(') + r + ', ∞)'); };
           var cor = lt ? ins(cl) : out(cl), w = lt ? [out(!cl), ins(!cl), m(NEGINF + ', ' + r + (cl ? ']' : ')'))] : [ins(!cl), out(!cl), m((cl ? '[' : '(') + r + ', ∞)')];
-          return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, w), why: ['Rewrite: ' + m(X2 + ' ' + M + ' ' + k + ' ' + SYM[sym] + ' 0') + '. The zeros are ' + m('<i>x</i> = ±' + K.sqrt(k) + ' = ±' + r) + '.', 'Test 0: ' + m('0 ' + M + ' ' + k + ' &lt; 0') + ', so the middle interval makes ' + m(X2 + ' ' + M + ' ' + k) + ' negative and the outer intervals make it positive.', 'So the solution set is ' + cor + (cl ? ', endpoints included.' : ', endpoints excluded.')] }), { k: 'ineq', e: e });
+          return withP(Q({ q: 'Solve ' + e + '. Write the solution set in interval notation.', mc: mc(cor, w), why: ['Rewrite: ' + m(X2 + ' ' + M + ' ' + k + ' ' + SYM[sym] + ' 0') + '. The zeros are ' + m('<i>x</i> = ±' + K.sqrt(k) + (sqf(k)[0] > 1 ? ' = ±' + r : '')) + '.', 'Test 0: ' + m('0 ' + M + ' ' + k + ' &lt; 0') + ', so the middle interval makes ' + m(X2 + ' ' + M + ' ' + k) + ' negative and the outer intervals make it positive.', 'So the solution set is ' + cor + (cl ? ', endpoints included.' : ', endpoints excluded.')] }), { k: 'ineq', e: e });
         }
         var b, c; do { b = ri(-6, 6); c = ri(1, 15); } while (b * b - 4 * c >= 0);
         var e2 = m(quad(1, b, c) + ' ' + SYM[sym] + ' 0'), all = m(NEGINF + ', ∞)'), none = m('∅'), h = R(-b, 2);
@@ -906,7 +906,7 @@
         var all = m(NEGINF + ', ∞)'), none = m('∅'), pt = m('{' + v.html() + '}'), hole = m(NEGINF + ', ' + v.html() + ') ∪ (' + v.html() + ', ∞)');
         var cor = rhs < 0 ? (t === 0 ? all : none) : (sym === '<=' ? pt : sym === '>' ? hole : sym === '<' ? none : all);
         var reason = rhs < 0 ? 'An absolute value is never negative, so it is always greater than ' + n(rhs) + ' and never less than it.' : (sym === '<=' ? 'An absolute value is never negative, so ' + m(absH(a, b) + ' ≤ 0') + ' only when it equals 0.' : sym === '>' ? 'An absolute value is positive except where it equals 0.' : sym === '<' ? 'An absolute value is never less than 0.' : 'An absolute value is always at least 0.');
-        return withP(Q({ q: 'Solve ' + e + '.', mc: mc(cor, [all, none, pt, hole].filter(function (z) { return z !== cor; })), why: ['Isolate the absolute value: ' + m(absH(a, b) + ' ' + SYM[sym] + ' ' + n(rhs)) + '.', reason, (rhs === 0 ? m(lin(a, b) + ' = 0') + ' at ' + xeq(v) + '. ' : '') + 'Solution set: ' + cor + '.'] }), { k: 'ineq', e: e });
+        return withP(Q({ q: 'Solve ' + e + '.', mc: mc(cor, [all, none, pt, hole].filter(function (z) { return z !== cor; })), why: ['Isolate the absolute value: ' + m(absH(a, b) + ' ' + SYM[sym] + ' ' + n(rhs)) + '.', reason, (rhs === 0 && (sym === '<=' || sym === '>') ? m(lin(a, b) + ' = 0') + ' at ' + xeq(v) + '. ' : '') + 'Solution set: ' + cor + '.'] }), { k: 'ineq', e: e });
       },
       function () { // tolerance
         var C = pick([['A bolt', 'mm', 20, [0.05, 0.1, 0.2]], ['A cereal box', 'oz', 16, [0.25, 0.5]], ['A metal rod', 'cm', 45, [0.1, 0.3, 0.5]], ['A water bottle', 'mL', 500, [2, 5, 8]], ['A machine part', 'in.', 3, [0.01, 0.02, 0.05]]]);
