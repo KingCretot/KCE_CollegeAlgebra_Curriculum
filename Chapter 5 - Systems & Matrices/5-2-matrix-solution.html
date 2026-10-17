@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Lesson 5.2: Matrix Solution of Linear Systems</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 5: Systems and Matrices</div></div></div><div class="lesson-tag">Lesson 5.2 &middot; Matrix Solution</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 11</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Let's Begin</p><h1 class="slide-title">Elimination, with the variables left out</h1>
+<div class="card warm"><p style="margin-bottom:0;">When you solve by elimination, the variables just come along for the ride. A matrix keeps only the numbers, which makes larger systems faster and less error-prone.</p></div><p>Today you'll write a system as an augmented matrix, use row operations to reduce it, and read the solution from the result.</p><h2 class="sub-title" style="margin-top:22px;">By the end of today, you will be able to:</h2><ul class="obj-list"><li><span class="num">1</span><span>Write the augmented matrix of a linear system</span></li><li><span class="num">2</span><span>Use the three row operations to solve by the Gauss-Jordan method</span></li><li><span class="num">3</span><span>Recognize inconsistent and dependent systems from a matrix</span></li></ul>
+  <div class="name-field-wrap">
+        <label for="studentName">Your name (so your tutor can see your progress)</label>
+        <input type="text" id="studentName" placeholder="Type your first and last name">
+      </div>
+
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Vocabulary</p><h1 class="slide-title">The words for this lesson</h1>
+<div class="vocab-grid"><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Matrix &amp; Dimensions</span></div><div class="vocab-body"><p class="vocab-def">A rectangular array of numbers. An m &times; n matrix has m rows and n columns.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> A system of 3 equations in 3 variables has a 3 &times; 4 augmented matrix.</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Augmented Matrix</span></div><div class="vocab-body"><p class="vocab-def">The coefficients of the variables, then a bar, then the constants.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> 2x &minus; y = 1 and x + 3y = 11 become [2 &minus;1 | 1; 1 3 | 11].</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Row Operations</span></div><div class="vocab-body"><p class="vocab-def">(1) Swap two rows. (2) Multiply a row by a nonzero number. (3) Add a multiple of one row to another.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Common slip:</b> Adding a number to every entry of a row is <em>not</em> a row operation.</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Gauss-Jordan Method</span></div><div class="vocab-body"><p class="vocab-def">Use row operations until the left side has 1s on the diagonal and 0s elsewhere. The last column is then the solution.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Memory hook:</b> Work column by column: get the 1, then clear the rest of that column.</span></div></div></div></div><div class="card warm"><p style="margin-bottom:0;"><strong>Notation:</strong> to save space, a matrix is sometimes written on one line with its rows separated by semicolons. [1 2; 3 4] means the matrix with first row 1, 2 and second row 3, 4.</p></div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">How It Works</p><h1 class="slide-title">The Gauss-Jordan method</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Write the augmented matrix</div>One row per equation, one column per variable, and the constants after the bar.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Get a 1 in the first column</div>Swap rows or divide a row so the top-left entry is 1.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Clear the rest of that column</div>Add multiples of the first row to the others to make every other entry in column 1 a 0. Then repeat for column 2, column 3, and so on.</div></div><div class="step"><div class="badge">4</div><div class="content"><div class="label">Read the answer</div>With 1s on the diagonal and 0s elsewhere, the last column gives x, y, (and z) in order.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> A row like [0 0 | 5] says 0 = 5, so the system has no solution. A row of all zeros, [0 0 | 0], says 0 = 0 and signals infinitely many solutions.</p></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Real-World Context</p><h1 class="slide-title">Mixing a snack blend</h1>
+<p>A shop mixes peanuts at $3/lb, cashews at $8/lb, and raisins at $2/lb into 10 lb of trail mix worth $40, using twice as many pounds of peanuts as raisins. Three conditions and three unknowns: a matrix keeps the work organized.</p><div class="card warm"><p style="margin-bottom:0;"><strong>Example:</strong> With p, c, and r for pounds: p + c + r = 10, 3p + 8c + 2r = 40, and p &minus; 2r = 0. Row-reducing the 3 &times; 4 augmented matrix gives <strong>p = 5, c = 2.5, r = 2.5</strong>. Check: 3(5) + 8(2.5) + 2(2.5) = 15 + 20 + 5 = $40.</p></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Worked Example &middot; Two Variables</p><h1 class="slide-title">Solve 2x &minus; y = 1 and x + 3y = 11 with a matrix</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Write and swap</div>Swap the rows so the first entry is 1.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Clear column 1</div>R2 &minus; 2R1 makes the 2 a 0. Then divide R2 by &minus;7.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Clear column 2</div>R1 &minus; 3R2 makes the 3 a 0. The solution is <strong>(2, 3)</strong>. Check: 2(2) &minus; 3 = 1.</div></div><p style="margin:6px 0 0;font-weight:600;">After swapping the rows:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">3</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">11</td></tr><tr><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;">&minus;1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">1</td></tr></table></div><p style="margin:6px 0 0;font-weight:600;">R2 &minus; 2R1:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">3</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">11</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">&minus;7</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">&minus;21</td></tr></table></div><p style="margin:6px 0 0;font-weight:600;">R2 &divide; (&minus;7), then R1 &minus; 3R2:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">2</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">3</td></tr></table></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Write down which operation you used on each step, like R2 &minus; 2R1. It makes mistakes easy to find.</p></div>
+</section>
+<section class="slide" data-slide="6"><p class="eyebrow">Worked Example &middot; Three Variables</p><h1 class="slide-title">Solve x + y + z = 6, 2x + y &minus; z = 1, x &minus; y + 2z = 5</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Clear column 1</div>R2 &minus; 2R1 and R3 &minus; R1.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Clear column 2</div>Multiply R2 by &minus;1, then R3 + 2R2 gives [0 0 7 | 21], so z = 3.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Back-substitute</div>Row 2 says y + 3z = 11, so y = 2. Row 1 says x + y + z = 6, so x = 1. The solution is <strong>(1, 2, 3)</strong>.</div></div><p style="margin:6px 0 0;font-weight:600;">Augmented matrix:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">6</td></tr><tr><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">&minus;1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">1</td></tr><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">&minus;1</td><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">5</td></tr></table></div><p style="margin:6px 0 0;font-weight:600;">R2 &minus; 2R1 and R3 &minus; R1:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">6</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">&minus;1</td><td style="padding:3px 12px;text-align:right;">&minus;3</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">&minus;11</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">&minus;2</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">&minus;1</td></tr></table></div><p style="margin:6px 0 0;font-weight:600;">&minus;R2, then R3 + 2R2:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">6</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">3</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">11</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">7</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">21</td></tr></table></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Stopping at a triangle and back-substituting (Gaussian elimination) gives the same answer as reducing all the way. Use whichever is faster.</p></div>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Worked Example &middot; No Solution</p><h1 class="slide-title">Solve x + 2y = 4 and 2x + 4y = 9</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Write the matrix</div>[1 2 | 4; 2 4 | 9]</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Clear column 1</div>R2 &minus; 2R1 gives [0 0 | 1].</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Read the row</div>0x + 0y = 1 is impossible. The system is <strong>inconsistent: no solution</strong>.</div></div><p style="margin:6px 0 0;font-weight:600;">After R2 &minus; 2R1:</p><div style="overflow-x:auto;margin:10px 0 4px;"><table style="border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;background:#fff;border-left:2px solid #0A1F3D;border-right:2px solid #0A1F3D;"><tr><td style="padding:3px 12px;text-align:right;">1</td><td style="padding:3px 12px;text-align:right;">2</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">4</td></tr><tr><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;">0</td><td style="padding:3px 12px;text-align:right;border-left:2px solid #C9A84C;">1</td></tr></table></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> A zero row on the left with a nonzero constant means no solution. Do not write &ldquo;y = 1&rdquo; from that row.</p></div>
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
+<div class="gp-box"><p class="gp-prompt"><strong>Work each one, then tap your answer.</strong></p><p style="font-weight:600;font-size:15px;">Question 1 &mdash; Which of these is <em>not</em> a row operation?</p><div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="true">Add 3 to every entry of a row</button><button class="choice-btn" data-correct="false">Multiply a row by &minus;2</button></div><p class="feedback" id="fb-gp1"></p>
+<div class="explain-box" id="ex-gp1"><b>Here's why:</b> Multiplying a row by a nonzero number is allowed. Adding 3 to each entry changes the equation itself, so it is not a row operation.</div>
+<p style="font-weight:600;font-size:15px; margin-top:18px;">Question 2 &mdash; A reduced matrix is [1 0 | 4; 0 1 | &minus;1]. What is the solution?</p><div class="choice-row" data-q="gp2"><button class="choice-btn" data-correct="true">(4, &minus;1)</button><button class="choice-btn" data-correct="false">(&minus;1, 4)</button></div><p class="feedback" id="fb-gp2"></p>
+<div class="explain-box" id="ex-gp2"><b>Here's why:</b> Row 1 reads x = 4 and row 2 reads y = &minus;1, so the solution is (4, &minus;1).</div>
+</div>
+</section>
+<section class="slide" data-slide="9"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">Matrices scale up</h1>
+<p>Two equations are easy by hand, but real systems in engineering, economics, and graphics have dozens of variables. Computers solve them with the same row operations you used today.</p><h2 class="sub-title" style="margin-top:20px;">This shows up everywhere</h2><ul><li>Lesson 5.3 solves systems with determinants instead of row operations.</li><li>Lesson 5.7 adds, subtracts, and multiplies matrices.</li><li>Lesson 5.8 uses row operations to find a matrix inverse.</li></ul>
+</section>
+<section class="slide" data-slide="10"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know &mdash; 5 quick questions</h1>
+<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">What are the dimensions of the augmented matrix for a system of 3 equations in 3 variables?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">3 &times; 4</button><button class="quiz-opt" data-correct="false">4 &times; 3</button><button class="quiz-opt" data-correct="false">9</button><button class="quiz-opt" data-correct="false">3 &times; 3</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> There are 3 rows (equations) and 4 columns (3 variables plus the constants). 3 &times; 3 leaves out the constants, 4 &times; 3 swaps rows and columns, and 9 is a count of coefficients, not dimensions.</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">A reduced matrix is [1 0 0 | 2; 0 1 0 | &minus;1; 0 0 1 | 5]. What is the solution?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">(2, &minus;1, 5)</button><button class="quiz-opt" data-correct="false">(1, 1, 1)</button><button class="quiz-opt" data-correct="false">(5, &minus;1, 2)</button><button class="quiz-opt" data-correct="false">(2, 1, 5)</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Each row gives one variable: x = 2, y = &minus;1, z = 5. The other choices reverse the order, drop a sign, or read the diagonal 1s.</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">In [1 2 | 5; 3 4 | 6], what is the new row 2 after R2 &minus; 3R1?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">[0 2 | &minus;9]</button><button class="quiz-opt" data-correct="false">[0 &minus;2 | 9]</button><button class="quiz-opt" data-correct="false">[2 2 | 1]</button><button class="quiz-opt" data-correct="true">[0 &minus;2 | &minus;9]</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> 3 &minus; 3(1) = 0, 4 &minus; 3(2) = &minus;2, and 6 &minus; 3(5) = &minus;9. [2 2 | 1] subtracts R1 only once, and the others drop a sign.</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">Row-reducing a system gives the row [0 0 0 | 4]. What does this mean?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">The solution is (0, 0, 0)</button><button class="quiz-opt" data-correct="false">The system has infinitely many solutions</button><button class="quiz-opt" data-correct="true">The system has no solution</button><button class="quiz-opt" data-correct="false">z = 4</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> The row says 0 = 4, which is never true, so the system is inconsistent. A row of all zeros, including the constant, would mean infinitely many solutions.</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Solve x + 2y = 7 and 3x &minus; y = 7.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">(3, 2)</button><button class="quiz-opt" data-correct="false">(2, 3)</button><button class="quiz-opt" data-correct="false">(7, 0)</button><button class="quiz-opt" data-correct="false">(1, 3)</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> R2 &minus; 3R1 gives [0 &minus;7 | &minus;14], so y = 2, and then x = 3. Check: 3 + 4 = 7 and 9 &minus; 2 = 7. (1, 3) and (7, 0) work only in the first equation.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 5</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+
+</section>
+<section class="slide" data-slide="11"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can write a system as an augmented matrix.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve a system with row operations and the Gauss-Jordan method.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can spot an inconsistent or dependent system from its matrix.</div>
+<h2 class="sub-title" style="margin-top:22px;">Vocabulary from today</h2>
+<div><span class="term-pill">Matrix</span><span class="term-pill">Dimensions</span><span class="term-pill">Augmented Matrix</span><span class="term-pill">Row Operations</span><span class="term-pill">Gauss-Jordan Method</span><span class="term-pill">Inconsistent</span><span class="term-pill">Dependent</span></div>
+<div class="next-box"><strong>Next &mdash; Lesson 5.3: Determinant Solution of Linear Systems.</strong> Evaluate determinants and solve systems with Cramer's rule.</div>
+<div class="end-actions"><a class="end-btn primary next-lesson-link" href="5-3-determinants-cramers-rule.html">Lesson 5.3 &rarr;</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Lesson</button></div>
+
+</section>
+</div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-5-2',
+        lesson: '5.2: Matrix Solution of Linear Systems',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>

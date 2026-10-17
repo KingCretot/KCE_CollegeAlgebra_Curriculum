@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KCE College Algebra — Lesson R.4: Factoring Polynomials</title>
+<style>
+:root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
+*{box-sizing:border-box;}html,body{margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--navy);color:var(--ink);line-height:1.55;}
+.app{max-width:920px;margin:0 auto;min-height:100vh;background:var(--cream);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.35);}
+.masthead{background:var(--navy);padding:18px 28px 14px;}
+.mast-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.kc{border:2px solid var(--gold);padding:4px 9px;line-height:1;flex:none;}
+.kc .inner{border:1px solid var(--gold);padding:3px 7px;color:var(--gold);font-weight:700;font-size:15px;letter-spacing:1.5px;}
+.wordmark{color:var(--gold);font-size:16px;letter-spacing:.5px;font-weight:600;}
+.course-tag{color:#cfd6e4;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;}
+.lesson-tag{color:#fff;font-size:13px;background:rgba(255,255,255,.08);border:1px solid rgba(201,168,76,.5);padding:5px 12px;border-radius:20px;white-space:nowrap;}
+.tricolor{height:5px;display:flex;}.tricolor div{flex:1;}
+.tri-b{background:var(--blue);}.tri-g{background:var(--gold);}.tri-r{background:var(--red);}
+.progress-wrap{background:#fff;padding:10px 28px;border-bottom:1px solid var(--line);}
+.progress-track{background:#eee6d2;height:8px;border-radius:6px;overflow:hidden;}
+.progress-fill{background:var(--gold);height:100%;width:10%;border-radius:6px;transition:width .35s ease;}
+.progress-label{font-size:12px;color:#777;margin-top:6px;letter-spacing:.5px;}
+.stage{flex:1;padding:34px 34px 20px;}
+.slide{display:none;animation:fadeIn .3s ease;}.slide.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{color:var(--blue);font-weight:700;font-size:12.5px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;}
+h1.slide-title{color:var(--navy);font-size:26px;margin:0 0 18px;line-height:1.25;}
+h2.sub-title{color:var(--navy);font-size:19px;margin:0 0 12px;}
+p{margin:0 0 14px;font-size:16px;}ul{margin:0 0 14px;padding-left:22px;}li{margin-bottom:8px;font-size:16px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px;}
+.card.warm{background:#fdf8ec;border-left:5px solid var(--gold);}
+.card.blue{background:#eef2fb;border-left:5px solid var(--blue);}
+.card.think{background:#fff;border:2px dashed var(--gold);}
+.vocab-grid{display:flex;flex-wrap:wrap;gap:14px;}
+.vocab-card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:1 1 100%;}
+@media(min-width:640px){.vocab-card{flex:1 1 calc(50% - 7px);}}
+.vocab-card.wide{flex-basis:100%;}
+.vocab-head{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.vocab-head .icon{width:26px;height:26px;flex:none;}
+.vocab-head .term{font-weight:700;font-size:16px;letter-spacing:.3px;}
+.vocab-body{padding:14px 16px;}.vocab-def{font-size:15px;margin-bottom:8px;}
+.vocab-hook{font-size:13.5px;color:var(--navy);background:#fdf8ec;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;}
+.vocab-hook b{color:var(--blue);}
+.obj-list{list-style:none;margin:0;padding:0;}
+.obj-list li{display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:15.5px;}
+.obj-list .num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.step .badge{flex:none;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--gold);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;}
+.step .content{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 15px;}
+.step .content .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);font-weight:700;margin-bottom:4px;}
+.gp-box{background:#fff;border:2px solid var(--blue);border-radius:12px;padding:18px 20px;}
+.gp-prompt{font-size:16px;margin-bottom:14px;}
+.choice-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.choice-btn{background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer;font-family:inherit;transition:.15s;}
+.choice-btn:hover{border-color:var(--blue);}
+.choice-btn.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.choice-btn.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.feedback{font-size:14.5px;font-weight:600;min-height:20px;}
+.feedback.ok{color:var(--green);}.feedback.bad{color:var(--red);}
+.quiz-q{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px;}
+.quiz-q .qnum{font-size:12px;color:var(--blue);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.quiz-q .qtext{font-size:15.5px;font-weight:600;margin-bottom:12px;}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;}
+.quiz-opt{text-align:left;background:#faf8f2;border:2px solid var(--line);border-radius:8px;padding:9px 13px;font-size:14.5px;cursor:pointer;font-family:inherit;}
+.quiz-opt.correct{background:#e8f6ec;border-color:var(--green);color:var(--green);font-weight:700;}
+.quiz-opt.incorrect{background:#fdeeee;border-color:var(--red);color:var(--red);}
+.quiz-note{font-size:13px;color:#555;margin-top:8px;display:none;}.quiz-note.show{display:block;}
+.quiz-score{text-align:center;background:var(--navy);color:#fff;border-radius:12px;padding:18px;font-size:17px;font-weight:700;margin-top:10px;display:none;}
+.quiz-score.show{display:block;}.quiz-score .gold{color:var(--gold);}
+.recap-check{display:flex;align-items:center;gap:10px;background:#e8f6ec;border:1px solid #bfe3c9;border-radius:10px;padding:10px 14px;margin-bottom:9px;font-size:15px;}
+.recap-check svg{flex:none;}
+.term-pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;margin:4px 6px 4px 0;font-size:13.5px;font-weight:600;color:var(--navy);}
+.next-box{background:#eef2fb;border-left:5px solid var(--blue);border-radius:0 12px 12px 0;padding:16px 20px;margin-top:18px;}
+.end-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;}
+.end-btn{font-family:inherit;font-size:14.5px;font-weight:700;padding:12px 22px;border-radius:10px;cursor:pointer;letter-spacing:.2px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:2px solid var(--navy);}
+.end-btn.primary{background:var(--navy);color:#fff;}.end-btn.secondary{background:#fff;color:var(--navy);}
+svg.icon{display:block;}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 28px 22px;border-top:1px solid var(--line);background:#fff;}
+.nav button{font-family:inherit;font-size:14px;font-weight:700;padding:10px 20px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;letter-spacing:.3px;}
+.nav button.ghost{background:#fff;color:var(--navy);}.nav button:disabled{opacity:.35;cursor:default;}
+.nav .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:260px;}
+.nav .dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.nav .dot.active{background:var(--gold);width:20px;border-radius:5px;}
+.footer-brand{background:var(--navy);color:#cfd6e4;text-align:center;font-size:11px;letter-spacing:1.5px;padding:10px;}
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:var(--navy);color:#fff;border:1px solid var(--gold);padding:13px 24px;border-radius:30px;font-size:15px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;z-index:50;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:520px){.stage{padding:22px 18px 14px;}h1.slide-title{font-size:21px;}.nav{padding:14px 16px 18px;}.nav .dots{display:none;}}
+
+  .explain-box{display:none;margin-top:10px;padding:13px 16px;background:#eef3fb;border-left:4px solid var(--blue);border-radius:6px;font-size:14px;line-height:1.55;color:#1c1c1c;}
+  .explain-box.show{display:block;animation:fadeIn .3s ease;}
+  .explain-box b{color:var(--navy);}
+  .name-field-wrap{margin-top:20px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .name-field-wrap label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;letter-spacing:.3px;}
+  .name-field-wrap input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:15px;font-family:inherit;box-sizing:border-box;}
+  .name-field-wrap input:focus{outline:2px solid var(--blue);outline-offset:1px;}
+  .submit-status{margin-top:14px;font-size:13px;color:#555;min-height:18px;}
+.diagram-row{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin:16px 0 6px;}.diagram-panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;text-align:center;max-width:100%;}.diagram-panel svg{display:block;margin:0 auto;}.diagram-cap{font-size:13px;color:var(--navy);font-weight:600;margin:0 auto 8px;max-width:300px;line-height:1.35;}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter R: Review of Basic Concepts</div></div></div><div class="lesson-tag">Lesson R.4 &middot; Factoring</div></div></div>
+<div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 11</div></div>
+<div class="stage">
+<section class="slide active" data-slide="1"><p class="eyebrow">Let's Begin</p><h1 class="slide-title">Multiplying, run in reverse</h1>
+<div class="card warm"><p style="margin-bottom:0;">Factoring rewrites a sum as a product. It is the step that solves quadratic equations, simplifies fractions, and finds the zeros of a graph, so it shows up in almost every chapter that follows.</p></div><p>Today you'll pull out a greatest common factor, factor by grouping, factor trinomials, and spot the special patterns that factor on sight.</p><h2 class="sub-title" style="margin-top:22px;">By the end of today, you will be able to:</h2><ul class="obj-list"><li><span class="num">1</span><span>Factor out the greatest common factor and factor by grouping</span></li><li><span class="num">2</span><span>Factor trinomials, including perfect square trinomials</span></li><li><span class="num">3</span><span>Factor differences of squares, sums and differences of cubes, and use substitution</span></li></ul>
+  <div class="name-field-wrap">
+        <label for="studentName">Your name (so your tutor can see your progress)</label>
+        <input type="text" id="studentName" placeholder="Type your first and last name">
+      </div>
+
+</section>
+<section class="slide" data-slide="2"><p class="eyebrow">Vocabulary</p><h1 class="slide-title">The words for this lesson</h1>
+<div class="vocab-grid"><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Greatest Common Factor</span></div><div class="vocab-body"><p class="vocab-def">The largest expression that divides every term. Always look for it first.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> 12x<sup>3</sup> + 18x<sup>2</sup> = 6x<sup>2</sup>(2x + 3)</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Factoring by Grouping</span></div><div class="vocab-body"><p class="vocab-def">For four terms: group them in pairs, factor each pair, then factor out the shared binomial.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> x<sup>3</sup> + 2x<sup>2</sup> + 5x + 10 = x<sup>2</sup>(x + 2) + 5(x + 2) = (x + 2)(x<sup>2</sup> + 5)</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Difference of Squares</span></div><div class="vocab-body"><p class="vocab-def">x<sup>2</sup> &minus; y<sup>2</sup> = (x + y)(x &minus; y).</p><div class="vocab-hook"><span>&#128161;</span><span><b>Common slip:</b> x<sup>2</sup> + y<sup>2</sup>, a <em>sum</em> of squares, does not factor over the real numbers.</span></div></div></div><div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Sum &amp; Difference of Cubes</span></div><div class="vocab-body"><p class="vocab-def">x<sup>3</sup> + y<sup>3</sup> = (x + y)(x<sup>2</sup> &minus; xy + y<sup>2</sup>) and x<sup>3</sup> &minus; y<sup>3</sup> = (x &minus; y)(x<sup>2</sup> + xy + y<sup>2</sup>).</p><div class="vocab-hook"><span>&#128161;</span><span><b>Memory hook:</b> SOAP gives the signs: <b>S</b>ame, <b>O</b>pposite, <b>A</b>lways <b>P</b>ositive.</span></div></div></div></div>
+</section>
+<section class="slide" data-slide="3"><p class="eyebrow">How It Works</p><h1 class="slide-title">A factoring checklist</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">GCF first</div>Factor out the greatest common factor before anything else. It makes every later step smaller.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Count the terms</div>Two terms: look for a difference of squares or a sum or difference of cubes. Three terms: a trinomial. Four terms: try grouping.</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Trinomials ax<sup>2</sup> + bx + c</div>Find two numbers whose product is ac and whose sum is b. Split the middle term with them, then factor by grouping.</div></div><div class="step"><div class="badge">4</div><div class="content"><div class="label">Check</div>Multiply your factors back out. You should get the original polynomial, and no factor should factor any further.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> &ldquo;Factor completely&rdquo; means keep going. x<sup>4</sup> &minus; 16 = (x<sup>2</sup> + 4)(x<sup>2</sup> &minus; 4) is not finished; x<sup>2</sup> &minus; 4 still factors into (x + 2)(x &minus; 2).</p></div>
+</section>
+<section class="slide" data-slide="4"><p class="eyebrow">Real-World Context</p><h1 class="slide-title">Finding the dimensions of a rectangle</h1>
+<p>A rectangular patio has area x<sup>2</sup> + 7x + 12 square feet. Factoring the area gives the length and width as expressions in x.</p><div class="card warm"><p style="margin-bottom:0;"><strong>Example:</strong> x<sup>2</sup> + 7x + 12 = <strong>(x + 3)(x + 4)</strong>, so the patio is (x + 3) feet by (x + 4) feet. When x = 5, that is 8 ft by 9 ft, and 8 &times; 9 = 72 = 25 + 35 + 12.</p></div>
+</section>
+<section class="slide" data-slide="5"><p class="eyebrow">Worked Example &middot; Trinomials</p><h1 class="slide-title">Factor 6x<sup>2</sup> &minus; 7x &minus; 20 completely</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Find ac</div>a &middot; c = 6(&minus;20) = &minus;120. You need two numbers that multiply to &minus;120 and add to &minus;7: 8 and &minus;15.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Split and group</div>6x<sup>2</sup> + 8x &minus; 15x &minus; 20 = 2x(3x + 4) &minus; 5(3x + 4)</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Factor out the binomial</div><strong>(3x + 4)(2x &minus; 5)</strong>. Check: 6x<sup>2</sup> &minus; 15x + 8x &minus; 20 = 6x<sup>2</sup> &minus; 7x &minus; 20.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Factor &minus;5 (not 5) out of &minus;15x &minus; 20 so the two binomials match: &minus;5(3x + 4).</p></div>
+</section>
+<section class="slide" data-slide="6"><p class="eyebrow">Worked Example &middot; Difference of Cubes</p><h1 class="slide-title">Factor 8x<sup>3</sup> &minus; 27</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Write as cubes</div>8x<sup>3</sup> = (2x)<sup>3</sup> and 27 = 3<sup>3</sup>, so x &rarr; 2x and y &rarr; 3.</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Use the pattern</div>(x &minus; y)(x<sup>2</sup> + xy + y<sup>2</sup>) becomes (2x &minus; 3)((2x)<sup>2</sup> + (2x)(3) + 3<sup>2</sup>)</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Simplify</div><strong>(2x &minus; 3)(4x<sup>2</sup> + 6x + 9)</strong>. The trinomial does not factor further.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> The middle term is +6x, not +12x. There is no 2 in the cube pattern; that 2 belongs to the square of a binomial.</p></div>
+</section>
+<section class="slide" data-slide="7"><p class="eyebrow">Worked Example &middot; Grouping</p><h1 class="slide-title">Factor x<sup>3</sup> + 3x<sup>2</sup> &minus; 4x &minus; 12 completely</h1>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Group in pairs</div>(x<sup>3</sup> + 3x<sup>2</sup>) + (&minus;4x &minus; 12) = x<sup>2</sup>(x + 3) &minus; 4(x + 3)</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Factor out x + 3</div>(x + 3)(x<sup>2</sup> &minus; 4)</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Keep going</div>x<sup>2</sup> &minus; 4 is a difference of squares: <strong>(x + 3)(x &minus; 2)(x + 2)</strong></div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> Stopping at (x + 3)(x<sup>2</sup> &minus; 4) loses points on a &ldquo;factor completely&rdquo; question. Always check every factor one more time.</p></div>
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
+<div class="gp-box"><p class="gp-prompt"><strong>Work each one, then tap your answer.</strong></p><p style="font-weight:600;font-size:15px;">Question 1 &mdash; Factor x<sup>2</sup> + 5x &minus; 14.</p><div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="true">(x + 7)(x &minus; 2)</button><button class="choice-btn" data-correct="false">(x &minus; 7)(x + 2)</button></div><p class="feedback" id="fb-gp1"></p>
+<div class="explain-box" id="ex-gp1"><b>Here's why:</b> You need two numbers that multiply to &minus;14 and add to +5: 7 and &minus;2. (x &minus; 7)(x + 2) multiplies to x<sup>2</sup> &minus; 5x &minus; 14, the wrong middle sign.</div>
+<p style="font-weight:600;font-size:15px; margin-top:18px;">Question 2 &mdash; Factor 9y<sup>2</sup> &minus; 25.</p><div class="choice-row" data-q="gp2"><button class="choice-btn" data-correct="false">(3y &minus; 5)<sup>2</sup></button><button class="choice-btn" data-correct="true">(3y + 5)(3y &minus; 5)</button></div><p class="feedback" id="fb-gp2"></p>
+<div class="explain-box" id="ex-gp2"><b>Here's why:</b> 9y<sup>2</sup> &minus; 25 = (3y)<sup>2</sup> &minus; 5<sup>2</sup>, a difference of squares. (3y &minus; 5)<sup>2</sup> = 9y<sup>2</sup> &minus; 30y + 25 has a middle term.</div>
+</div>
+</section>
+<section class="slide" data-slide="9"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">Factoring is how equations get solved</h1>
+<p>When a product equals zero, one of its factors must be zero. That one fact turns factoring into a way to solve equations, find x-intercepts, and simplify fractions.</p><h2 class="sub-title" style="margin-top:20px;">This shows up everywhere</h2><ul><li>Lesson R.5 simplifies rational expressions by factoring the top and bottom.</li><li>Lesson 1.4 solves quadratic equations by factoring and the zero-product property.</li><li>Lesson 3.3 finds the zeros of polynomial functions from their factors.</li></ul>
+</section>
+<section class="slide" data-slide="10"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know &mdash; 5 quick questions</h1>
+<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Factor completely: 12x<sup>3</sup>y<sup>2</sup> &minus; 18x<sup>2</sup>y<sup>3</sup></div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">6x<sup>2</sup>y<sup>2</sup>(2x &minus; 3y)</button><button class="quiz-opt" data-correct="false">6x<sup>2</sup>y<sup>2</sup>(2xy &minus; 3y)</button><button class="quiz-opt" data-correct="false">2x<sup>2</sup>y<sup>2</sup>(6x &minus; 9y)</button><button class="quiz-opt" data-correct="false">6x<sup>2</sup>y<sup>2</sup>(2x + 3y)</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> The GCF of 12 and 18 is 6, and the lowest powers are x<sup>2</sup> and y<sup>2</sup>. 2x<sup>2</sup>y<sup>2</sup>(6x &minus; 9y) is not complete because 6x &minus; 9y still has a 3 in common. The other two change the sign or leave an extra y.</div>
+      </div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Factor 4x<sup>2</sup> + 12x + 9.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">(4x + 3)(x + 3)</button><button class="quiz-opt" data-correct="false">(2x &minus; 3)<sup>2</sup></button><button class="quiz-opt" data-correct="false">(2x + 9)(2x + 1)</button><button class="quiz-opt" data-correct="true">(2x + 3)<sup>2</sup></button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> 4x<sup>2</sup> = (2x)<sup>2</sup>, 9 = 3<sup>2</sup>, and 2(2x)(3) = 12x, so it is a perfect square trinomial. (4x + 3)(x + 3) gives 15x, (2x &minus; 3)<sup>2</sup> gives &minus;12x, and (2x + 9)(2x + 1) gives 20x.</div>
+      </div>
+<div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">Factor x<sup>3</sup> + 64.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">(x + 4)(x<sup>2</sup> + 4x + 16)</button><button class="quiz-opt" data-correct="false">(x + 4)<sup>3</sup></button><button class="quiz-opt" data-correct="false">(x &minus; 4)(x<sup>2</sup> + 4x + 16)</button><button class="quiz-opt" data-correct="true">(x + 4)(x<sup>2</sup> &minus; 4x + 16)</button></div>
+        <div class="explain-box" id="ex-q3"><b>Here's why:</b> x<sup>3</sup> + 4<sup>3</sup> is a sum of cubes: same sign, opposite sign, always positive. (x &minus; 4)(x<sup>2</sup> + 4x + 16) is x<sup>3</sup> &minus; 64, the first choice has the wrong middle sign, and (x + 4)<sup>3</sup> has extra middle terms.</div>
+      </div>
+<div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">Factor 2x<sup>2</sup> + x &minus; 15.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="true">(2x &minus; 5)(x + 3)</button><button class="quiz-opt" data-correct="false">(2x &minus; 3)(x + 5)</button><button class="quiz-opt" data-correct="false">(2x + 5)(x &minus; 3)</button><button class="quiz-opt" data-correct="false">(2x + 3)(x &minus; 5)</button></div>
+        <div class="explain-box" id="ex-q4"><b>Here's why:</b> ac = &minus;30, and 6 and &minus;5 multiply to &minus;30 and add to 1. Multiplying out the other choices gives middle terms of &minus;x, +7x, and &minus;7x.</div>
+      </div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Factor (x + 1)<sup>2</sup> &minus; 5(x + 1) + 6.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">(x + 3)(x + 4)</button><button class="quiz-opt" data-correct="false">(x + 1)(x &minus; 5)</button><button class="quiz-opt" data-correct="false">(x &minus; 2)(x &minus; 3)</button><button class="quiz-opt" data-correct="true">(x &minus; 1)(x &minus; 2)</button></div>
+        <div class="explain-box" id="ex-q5"><b>Here's why:</b> Let u = x + 1. Then u<sup>2</sup> &minus; 5u + 6 = (u &minus; 2)(u &minus; 3) = (x + 1 &minus; 2)(x + 1 &minus; 3) = (x &minus; 1)(x &minus; 2). (x &minus; 2)(x &minus; 3) forgets to put x + 1 back in, and (x + 3)(x + 4) uses the wrong signs.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 5</span></div>
+      <div class="submit-status" id="submitStatus"></div>
+
+</section>
+<section class="slide" data-slide="11"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can factor out a greatest common factor and factor four terms by grouping.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can factor trinomials, including perfect square trinomials.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can factor differences of squares and sums and differences of cubes, and use substitution.</div>
+<h2 class="sub-title" style="margin-top:22px;">Vocabulary from today</h2>
+<div><span class="term-pill">Greatest Common Factor</span><span class="term-pill">Grouping</span><span class="term-pill">Trinomial</span><span class="term-pill">Perfect Square Trinomial</span><span class="term-pill">Difference of Squares</span><span class="term-pill">Sum of Cubes</span><span class="term-pill">Difference of Cubes</span><span class="term-pill">Substitution</span><span class="term-pill">Factor Completely</span></div>
+<div class="next-box"><strong>Next &mdash; Lesson R.5: Rational Expressions.</strong> Use factoring to simplify, multiply, divide, add, and subtract fractions with polynomials.</div>
+<div class="end-actions"><a class="end-btn primary next-lesson-link" href="r-5-rational-expressions.html">Lesson R.5 &rarr;</a><button class="end-btn secondary" data-action="restart">&#8635; Restart This Lesson</button></div>
+
+</section>
+</div>
+<div class="nav"><button class="ghost" id="prevBtn">&larr; Back</button><div class="dots" id="dots"></div><button id="nextBtn">Next &rarr;</button></div>
+<div class="footer-brand">KINGCRETOT EXPERIENCE &middot; COLLEGE ALGEBRA CURRICULUM &middot; INTERNAL / STUDENT USE</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var total = document.querySelectorAll('.slide').length;
+var current = 1;
+var dotsEl = document.getElementById('dots');
+for (var i = 1; i <= total; i++) { var d = document.createElement('div'); d.className = 'dot' + (i === 1 ? ' active' : ''); dotsEl.appendChild(d); }
+function goTo(n) {
+  if (n < 1 || n > total) return;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.remove('active');
+  document.querySelectorAll('.dot')[current - 1].classList.remove('active');
+  current = n;
+  document.querySelector('.slide[data-slide="' + current + '"]').classList.add('active');
+  document.querySelectorAll('.dot')[current - 1].classList.add('active');
+  document.getElementById('progressFill').style.width = Math.round(current / total * 100) + '%';
+  document.getElementById('progressLabel').textContent = 'Slide ' + current + ' of ' + total;
+  document.getElementById('prevBtn').disabled = current === 1;
+  var nb = document.getElementById('nextBtn');
+  if (current === total) { nb.style.display = 'none'; } else { nb.style.display = 'inline-block'; nb.textContent = 'Next \u2192'; }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').disabled = true;
+document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
+document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
+function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('.choice-row').forEach(function(row){
+    var q = row.dataset.q;
+    var fb = document.getElementById('fb-' + q);
+    var exBox = document.getElementById('ex-' + q);
+    var attempts = 0;
+    var locked = false;
+    row.querySelectorAll('.choice-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (locked) return;
+        if (btn.classList.contains('incorrect')) return;
+        attempts++;
+        if (btn.dataset.correct === 'true') {
+          locked = true;
+          row.querySelectorAll('.choice-btn').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          fb.textContent = '\u2713 Correct!';
+          fb.className = 'feedback ok';
+          if (exBox) exBox.classList.add('show');
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (attempts >= 2) {
+            locked = true;
+            row.querySelectorAll('.choice-btn').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            fb.textContent = 'The correct answer is highlighted in green \u2014 read the explanation below.';
+            fb.className = 'feedback bad';
+            if (exBox) exBox.classList.add('show');
+          } else {
+            fb.textContent = 'Not quite \u2014 give it one more try.';
+            fb.className = 'feedback bad';
+          }
+        }
+      });
+    });
+  });
+var quizAnswered = {};
+  var quizAttempts = {};
+  var quizTotal = document.querySelectorAll('.quiz-q').length;
+  document.querySelectorAll('.quiz-q').forEach(function(q){
+    var qid = q.dataset.quiz;
+    var exBox = document.getElementById('ex-' + qid);
+    quizAttempts[qid] = 0;
+    q.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (quizAnswered[qid] !== undefined) return;
+        if (btn.classList.contains('incorrect')) return;
+        quizAttempts[qid]++;
+        if (btn.dataset.correct === 'true') {
+          quizAnswered[qid] = true;
+          q.querySelectorAll('.quiz-opt').forEach(function(b){ b.disabled = true; });
+          btn.classList.add('correct');
+          if (exBox) exBox.classList.add('show');
+          updateScore();
+        } else {
+          btn.classList.add('incorrect');
+          btn.disabled = true;
+          if (quizAttempts[qid] >= 2) {
+            quizAnswered[qid] = false;
+            q.querySelectorAll('.quiz-opt').forEach(function(b){
+              b.disabled = true;
+              if (b.dataset.correct === 'true') b.classList.add('correct');
+            });
+            if (exBox) exBox.classList.add('show');
+            updateScore();
+          } else {
+            showToast('Not quite \u2014 try this one once more.');
+          }
+        }
+      });
+    });
+  });
+  function updateScore(){
+    var answeredCount = Object.keys(quizAnswered).length;
+    if (answeredCount < quizTotal) return;
+    var score = 0;
+    for (var k in quizAnswered) if (quizAnswered[k]) score++;
+    var scoreBox = document.getElementById('quizScore');
+    document.getElementById('scoreText').textContent = score + ' / ' + quizTotal;
+    scoreBox.classList.add('show');
+    submitProgress(score, quizTotal);
+  }
+
+  var alreadySubmitted = false;
+  function submitProgress(score, total) {
+    if (alreadySubmitted) return;
+    alreadySubmitted = true;
+    var nameEl = document.getElementById('studentName');
+    var studentName = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : '(name not entered)';
+    var pct = Math.round((score/total)*100);
+    var mastered = pct >= 80 ? 'yes' : 'no';
+    var statusEl = document.getElementById('submitStatus');
+    if (statusEl) statusEl.textContent = 'Sending your results to your tutor\u2026';
+    fetch('https://formspree.io/f/xrpbqdra', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        program: 'KCE College Algebra',
+        student: studentName,
+        module: 'college-algebra-r-4',
+        lesson: 'R.4: Factoring Polynomials',
+        score: pct,
+        mastered: mastered,
+        rawScore: score + ' / ' + total
+      })
+    }).then(function(r){
+      if (statusEl) statusEl.textContent = r.ok ? '\u2713 Results sent to your tutor.' : 'Could not send results \u2014 please tell your tutor your score.';
+    }).catch(function(){
+      if (statusEl) statusEl.textContent = 'Could not send results \u2014 please tell your tutor your score.';
+    });
+  }
+</script>
+</body>
+</html>
