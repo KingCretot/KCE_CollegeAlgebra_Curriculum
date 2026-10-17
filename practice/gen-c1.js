@@ -368,7 +368,7 @@
         var e = ri(5, 99), v = iPow(e), idx = ((e % 4) + 4) % 4;
         var cor = [cxv(1, 0), cxv(0, 1), cxv(-1, 0), cxv(0, -1)][idx];
         var ex = m('i<sup>' + e + '</sup>');
-        return withP(Q({ q: 'Simplify ' + ex + '.', mc: mcV(cor, IP), why: ['Powers of i repeat every 4: ' + m('i<sup>1</sup> = i, i<sup>2</sup> = ' + M + '1, i<sup>3</sup> = ' + M + 'i, i<sup>4</sup> = 1') + '.', e + ' ÷ 4 = ' + Math.floor(e / 4) + ' remainder ' + idx + ', so ' + m(ex + ' = (i<sup>4</sup>)<sup>' + Math.floor(e / 4) + '</sup> · i<sup>' + idx + '</sup> = ' + (idx === 0 ? '1' : idx === 1 ? 'i' : 'i<sup>' + idx + '</sup>')) + '.', 'Answer: ' + m(cx(v[0], v[1])) + '.'] }), { k: 'cx', e: ex });
+        return withP(Q({ q: 'Simplify ' + ex + '.', mc: mcV(cor, IP), why: ['Powers of i repeat every 4: ' + m('i<sup>1</sup> = i, i<sup>2</sup> = ' + M + '1, i<sup>3</sup> = ' + M + 'i, i<sup>4</sup> = 1') + '.', e + ' ÷ 4 = ' + Math.floor(e / 4) + ' remainder ' + idx + ', so ' + m(ex + ' = (i<sup>4</sup>)<sup>' + Math.floor(e / 4) + '</sup>' + (idx === 0 ? '' : ' · ' + (idx === 1 ? 'i' : 'i<sup>' + idx + '</sup>')) + ' = ' + (idx === 0 ? '1' : idx === 1 ? 'i' : 'i<sup>' + idx + '</sup>')) + '.', 'Answer: ' + m(cx(v[0], v[1])) + '.'] }), { k: 'cx', e: ex });
       }
     ],
     [

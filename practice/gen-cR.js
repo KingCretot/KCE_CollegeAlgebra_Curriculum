@@ -851,7 +851,7 @@
           eh = n(b) + '<sup>' + M + k + '</sup>';
           val = R(1, ipow(b, k));
           w = [R(-ipow(b, k)), R(-1, ipow(b, k)), R(-b * k)];
-          why = ['A negative exponent means reciprocal: ' + m('<i>a</i><sup>' + M + '<i>n</i></sup> = ' + fr('1', '<i>a</i><sup><i>n</i></sup>')) + '.', m(b + '<sup>' + k + '</sup> = ' + ipow(b, k)) + ', so ' + m(eh + ' = ' + val.html()) + '.', 'It is not ' + m(n(-ipow(b, k))) + ': the negative sign moves the power to the denominator.'];
+          why = ['A negative exponent means reciprocal: ' + m('<i>a</i><sup>' + M + '<i>n</i></sup> = ' + fr('1', '<i>a</i><sup><i>n</i></sup>')) + '.', (k === 1 ? 'So ' : m(b + '<sup>' + k + '</sup> = ' + ipow(b, k)) + ', so ') + m(eh + ' = ' + val.html()) + '.', 'It is not ' + m(n(-ipow(b, k))) + ': the negative sign moves the power to the denominator.'];
         }
         return attach(Q({ q: 'Evaluate ' + m(eh) + '.', mc: mcF(rvm(val), w.map(rvm), function () { return rvm(val.add(rnz(1, 3))); }), why: why }), { t: 'num', eh: eh });
       },
