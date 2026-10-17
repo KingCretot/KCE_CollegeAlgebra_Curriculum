@@ -110,3 +110,5 @@ h1,h2,h3,.title,.wordmark,.banner h2{font-family:Georgia,'Times New Roman',serif
 .mx table{border-collapse:collapse;font-family:Consolas,Menlo,'Courier New',monospace;font-size:16px;}
 .mx td{padding:2px 9px;text-align:right;}
 .mx td.ag{border-left:2px solid var(--gold);}
+/* safety net: long math in an explanation scrolls inside its box instead of spilling past it on phones */
+.fb,.qtext{overflow-x:auto;}
