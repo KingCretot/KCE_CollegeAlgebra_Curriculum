@@ -103,7 +103,7 @@ svg.icon{display:block;}
 </head>
 <body>
 <div class="app">
-<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations &amp; Inequalities</div></div></div><div class="lesson-tag">Lesson 1.3 &middot; Complex Numbers</div></div></div>
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations and Inequalities</div></div></div><div class="lesson-tag">Lesson 1.3 &middot; Complex Numbers</div></div></div>
 <div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
 <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 10</div></div>
 <div class="stage">
@@ -217,7 +217,7 @@ document.getElementById('prevBtn').disabled = true;
 document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
 document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
 function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
-document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ window.location.reload(); }); });
 document.querySelectorAll('.choice-row').forEach(function(row){
     var q = row.dataset.q;
     var fb = document.getElementById('fb-' + q);

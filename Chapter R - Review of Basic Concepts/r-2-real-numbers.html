@@ -201,7 +201,7 @@ document.getElementById('prevBtn').disabled = true;
 document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
 document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
 function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
-document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ window.location.reload(); }); });
 document.querySelectorAll('.choice-row').forEach(function(row){
     var q = row.dataset.q;
     var fb = document.getElementById('fb-' + q);

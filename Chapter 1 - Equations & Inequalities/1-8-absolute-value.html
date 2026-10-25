@@ -4,7 +4,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KCE College Algebra — Lesson 1.8: Absolute Value Equations & Inequalities</title>
+<title>KCE College Algebra — Lesson 1.8: Absolute Value Equations and Inequalities</title>
 <style>
 :root{--navy:#0A1F3D;--gold:#C9A84C;--blue:#0047BA;--red:#DB2F30;--cream:#FAF7EF;--ink:#1c1c1c;--line:#E3DDC9;--green:#1a7a3c;}
 *{box-sizing:border-box;}html,body{margin:0;padding:0;}
@@ -103,7 +103,7 @@ svg.icon{display:block;}
 </head>
 <body>
 <div class="app">
-<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations &amp; Inequalities</div></div></div><div class="lesson-tag">Lesson 1.8 &middot; Absolute Value</div></div></div>
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations and Inequalities</div></div></div><div class="lesson-tag">Lesson 1.8 &middot; Absolute Value</div></div></div>
 <div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
 <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 10</div></div>
 <div class="stage">
@@ -218,7 +218,7 @@ document.getElementById('prevBtn').disabled = true;
 document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
 document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
 function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
-document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ window.location.reload(); }); });
 document.querySelectorAll('.choice-row').forEach(function(row){
     var q = row.dataset.q;
     var fb = document.getElementById('fb-' + q);
@@ -321,7 +321,7 @@ var quizAnswered = {};
         program: 'KCE College Algebra',
         student: studentName,
         module: 'college-algebra-1-8',
-        lesson: '1.8: Absolute Value Equations & Inequalities',
+        lesson: '1.8: Absolute Value Equations and Inequalities',
         score: pct,
         mastered: mastered,
         rawScore: score + ' / ' + total

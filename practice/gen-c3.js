@@ -1,4 +1,4 @@
-/* KCE College Algebra — Chapter 3: Polynomial & Rational Functions
+/* KCE College Algebra — Chapter 3: Polynomial and Rational Functions
    Lial, Essentials of College Algebra 12e, Sections 3.1–3.6.
    Every generator randomizes its numbers. Each question also carries o.p (raw parameters)
    so verify-c3.js can check the math independently. */
@@ -797,5 +797,5 @@
   ];
   K.lesson('3.6', { title: 'Variation', std: 'Lial 12e · Section 3.6', levels: c36 });
 
-  K.review('3', 'Chapter 3 Review: Polynomial & Rational Functions');
+  K.review('3', 'Chapter 3 Review: Polynomial and Rational Functions');
 })(typeof window !== 'undefined' ? window.KCEP : globalThis.KCEP);

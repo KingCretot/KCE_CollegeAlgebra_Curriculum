@@ -1,4 +1,4 @@
-/* KCE College Algebra Practice — Chapter 1: Equations & Inequalities
+/* KCE College Algebra Practice — Chapter 1: Equations and Inequalities
    Lial, Essentials of College Algebra 12e, Sections 1.1–1.8.
    Each lesson: Level 1 Warm-Up, Level 2 Building, Level 3 Exam Challenge (3+ generators per level).
    Every question carries its raw problem data in q.p for the independent check in verify-c1.py. */
@@ -249,7 +249,7 @@
   ];
   K.lesson('1.1', { title: 'Linear Equations', std: 'Lial 12e · Section 1.1', levels: c11 });
 
-  /* ================= 1.2 Applications & Modeling with Linear Equations ================= */
+  /* ================= 1.2 Applications and Modeling with Linear Equations ================= */
   function numC(v, unit) { return [n(v) + (unit ? ' ' + unit : ''), [v]]; }
   var NAMES = [['Jada', 'Malik'], ['Ana', 'Ben'], ['Priya', 'Luis'], ['Kim', 'Omar'], ['Sofia', 'Dev']];
   var c12 = [
@@ -343,7 +343,7 @@
       }
     ]
   ];
-  K.lesson('1.2', { title: 'Applications & Modeling with Linear Equations', std: 'Lial 12e · Section 1.2', levels: c12 });
+  K.lesson('1.2', { title: 'Applications and Modeling with Linear Equations', std: 'Lial 12e · Section 1.2', levels: c12 });
 
   /* ================= 1.3 Complex Numbers ================= */
   function cterm(v, first) { var a = Math.abs(v), body = (a === 1 ? '' : n(a)) + 'i'; return first ? (v < 0 ? M : '') + body : (v < 0 ? ' ' + M + ' ' : ' + ') + body; }
@@ -529,7 +529,7 @@
   ];
   K.lesson('1.4', { title: 'Quadratic Equations', std: 'Lial 12e · Section 1.4', levels: c14 });
 
-  /* ================= 1.5 Applications & Modeling with Quadratic Equations ================= */
+  /* ================= 1.5 Applications and Modeling with Quadratic Equations ================= */
   var TRIP = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 12, 15]];
   function sec(v) { return [m(L('t = ') + n(v)) + (v === 1 ? ' second' : ' seconds'), [v]]; }
   var c15 = [
@@ -604,9 +604,9 @@
       }
     ]
   ];
-  K.lesson('1.5', { title: 'Applications & Modeling with Quadratic Equations', std: 'Lial 12e · Section 1.5', levels: c15 });
+  K.lesson('1.5', { title: 'Applications and Modeling with Quadratic Equations', std: 'Lial 12e · Section 1.5', levels: c15 });
 
-  /* ================= 1.6 Other Types of Equations & Applications ================= */
+  /* ================= 1.6 Other Types of Equations and Applications ================= */
   function sx(v) { return v === null ? EMPTY : setH([v]); }
   var c16 = [
     [
@@ -735,7 +735,7 @@
       }
     ]
   ];
-  K.lesson('1.6', { title: 'Other Types of Equations & Applications', std: 'Lial 12e · Section 1.6', levels: c16 });
+  K.lesson('1.6', { title: 'Other Types of Equations and Applications', std: 'Lial 12e · Section 1.6', levels: c16 });
 
   /* ================= 1.7 Inequalities ================= */
   function linIneq(a, b, sym, c) { return m(lin(a, b) + ' ' + SYM[sym] + ' ' + n(c)); }
@@ -850,7 +850,7 @@
   ];
   K.lesson('1.7', { title: 'Inequalities', std: 'Lial 12e · Section 1.7', levels: c17 });
 
-  /* ================= 1.8 Absolute Value Equations & Inequalities ================= */
+  /* ================= 1.8 Absolute Value Equations and Inequalities ================= */
   function absH(a, b) { return '|' + lin(a, b) + '|'; }
   function absSet(a, b, c) { return setH([R(c - b, a), R(-c - b, a)]); }
   function absIv(a, b, sym, c) { return ivSet(function (x) { return cmp(x.mul(a).add(b).abs().sub(c), sym); }, [R(c - b, a), R(-c - b, a)]); }
@@ -938,7 +938,7 @@
       }
     ]
   ];
-  K.lesson('1.8', { title: 'Absolute Value Equations & Inequalities', std: 'Lial 12e · Section 1.8', levels: c18 });
+  K.lesson('1.8', { title: 'Absolute Value Equations and Inequalities', std: 'Lial 12e · Section 1.8', levels: c18 });
 
-  K.review('1', 'Chapter 1 Review: Equations & Inequalities');
+  K.review('1', 'Chapter 1 Review: Equations and Inequalities');
 })(typeof window !== 'undefined' ? window.KCEP : globalThis.KCEP);

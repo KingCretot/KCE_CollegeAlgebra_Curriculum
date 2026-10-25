@@ -103,7 +103,7 @@ svg.icon{display:block;}
 </head>
 <body>
 <div class="app">
-<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 2: Graphs &amp; Functions</div></div></div><div class="lesson-tag">Lesson 2.8 &middot; Operations & Composition</div></div></div>
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 2: Graphs and Functions</div></div></div><div class="lesson-tag">Lesson 2.8 &middot; Operations & Composition</div></div></div>
 <div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
 <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 11</div></div>
 <div class="stage">
@@ -147,8 +147,8 @@ svg.icon{display:block;}
 <div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">If f(x) = 3x − 1 and g(x) = x², find (f + g)(2).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">20</button><button class="quiz-opt" data-correct="false">4</button><button class="quiz-opt" data-correct="false">5</button><button class="quiz-opt" data-correct="true">9</button></div>
         <div class="explain-box" id="ex-q1"><b>Here's why:</b> f(2) = 5 and g(2) = 4, so 5 + 4 = 9. 20 is the product (fg)(2).</div>
       </div>
-<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">With f(x) = 3x − 1 and g(x) = x², find (f ∘ g)(x).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">3x³ − x²</button><button class="quiz-opt" data-correct="true">3x² − 1</button><button class="quiz-opt" data-correct="false">(3x − 1)²</button><button class="quiz-opt" data-correct="false">9x² − 6x + 1</button></div>
-        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Put g inside f: f(x²) = 3x² − 1. 9x² − 6x + 1 = (3x − 1)² is (g ∘ f)(x), the other order.</div>
+<div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">With f(x) = 3x − 1 and g(x) = x², find (f ∘ g)(x).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">3x³ − x²</button><button class="quiz-opt" data-correct="true">3x² − 1</button><button class="quiz-opt" data-correct="false">(3x − 1)²</button><button class="quiz-opt" data-correct="false">3x² + 1</button></div>
+        <div class="explain-box" id="ex-q2"><b>Here's why:</b> Put g inside f: f(x²) = 3x² − 1. (3x − 1)² is (g ∘ f)(x), the other order; 3x² + 1 adds the 1 instead of subtracting it; 3x³ − x² multiplies f and g instead of composing them.</div>
       </div>
 <div class="quiz-q" data-quiz="q3"><div class="qnum">Question 3</div><div class="qtext">With f(x) = 3x − 1 and g(x) = x², find (g ∘ f)(x).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">9x² + 1</button><button class="quiz-opt" data-correct="false">9x² − 1</button><button class="quiz-opt" data-correct="true">9x² − 6x + 1</button><button class="quiz-opt" data-correct="false">3x² − 1</button></div>
         <div class="explain-box" id="ex-q3"><b>Here's why:</b> g(3x − 1) = (3x − 1)² = 9x² − 6x + 1. Squaring term by term to get 9x² + 1 skips the middle term.</div>
@@ -201,7 +201,7 @@ document.getElementById('prevBtn').disabled = true;
 document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
 document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
 function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
-document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ window.location.reload(); }); });
 document.querySelectorAll('.choice-row').forEach(function(row){
     var q = row.dataset.q;
     var fb = document.getElementById('fb-' + q);

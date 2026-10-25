@@ -103,7 +103,7 @@ svg.icon{display:block;}
 </head>
 <body>
 <div class="app">
-<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations &amp; Inequalities</div></div></div><div class="lesson-tag">Lesson 1.4 &middot; Quadratic Equations</div></div></div>
+<div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations and Inequalities</div></div></div><div class="lesson-tag">Lesson 1.4 &middot; Quadratic Equations</div></div></div>
 <div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
 <div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 10</div></div>
 <div class="stage">
@@ -120,7 +120,7 @@ svg.icon{display:block;}
 <section class="slide" data-slide="2"><p class="eyebrow">Vocabulary</p><h1 class="slide-title">Standard form and the discriminant</h1>
 <div class="vocab-grid">
 <div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Standard Form and the Quadratic Formula</span></div><div class="vocab-body"><p class="vocab-def">Standard form: ax² + bx + c = 0 with a ≠ 0. Quadratic formula: x = [−b ± √(b² − 4ac)] / (2a).</p><div class="vocab-hook"><span>&#128161;</span><span><b>Remember:</b> the fraction bar covers the −b too.</span></div></div></div>
-<div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Discriminant</span></div><div class="vocab-body"><p class="vocab-def">b² − 4ac. Positive: two real solutions (rational if it's a perfect square). Zero: one real solution. Negative: two nonreal complex solutions.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> x² + 4x + 4: 16 − 16 = 0, one solution.</span></div></div></div>
+<div class="vocab-card"><div class="vocab-head"><svg class="icon" width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="5" width="16" height="16" fill="none" stroke="#C9A84C" stroke-width="2"/></svg><span class="term">Discriminant</span></div><div class="vocab-body"><p class="vocab-def">b² − 4ac. With integer a, b, c: positive perfect square, two rational solutions; positive but not a perfect square, two irrational solutions; zero, one rational solution (a double solution); negative, two nonreal complex solutions.</p><div class="vocab-hook"><span>&#128161;</span><span><b>Example:</b> x² + 4x + 4 = 0: 16 − 16 = 0, one solution.</span></div></div></div>
 </div>
 </section>
 <section class="slide" data-slide="3"><p class="eyebrow">How It Works</p><h1 class="slide-title">Choosing a method</h1>
@@ -218,7 +218,7 @@ document.getElementById('prevBtn').disabled = true;
 document.getElementById('prevBtn').addEventListener('click', function(){ goTo(current - 1); });
 document.getElementById('nextBtn').addEventListener('click', function(){ goTo(current + 1); });
 function showToast(msg){ var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(window._toastTimer); window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3200); }
-document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ showToast('\ud83c\udf89 Lesson complete \u2014 nice work today!'); goTo(1); }); });
+document.querySelectorAll('[data-action="restart"]').forEach(function(btn){ btn.addEventListener('click', function(){ window.location.reload(); }); });
 document.querySelectorAll('.choice-row').forEach(function(row){
     var q = row.dataset.q;
     var fb = document.getElementById('fb-' + q);

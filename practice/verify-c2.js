@@ -1,4 +1,4 @@
-/* Independent math check for gen-c2.js (Chapter 2 — Graphs & Functions).
+/* Independent math check for gen-c2.js (Chapter 2 — Graphs and Functions).
    For every generator, runs many random cases, re-derives the answer from the problem data
    (parsing the displayed formulas wherever possible) and classifies EVERY choice as right or wrong.
    A case passes only when exactly one choice is mathematically correct and it is the marked one.

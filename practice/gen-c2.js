@@ -1,4 +1,4 @@
-/* Chapter 2 — Graphs & Functions (Lial, Essentials of College Algebra 12e, Sections 2.1–2.8) */
+/* Chapter 2 — Graphs and Functions (Lial, Essentials of College Algebra 12e, Sections 2.1–2.8) */
 (function (K) {
   var ri = K.ri, rnz = K.rnz, pick = K.pick, n = K.n, R = K.R, P = K.poly, X = K.x, Y = K.y, Q = K.Q, mc = K.mc, M = K.MINUS, m = K.m, C = K.COL;
   var SL = [R(1), R(2), R(3), R(-1), R(-2), R(-3), R(1, 2), R(-1, 2), R(1, 3), R(-1, 3), R(2, 3), R(-2, 3), R(3, 2), R(-3, 2)];
@@ -885,5 +885,5 @@
   ];
   K.lesson('2.8', { title: 'Function Operations and Composition', std: 'Lial 12e · Section 2.8', levels: c28 });
 
-  K.review('2', 'Chapter 2 Review: Graphs & Functions');
+  K.review('2', 'Chapter 2 Review: Graphs and Functions');
 })(typeof window !== 'undefined' ? window.KCEP : globalThis.KCEP);

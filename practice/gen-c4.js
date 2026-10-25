@@ -1,4 +1,4 @@
-/* Chapter 4 — Inverse, Exponential & Logarithmic Functions */
+/* Chapter 4 — Inverse, Exponential, and Logarithmic Functions */
 (function (K) {
   var ri = K.ri, rnz = K.rnz, pick = K.pick, n = K.n, P = K.poly, Q = K.Q, mc = K.mc, M = K.MINUS, m = K.m, fr = K.frx, R = K.R, C = K.COL;
   var xi = '<i>x</i>', yi = '<i>y</i>', zi = '<i>z</i>', INF = '∞', NINF = M + '∞';
@@ -775,5 +775,5 @@
   ];
   K.lesson('4.6', { title: 'Applications and Models of Exponential Growth and Decay', std: 'Lial 12e · Section 4.6', levels: c46 });
 
-  K.review('4', 'Chapter 4 Review: Inverse, Exponential & Logarithmic Functions');
+  K.review('4', 'Chapter 4 Review: Inverse, Exponential, and Logarithmic Functions');
 })(typeof window !== 'undefined' ? window.KCEP : globalThis.KCEP);

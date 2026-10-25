@@ -1,4 +1,4 @@
-/* KCE College Algebra — Chapter 5: Systems & Matrices
+/* KCE College Algebra — Chapter 5: Systems and Matrices
    Practice generators for Lial, Essentials of College Algebra 12e, Sections 5.1–5.8, plus the chapter review.
    Every question also carries o.p (problem data) and o.raw (the raw value behind each choice) for verify-c5.py. */
 (function (K) {
