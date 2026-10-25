@@ -509,7 +509,6 @@ def c_pv(o):
 def c_invprop(o):
     """evaluate the displayed expression itself with sympy (no use of the generator's answer)"""
     q = text(o['q']).split('calculator: ')[1].replace('−', '-')
-    mm = re.match(r'(\d+)log_?(\d+) (\d+) ([+-]) log_?(\d+) (\S+)$', q.replace('^', '').replace('@', ''))
     p = o['p']; a, N, b = sp.Integer(p['a']), sp.Integer(p['N']), sp.Integer(p['b'])
     first = sp.simplify(a ** (sp.log(N) / sp.log(a)))
     arg = {'pow': b ** p['k'], 'one': sp.Integer(1), 'base': b}[p['kind']]
