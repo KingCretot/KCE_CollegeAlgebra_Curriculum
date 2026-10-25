@@ -288,6 +288,16 @@
         return QP({ q: moneyW(Pp) + ' is invested at ' + n(r) + '% interest compounded ' + names[nn] + ' for ' + t + ' years. Find the balance to the nearest cent.', mc: mcN(A, ws, money),
           why: ['Use ' + m('<i>A</i> = <i>P</i>(1 + ' + fr('<i>r</i>', '<i>n</i>') + ')' + K.sup('<i>nt</i>')) + ' with ' + m('<i>P</i> = ' + n(Pp) + ', <i>r</i> = ' + n(rd) + ', <i>n</i> = ' + nn + ', <i>t</i> = ' + t) + '.', m('<i>A</i> = ' + n(Pp) + '(1 + ' + (nn === 1 ? n(rd) : fr(n(rd), nn)) + ')' + K.sup(nn * t)) + (nn > 1 ? '. Divide the rate by ' + m('<i>n</i>') + ' and multiply the time by ' + m('<i>n</i>') + '.' : '.'), m('<i>A</i> ≈ ' + money(A)) + '.'] },
           { t: 'compound', P: Pp, r: rd, n: nn, yrs: t });
+      },
+      function () {   // present value
+        var names = { 1: 'annually', 2: 'semiannually', 4: 'quarterly', 12: 'monthly' };
+        var A, r, nn, t, Pv;
+        do { A = 1000 * ri(2, 30); r = pick([2, 2.5, 3, 3.5, 4, 4.5, 5, 6]); nn = pick([1, 2, 4, 12]); t = ri(2, 15); Pv = A / Math.pow(1 + r / 100 / nn, nn * t); } while (!safe(Pv, 2));
+        var rd = r / 100;
+        var ws = [A * Math.pow(1 + rd / nn, nn * t), A / Math.pow(1 + rd / nn, t), A / (1 + rd * t), A / Math.pow(1 + rd, t)];
+        return QP({ q: 'How much must be deposited today at ' + n(r) + '% interest compounded ' + names[nn] + ' to have ' + moneyW(A) + ' in ' + t + ' years? Round to the nearest cent.', mc: mcN(Pv, ws, money),
+          why: ['This asks for the present value ' + m('<i>P</i>') + '. Divide both sides of ' + m('<i>A</i> = <i>P</i>(1 + ' + fr('<i>r</i>', '<i>n</i>') + ')' + K.sup('<i>nt</i>')) + ' by ' + m('(1 + ' + fr('<i>r</i>', '<i>n</i>') + ')' + K.sup('<i>nt</i>')) + '.', 'With ' + m('<i>A</i> = ' + n(A) + ', <i>r</i> = ' + n(rd) + ', <i>n</i> = ' + nn + ', <i>t</i> = ' + t) + ': ' + m('<i>P</i> = ' + n(A) + ' / (1 + ' + (nn === 1 ? n(rd) : n(rd) + '/' + nn) + ')' + K.sup(nn * t)) + '.', m('<i>P</i> ≈ ' + money(Pv)) + '. The present value is always less than ' + moneyW(A) + '; multiplying instead of dividing gives the future value of ' + moneyW(A) + '.'] },
+          { t: 'pv', A: A, r: rd, n: nn, yrs: t });
       }
     ],
     [
@@ -366,6 +376,21 @@
         return QP({ q: 'What is the domain of ' + m(fx(lg(b, K.minusH(xi, h), true) + K.plusK(k))) + '?', mc: mc(iv(n(h), INF), [iv(n(h), INF, '['), iv(n(-h), INF), iv(n(k), INF), iv(NINF, n(h))]),
           why: ['You can only take the log of a positive number, so the argument must be positive: ' + m(K.minusH(xi, h) + ' &gt; 0') + '.', 'So ' + m('<i>x</i> &gt; ' + n(h)) + '. The ' + m(K.plusK(k)) + ' shifts the graph vertically and does not change the domain.', 'Domain: ' + iv(n(h), INF) + ', with a parenthesis because ' + m('<i>x</i> = ' + n(h)) + ' would make the argument 0.'] },
           { t: 'logdom', b: b, h: h, k: k });
+      },
+      function () {   // inverse properties a^(log_a N) = N, log_b b^k = k, log_b 1 = 0, log_b b = 1
+        var a = pick([2, 3, 4, 5, 6, 7, 8, 9]), N, b, k, kind = pick(['pow', 'pow', 'one', 'base']), plus = K.coin(), v2, t2, w2;
+        do { N = ri(2, 20); } while (N === a);
+        do { b = pick([2, 3, 4, 5, 6, 10]); } while (b === a);
+        k = ri(2, 4);
+        if (kind === 'pow') { v2 = k; t2 = lg(b, pw(b, k)); w2 = [Math.pow(b, k), b * k]; }
+        else if (kind === 'one') { v2 = 0; t2 = lg(b, '1'); w2 = [1, b]; }
+        else { v2 = 1; t2 = lg(b, n(b)); w2 = [b, 0]; }
+        var sg = plus ? 1 : -1, ans = N + sg * v2;
+        var ws = [a * N + sg * v2].concat(w2.map(function (w) { return N + sg * w; })).concat([a * N + sg * w2[0]]);
+        var expr = pw(a, lg(a, n(N))) + (plus ? ' + ' : ' ' + M + ' ') + t2;
+        return QP({ q: 'Evaluate without a calculator: ' + m(expr), mc: mcN(ans, ws, n, function (i) { return n(ans + (i % 2 ? -1 : 1) * (2 + Math.floor(i / 2))); }),
+          why: ['Inverse property: ' + m(pw('<i>a</i>', lg('<i>a</i>', xi)) + ' = <i>x</i>') + ', so ' + m(pw(a, lg(a, n(N))) + ' = ' + N) + '. The base ' + a + ' and the ' + m(lg(a, '')) + ' undo each other; nothing is multiplied.', (kind === 'pow' ? m(lg(b, pw(b, k)) + ' = ' + k) + ' because ' + m(lg('<i>a</i>', pw('<i>a</i>', xi)) + ' = <i>x</i>') : kind === 'one' ? m(lg(b, '1') + ' = 0') + ' because ' + m(pw(b, 0) + ' = 1') : m(lg(b, n(b)) + ' = 1') + ' because ' + m(pw(b, 1) + ' = ' + b)) + '.', 'So the value is ' + m(N + (plus ? ' + ' : ' ' + M + ' ') + v2 + ' = ' + n(ans)) + '.'] },
+          { t: 'invprop', a: a, N: N, b: b, k: k, kind: kind, plus: plus });
       }
     ],
     [
@@ -415,6 +440,43 @@
         return QP({ q: 'Evaluate without a calculator: ' + m(expr), mc: mcN(k, [Math.pow(b, k), -k, k + 1, 2 * k], n, function (i) { return n(k + (i % 2 ? -1 : 1) * (2 + Math.floor(i / 2))); }),   // exact (integer) distractors only
           why: [sum ? 'Product property: ' + m(expr) + ' ' + m('= ' + lg(b, n(Mv) + ' · ' + n(N), true)) + ' ' + m('= ' + lg(b, n(Mv * N))) + '.' : 'Quotient property: ' + m(expr) + ' ' + m('= ' + lg(b, fr(n(Mv), n(N)), true)) + ' ' + m('= ' + lg(b, n(Mv / N))) + '.', (k === 1 ? 'The argument equals the base, and ' + m(lg(b, n(b)) + ' = 1') + ', so the value is 1.' : m(n(sum ? Mv * N : Mv / N) + ' = ' + pw(b, k)) + ', so the value is ' + k + '.'), 'Neither log is a whole number by itself; the properties make the problem easy.'] },
           { t: 'lognum', b: b, M: Mv, N: N, sum: sum });
+      },
+      function () {   // evaluate with given values log 2 ≈ 0.3010 and log 3 ≈ 0.4771
+        var L2 = 0.3010, L3 = 0.4771, mode = pick(['prod', 'prod', 'quot', 'root', 'ten']), c2, c3, c10 = 0, Nh, par = false, N, how;
+        if (mode === 'prod') {
+          do { c2 = ri(0, 4); c3 = ri(0, 3); N = Math.pow(2, c2) * Math.pow(3, c3); } while (c2 + c3 < 2 || N > 300 || (c3 === 0 && c2 < 3) || (c2 === 0 && c3 < 2));
+          Nh = n(N); how = m(Nh + ' = ' + [c2 ? (c2 === 1 ? '2' : pw(2, c2)) : '', c3 ? (c3 === 1 ? '3' : pw(3, c3)) : ''].filter(Boolean).join(' · '));
+        } else if (mode === 'quot') {
+          var i = ri(1, 3), j = ri(1, 2), up = K.coin();
+          c2 = up ? i : -i; c3 = up ? -j : j; Nh = up ? K.f(Math.pow(2, i), Math.pow(3, j)) : K.f(Math.pow(3, j), Math.pow(2, i)); par = true;
+          how = m(Nh + ' = ' + (up ? fr(i === 1 ? '2' : pw(2, i), j === 1 ? '3' : pw(3, j)) : fr(j === 1 ? '3' : pw(3, j), i === 1 ? '2' : pw(2, i))));
+        } else if (mode === 'root') {
+          var cand = [[1, 0], [3, 0], [5, 0], [1, 2], [3, 2], [0, 2]], pr = pick(cand.slice(0, 5));
+          c2 = pr[0] / 2; c3 = pr[1] / 2; N = Math.pow(2, pr[0]) * Math.pow(3, pr[1]); Nh = K.sqrt(n(N));
+          how = m(Nh + ' = ' + pw('(' + [pr[0] ? (pr[0] === 1 ? '2' : pw(2, pr[0])) : '', pr[1] ? pw(3, pr[1]) : ''].filter(Boolean).join(' · ') + ')', '1/2'));
+        } else {
+          var tens = [[5, -1, 0, 1], [15, -1, 1, 1], [45, -1, 2, 1], [25, -2, 0, 2], [20, 1, 0, 1], [30, 0, 1, 1], [50, -1, 0, 2], [60, 1, 1, 1], [0.5, -1, 0, 0]], tc = pick(tens.slice(0, 8));
+          N = tc[0]; c2 = tc[1]; c3 = tc[2]; c10 = tc[3]; Nh = n(N);
+          var num = [], den = [];
+          if (c2 > 0) num.push(c2 === 1 ? '2' : pw(2, c2)); if (c3 > 0) num.push(c3 === 1 ? '3' : pw(3, c3)); num.push(c10 === 1 ? '10' : pw(10, c10));
+          if (c2 < 0) den.push(c2 === -1 ? '2' : pw(2, -c2));
+          how = m(Nh + ' = ' + (den.length ? fr(num.join(' · '), den.join(' · ')) : num.join(' · '))) + ', and ' + m('log 10 = 1');
+        }
+        var v = c2 * L2 + c3 * L3 + c10;
+        var ws = [Math.abs(c2) * L2 + Math.abs(c3) * L3 + c10, c3 * L2 + c2 * L3 + c10, (c2 ? Math.sign(c2) * L2 : 0) + (c3 ? Math.sign(c3) * L3 : 0) + c10];
+        if (c2 && c3) ws.push(Math.abs(c2 * c3) * L2 * L3);
+        if (mode === 'root') ws.unshift(2 * (c2 * L2 + c3 * L3));
+        if (mode === 'ten') ws.unshift(c2 * L2 + c3 * L3);
+        var fmt = function (w) { return dec(w, 4); };
+        var terms = [];
+        if (c2) terms.push([c2, 'log 2']); if (c3) terms.push([c3, 'log 3']); if (c10) terms.push([c10, 'log 10']);
+        terms.sort(function (p, q) { return (q[0] > 0) - (p[0] > 0); });   // a positive term first
+        function cs(c, first) { var a = Math.abs(c), co = a === 1 ? '' : a === 0.5 ? '½' : Number.isInteger(a) ? n(a) : '(' + Math.round(2 * a) + '/2)'; return (first ? (c < 0 ? M : '') : (c < 0 ? ' ' + M + ' ' : ' + ')) + co; }
+        var lin = terms.map(function (tm, ix) { return cs(tm[0], ix === 0) + (Math.abs(tm[0]) === 1 ? '' : ' ') + tm[1]; }).join('');
+        var linV = terms.map(function (tm, ix) { var val = tm[1] === 'log 2' ? '0.3010' : tm[1] === 'log 3' ? '0.4771' : '1'; return cs(tm[0], ix === 0) + '(' + val + ')'; }).join('');
+        return QP({ q: 'Given ' + m('log 2 ≈ 0.3010') + ' and ' + m('log 3 ≈ 0.4771') + ', find ' + m(lg(10, Nh, par)) + '. Use only the given values and the properties of logarithms.', mc: mcN(v, ws, fmt, function (ix) { return fmt(v + (ix % 2 ? -1 : 1) * (0.3010 + 0.1 * Math.floor(ix / 2))); }),
+          why: ['Write the number using ' + (c10 ? '2s, 3s, and 10s' : '2s and 3s') + ': ' + how + '.', 'Use the product, quotient, and power properties: ' + m(lg(10, Nh, par) + ' = ' + lin) + '.', 'Substitute: ' + m(linV + ' = ' + fmt(v)) + '. A product inside the log becomes a sum, not a product of logs.'] },
+          { t: 'givenlog', mode: mode, N: mode === 'quot' ? [c2 > 0 ? Math.pow(2, c2) : Math.pow(3, c3), c2 > 0 ? Math.pow(3, -c3) : Math.pow(2, -c2)] : [N, 1], root: mode === 'root' });
       }
     ],
     [

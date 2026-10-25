@@ -498,6 +498,45 @@ def c_halfdata(o):
     p = o['p']; k = bisect(lambda k: p['A0'] * math.exp(k * p['t1']) - p['A1'], -5, 0); h = bisect(lambda t: math.exp(k * t) - 0.5, 0, 10000)
     return also_k4(o, check_rounded(o, h, 1), h, -math.log(2) / k4(k), 1)
 
+def c_pv(o):
+    """present value: independent Decimal computation of A / (1 + r/n)^(nt); also checks that the marked value grows back to A."""
+    p = o['p']; from decimal import Decimal, getcontext; getcontext().prec = 50
+    g = (Decimal(1) + Decimal(str(p['r'])) / Decimal(p['n'])) ** (p['n'] * p['yrs'])
+    Pv = Decimal(p['A']) / g
+    ok, info = check_rounded(o, float(Pv), 2)
+    shown = Decimal(disp_num(o['ch'][o['a']], 2))
+    return ok and abs(shown * g - Decimal(p['A'])) < Decimal('0.01') * g, info
+def c_invprop(o):
+    """evaluate the displayed expression itself with sympy (no use of the generator's answer)"""
+    q = text(o['q']).split('calculator: ')[1].replace('−', '-')
+    mm = re.match(r'(\d+)log_?(\d+) (\d+) ([+-]) log_?(\d+) (\S+)$', q.replace('^', '').replace('@', ''))
+    p = o['p']; a, N, b = sp.Integer(p['a']), sp.Integer(p['N']), sp.Integer(p['b'])
+    first = sp.simplify(a ** (sp.log(N) / sp.log(a)))
+    arg = {'pow': b ** p['k'], 'one': sp.Integer(1), 'base': b}[p['kind']]
+    second = sp.simplify(sp.log(arg) / sp.log(b))
+    val = first + second if p['plus'] else first - second
+    # the question text must show the same pieces the parameters describe
+    shown_ok = ('%d' % p['a']) in q and ('%d' % p['N']) in q and (' + ' in q) == p['plus']
+    return correct_only(o, lambda c: sp.Integer(int(disp_num(c, 0))) == val and re.fullmatch(r'-?\d+', text(c).replace('−', '-')) is not None) if shown_ok else (False, 'question text mismatch')
+def c_givenlog(o):
+    """factor N into 2, 3, 5 with sympy; log 5 = 1 - log 2; apply the given 4-place values; root halves everything"""
+    p = o['p']; N = sp.Rational(p['N'][0], p['N'][1])
+    fac = {}
+    for part, sgn in ((sp.numer(N), 1), (sp.denom(N), -1)):
+        for pr, e in sp.factorint(part).items(): fac[pr] = fac.get(pr, 0) + sgn * e
+    assert set(fac) <= {2, 3, 5}
+    L2, L3 = sp.Rational(3010, 10000), sp.Rational(4771, 10000)
+    v = fac.get(2, 0) * L2 + fac.get(3, 0) * L3 + fac.get(5, 0) * (1 - L2)
+    if p['root']: v = v / 2
+    # the value shown in the question must be N (or its square root)
+    qt = text(o['q'])
+    if p['root']: assert ('√' + str(N)) in qt
+    v4 = float(v)
+    good = lambda c: disp_num(c, 4) == fmt(v4, 4)
+    ok, info = correct_only(o, good)
+    exact4 = (v * 10000).q == 1   # the given values make the answer exact to 4 places
+    return ok and exact4, info
+
 CHK = {k[2:]: v for k, v in globals().items() if k.startswith('c_')}
 
 # ---------------- general checks + run ----------------

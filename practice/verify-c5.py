@@ -220,6 +220,7 @@ def correct(p, raw, case):
             prod *= fp ** int(pw)
         assert sp.expand(prod - poly(p['den'])) == 0, 'factors do not multiply to the denominator'
         assert deg(p['num']) < deg(p['den'])
+        assert sp.degree(sp.gcd(poly(p['num']), poly(p['den'])), x) == 0, 'numerator shares a factor with the denominator'
         canon = sorted((i, k, len(facs[i][0]) - 2) for i, (f, pw) in enumerate(facs) for k in range(1, int(pw) + 1))
         return sorted(tuple(int(v) for v in r) for r in raw) == canon
     if t == 'pconst':
@@ -247,6 +248,10 @@ def correct(p, raw, case):
         return [S(raw[0]), S(raw[1])] == [sols[0][L], sols[0][W]]
     if t == 'ineqpt':
         return all(sat_ineq(I, Fr(raw[0]), Fr(raw[1])) for I in p['ineqs'])
+    if t == 'nlineqpt':   # y op1 a x^2 + c  and  x^2 + y^2 op2 r^2, checked with exact fractions
+        a_, c_, op1 = p['par']; r2, op2 = p['circ']
+        px, py = Fr(raw[0]), Fr(raw[1])
+        return holds(py, op1, Fr(a_) * px * px + Fr(c_)) and holds(px * px + py * py, op2, Fr(r2))
     if t == 'ineqg':
         a, b, c = [Fr(v).limit_denominator(1000) for v in p['shade']]
         m_, b_, op = raw

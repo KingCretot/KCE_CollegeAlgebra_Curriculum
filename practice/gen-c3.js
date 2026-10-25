@@ -216,6 +216,16 @@
         var wr = [[fx(vform(a, -h, k)), function (x) { return a * (x + h) * (x + h) + k; }], [fx(vform(-a, h, k)), function (x) { return -a * (x - h) * (x - h) + k; }], [fx(vform(a, h, -k)), function (x) { return a * (x - h) * (x - h) - k; }]];
         return QP({ q: 'Which function is graphed below? The vertex and one other point are marked.', graph: parab(a, h, k, { pts: [{ x: h, y: k, label: '(' + h + ', ' + k + ')' }, { x: h + sd, y: k + a, label: '(' + (h + sd) + ', ' + (k + a) + ')' }] }), mc: mcF(cor, wr),
           why: ['The vertex is ' + K.pt(h, k) + ', so ' + fx('<i>a</i>' + sq('(' + dv(h) + ')') + K.plusK(k)) + '.', 'One unit to the ' + (sd > 0 ? 'right' : 'left') + ' of the vertex, the graph is at ' + n(k + a) + ', which is ' + n(Math.abs(a)) + (a > 0 ? ' above' : ' below') + ' the vertex, so ' + m('<i>a</i> = ' + n(a)) + '.', 'So ' + fx(vform(a, h, k)) + '.'] }, { t: 'graph', fn: fn });
+      },
+      function () {
+        var a = pick([1, 1, 1, -1, 2, -2]), r1, r2;
+        do { r1 = rnz(-7, 7); r2 = rnz(-7, 7); } while (r1 === r2 || r1 === -r2);
+        var lo = Math.min(r1, r2), hi = Math.max(r1, r2), cf = [a, -a * (r1 + r2), a * r1 * r2], c = cf[2], f = pd(cf);
+        var ans = function (u, v, yi) { return '<i>x</i>-intercepts ' + K.pt(u, 0) + ' and ' + K.pt(v, 0) + '; <i>y</i>-intercept ' + K.pt(0, yi); };
+        var wr = [ans(-hi, -lo, c), ans(lo, hi, -c), '<i>x</i>-intercept ' + K.pt(0, c) + '; <i>y</i>-intercepts ' + K.pt(lo, 0) + ' and ' + K.pt(hi, 0)];
+        var fq = a === 1 ? '(' + dv(lo) + ')(' + dv(hi) + ')' : lead(a) + '(' + dv(lo) + ')(' + dv(hi) + ')';
+        return QP({ q: 'Find the <i>x</i>-intercepts and the <i>y</i>-intercept of the graph of ' + fx(f) + '.', mc: mc(ans(lo, hi, c), wr, function (i) { return ans(lo, hi + i, c); }),
+          why: [m('<i>x</i>-intercepts: solve <i>f</i>(<i>x</i>) = 0') + '. ' + m(pd(cf) + ' = ' + fq + ' = 0') + ', so ' + m(IX + ' = ' + n(lo)) + ' or ' + m(IX + ' = ' + n(hi)) + '.', m('<i>y</i>-intercept: <i>f</i>(0) = ' + n(c)) + ', the constant term.', 'Answer: ' + ans(lo, hi, c) + '. (Reading the zeros straight off the factors without changing their signs is the most common slip.)'] }, { t: 'qint', f: f });
       }
     ],
     [
@@ -385,6 +395,17 @@
         var why = pos ? ['Signs of the coefficients of ' + m(FX) + ': ' + signs(c).join(' ') + '. That is ' + v + ' sign change' + (v === 1 ? '' : 's') + '.'] : ['Find ' + m('<i>f</i>(' + M + '<i>x</i>) =') + ' ' + brk(pd(negX(c))) + '. Its signs: ' + signs(negX(c)).join(' ') + ', which is ' + w + ' sign change' + (w === 1 ? '' : 's') + '.'];
         why.push('Descartes’ rule: the number of ' + (pos ? 'positive' : 'negative') + ' real zeros is ' + cnt + ' or less than that by an even number: ' + possStr(cnt).toLowerCase() + '.');
         return QP({ q: 'By Descartes’ rule of signs, how many ' + (pos ? 'positive' : 'negative') + ' real zeros could ' + fx(pd(c)) + ' have?', mc: mc(possStr(cnt), wr, function (i) { return possStr(cnt + 1 + i); }), why: why }, { t: 'desc', f: pd(c), pos: pos });
+      },
+      function () {
+        var cnt = pick([2, 2, 3]), zs = distinctZeros(cnt, -6, 6), ms, s = pick([1, 1, -1, 2, 3]);
+        do { ms = zs.map(function () { return ri(1, 4); }); } while (ms.every(function (v) { return v === ms[0]; }));
+        var item = function (z, mu) { return n(z) + ' (multiplicity ' + mu + ')'; };
+        var ans = function (zz, mm) { var idx = zz.map(function (z, i) { return i; }).sort(function (p, q) { return zz[p] - zz[q]; }); return list(idx.map(function (i) { return item(zz[i], mm[i]); })); };
+        var flip = zs.map(function (z) { return -z; }), rot = ms.slice(1).concat([ms[0]]), ones = zs.map(function () { return 1; });
+        var deg = ms.reduce(function (p, q) { return p + q; }, 0);
+        var wr = [ans(zs, rot), ans(flip, ms), ans(zs, ones)];
+        return QP({ q: 'What are the zeros of ' + fx(factored(s, zs, ms)) + ', and what is the multiplicity of each?', mc: mc(ans(zs, ms), wr, function (i) { var m2 = ms.slice(); m2[i % cnt] += 1 + Math.floor(i / cnt); return ans(zs, m2); }),
+          why: ['A factor ' + m('(<i>x</i> ' + M + ' <i>k</i>)<sup><i>m</i></sup>') + ' makes <i>k</i> a zero of multiplicity <i>m</i>. Set each factor equal to 0, and read the multiplicity from its exponent.', zs.map(function (z, i) { return m(fac(z, ms[i])) + ' gives ' + item(z, ms[i]); }).join('; ') + '.', 'Check: the multiplicities add to ' + deg + ', the degree of <i>f</i>.'] }, { t: 'mult', f: factored(s, zs, ms) });
       }
     ],
     [

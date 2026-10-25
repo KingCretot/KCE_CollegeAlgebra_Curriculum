@@ -289,6 +289,14 @@ const J = {
   decomp: (q, p, C) => { const Hs = mths(q.q).map(ser).find(s => /^H\(x\) = /.test(s)), H = parseExpr(Hs.slice(7)); return C.map(s => { const pr = splitTop(s, ','), f = parseExpr(pr[0].replace(/^f\(x\) = /, '')), g = parseExpr(pr[1].replace(/^g\(x\) = /, '')); return RX().every(x => { const hv = H({ x }), cv = f({ x: g({ x }) }); return (!fin(hv) && !fin(cv)) || near(hv, cv); }) && RX().some(x => fin(H({ x }))); }); },
   compDiff: (q, p, C) => { const F = qFuncs(q.q), fg = x => F.f(F.g(x)), gf = x => F.g(F.f(x)), T = p.fgFirst ? x => fg(x) - gf(x) : x => gf(x) - fg(x); if (!/\(f ∘ g\)\(x\) − \(g ∘ f\)\(x\)|\(g ∘ f\)\(x\) − \(f ∘ g\)\(x\)/.test(K.strip(q.q))) throw new Error('compDiff question form'); const order = K.strip(q.q).indexOf('(f ∘ g)(x) − (g ∘ f)(x)') >= 0; if (order !== p.fgFirst) throw new Error('compDiff order'); return C.map(s => { const g = parseExpr(s); return sameFn(x => g({ x }), T, RX()); }); },
   coupon: (q, p, C) => { const c = x => x - p.D, pp = x => x * (100 - p.pc) / 100, v = p.first ? pp(c(p.Xp)) : c(pp(p.Xp)); return C.map(s => near(numChoice(s), v)); },
+  symEq: (q, p, C) => { // independent: evaluate F(x, y) = L − R at random points and compare with the reflected points
+    const F = firstEq(q.q), P = []; for (let i = 0; i < 16; i++) P.push([Math.random() * 8 - 4, Math.random() * 8 - 4]);
+    const symm = T => P.every(([x, y]) => { const [u, v] = T(x, y); return near(F(u, v), F(x, y)); }) || P.every(([x, y]) => { const [u, v] = T(x, y); return near(F(u, v), -F(x, y)); });
+    const sx = symm((x, y) => [x, -y]), sy = symm((x, y) => [-x, y]), so = symm((x, y) => [-x, -y]);
+    const lab = sx && sy && so ? 'The x-axis, the y-axis, and the origin' : sx && !sy && !so ? 'The x-axis only' : sy && !sx && !so ? 'The y-axis only' : so && !sx && !sy ? 'The origin only' : 'UNCLASSIFIED';
+    if (lab === 'UNCLASSIFIED') throw new Error('symmetry combination not offered');
+    return C.map(s => s === lab);
+  },
   ripple: (q, p, C) => C.map(s => { const g = parseExpr(s.split('=')[1]); return [0.5, 1.7, 3].every(t => near(g({ t }), Math.PI * (p.c * t) ** 2)); })
 };
 function firstEqAny(h) { const s = mths(h).map(ser).find(z => /=/.test(z) && /[xy]/.test(z)); if (/^y = /.test(s)) { const ex = parseExpr(s.slice(4)); return (x, y) => y - ex({ x }); } return eqF(s); }

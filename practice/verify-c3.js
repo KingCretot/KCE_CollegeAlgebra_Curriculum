@@ -143,6 +143,18 @@ const J = {
   fence(q) { const P = q.p.P; let best = 0; for (let x = 0; x <= P / 2; x += 0.005) best = Math.max(best, q.p.river ? x * (P - 2 * x) : x * (P / 2 - x)); if (!new RegExp('\\b' + P + ' feet').test(plain(q.q))) throw new Error('fence perimeter missing'); return (s) => close(nums(s)[0], best, 1e-6); },
   profit(q) { const f = plain(q.p.f); let best = -Infinity, bx = 0; for (let x = 0; x <= 3000; x++) { const v = ev(f, x); if (v > best) { best = v; bx = x; } } return (s) => { const v = nums(s); return v[0] === bx && close(v[1], best); }; },
   findA(q) { const p = q.p, t = plain(q.q); if (!t.includes('(' + K.plain(K.R(p.x1).html()) + ', ' + K.plain(K.R(p.y1).html()) + ')')) throw new Error('point missing'); return (s) => { const a = nums(s)[0]; return close(a * (p.x1 - p.h) ** 2 + p.k, p.y1) && close(a * 0 + p.k, p.k); }; },
+  qint(q) { // quadratic formula on the parsed coefficients; y-intercept is f(0)
+    const c = poly(rhs(plain(q.p.f))); if (deg(c) !== 2) throw new Error('not quadratic'); if (!plain(q.q).includes(plain(q.p.f))) throw new Error('f missing');
+    const D = c[1] * c[1] - 4 * c[2] * c[0], r = [(-c[1] - Math.sqrt(D)) / (2 * c[2]), (-c[1] + Math.sqrt(D)) / (2 * c[2])].sort((a, b) => a - b);
+    return (s) => { if (!/^x-intercepts .*; y-intercept /.test(s)) return false; const v = nums(s); if (v.length !== 6 || v[1] !== 0 || v[3] !== 0 || v[4] !== 0) return false; const g = [v[0], v[2]].sort((a, b) => a - b); return close(g[0], r[0]) && close(g[1], r[1]) && close(v[5], c[0]); };
+  },
+  mult(q) { // expand the factored form, find integer zeros by search, count multiplicity by repeated division
+    const c = poly(rhs(plain(q.p.f))); if (!plain(q.q).includes(plain(q.p.f))) throw new Error('f missing');
+    const mult = (cc, z) => { let k = 0, cur = cc.slice(); for (;;) { if (cur.length < 2 || Math.abs(pval(cur, z)) > 1e-6) return k; const d = cur.slice().reverse(), qq = [d[0]]; for (let i = 1; i < d.length - 1; i++) qq.push(d[i] + qq[i - 1] * z); cur = qq.reverse(); k++; } };
+    const want = {}; for (let z = -20; z <= 20; z++) { const m0 = mult(c, z); if (m0) want[z] = m0; }
+    if (Object.values(want).reduce((a, b) => a + b, 0) !== deg(c)) throw new Error('zeros do not account for degree');
+    return (s) => { const got = {}; const re = /(−?\d+) \(multiplicity (\d+)\)/g; let mm, cnt = 0; while ((mm = re.exec(s))) { got[+mm[1].replace('−', '-')] = +mm[2]; cnt++; } return cnt === Object.keys(want).length && Object.keys(want).every((z) => got[z] === want[z]); };
+  },
   rem(q) { const f = rhs(plain(q.p.f)); if (!plain(q.q).includes(plain(K.minusH('<i>x</i>', q.p.k)))) throw new Error('divisor missing'); const r = ev(f, q.p.k); return (s) => close(nums(s)[0], r); },
   fk(q) { const f = rhs(plain(q.p.f)); if (!plain(q.q).includes('f(' + K.n(q.p.k) + ')')) throw new Error('f(k) missing'); const r = ev(f, q.p.k); return (s) => close(nums(s)[0], r); },
   qr(q) { // long division by (x - k) with subtraction, from the highest power down
