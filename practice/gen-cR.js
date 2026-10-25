@@ -162,6 +162,41 @@
         S = uniq(K.sample(S, nEl));
         var ans = ipow(2, nEl);
         return attach(Q({ q: 'How many subsets does ' + setH(S) + ' have?', mc: K.mcNum(ans, [2 * nEl, ans - 1, nEl * nEl, ipow(2, nEl - 1)]), why: ['Count the elements: the set has ' + nEl + ' elements.', 'A set with ' + m('<i>n</i>') + ' elements has ' + m('2<sup><i>n</i></sup>') + ' subsets, counting ' + EMPTY + ' and the set itself.', m('2<sup>' + nEl + '</sup> = ' + ans) + ' subsets.'] }), { t: 'count', mode: 'all' });
+      },
+      function () { // finite or infinite, equal sets, disjoint sets
+        var v = ri(0, 2), q, cor, wr, why, mode;
+        if (v === 0) {
+          var N = ri(5, 12), L = ri(2, 9), a0 = -ri(1, 6), b0 = ri(2, 9), ask = K.coin() ? 'infinite' : 'finite';
+          var INF = ['{' + N + ', ' + (N + 1) + ', ' + (N + 2) + ', …}', sb(xv + ' is a natural number greater than ' + N), sb(xv + ' is an integer less than ' + L)];
+          var FIN = ['{1, 2, 3, …, ' + N + '}', sb(xv + ' is a natural number less than ' + N), sb(xv + ' is an integer between ' + n(a0) + ' and ' + b0)];
+          cor = ask === 'infinite' ? pick(INF) : pick(FIN); wr = ask === 'infinite' ? FIN : INF; mode = 'fin';
+          q = 'Which set is <b>' + ask + '</b>?';
+          why = ['A set is finite if you can list all of its elements and stop; otherwise it is infinite.',
+            'The natural numbers less than a number, the integers between two numbers, and a list such as {1, 2, 3, …, ' + N + '} that ends all stop, so they are finite.',
+            'A list that ends with “…}”, the natural numbers greater than a number, and the integers less than a number go on forever, so they are infinite.',
+            'The ' + ask + ' set is ' + cor + '.'];
+        } else if (v === 1) {
+          var U = range(1, 12), A = uniq(K.sample(U, 4)), out = minus(U, A), dup = pick(A);
+          var show = function (arr) { return '{' + K.shuffle(arr).map(el).join(', ') + '}'; };
+          cor = show(A.concat([dup]));
+          var rep = A.slice(); rep[ri(0, 3)] = pick(out);
+          wr = [show(rep), show(dropOne(A)), show(A.concat([pick(out)]))]; mode = 'eq';
+          q = 'Let ' + SA + ' = ' + setH(A) + '. Which set is equal to ' + SA + '?';
+          why = ['Two sets are equal when they contain exactly the same elements.', 'Order does not matter, and a repeated element is listed only once, so ' + cor + ' = ' + setH(A) + '.', 'Each other choice is missing an element of ' + SA + ' or contains an element that is not in ' + SA + '.'];
+        } else {
+          var pairs, keys;
+          do {
+            pairs = []; var P0, Q0;
+            do { P0 = uniq(K.sample(range(1, 12), ri(2, 4))); Q0 = uniq(K.sample(minus(range(1, 12), P0), ri(2, 4))); } while (!Q0.length);
+            pairs.push([P0, Q0]);
+            for (var i = 0; i < 3; i++) { var P1, Q1; do { P1 = uniq(K.sample(range(1, 12), ri(2, 4))); Q1 = uniq(K.sample(range(1, 12), ri(2, 4))); } while (inter(P1, Q1).length < 1 || inter(P1, Q1).length === Math.min(P1.length, Q1.length)); pairs.push([P1, Q1]); }
+            keys = pairs.map(function (p) { return setH(p[0]) + ' and ' + setH(p[1]); });
+          } while (uniq(keys).length < 4);
+          cor = keys[0]; wr = keys.slice(1); mode = 'dis';
+          q = 'Which pair of sets is <b>disjoint</b>?';
+          why = ['Disjoint sets have no elements in common, so their intersection is ' + EMPTY + '.', 'In ' + cor + ', no element appears in both sets.', pairs.slice(1).map(function (p) { return setH(p[0]) + ' and ' + setH(p[1]) + ' share ' + inter(p[0], p[1]).map(el).join(', '); }).join('; ') + '.'];
+        }
+        return attach(Q({ q: q, mc: mc(cor, wr), why: why }), { t: 'svocab', mode: mode });
       }
     ],
     [ // Level 2
@@ -337,6 +372,35 @@
           return attach(Q({ q: 'The two dots on the number line mark two real numbers. What is the distance between them?', graph: g, mc: K.mcNum(d, wr), why: ['The dots are at ' + n(lo) + ' and ' + n(hi) + '.'].concat(why.slice(0, 2)) }), { t: 'dist', a: a, b: b, nl: true });
         }
         return attach(Q({ q: 'Find the distance between ' + m(n(a)) + ' and ' + m(n(b)) + ' on the number line.', mc: K.mcNum(d, wr), why: why }), { t: 'dist', a: a, b: b });
+      },
+      function () { // order on the number line
+        var vals, ok;
+        do {
+          vals = [];
+          var kinds = K.shuffle(['negint', 'negfr', 'posfr', 'dec', pick(['negfr', 'posfr', 'negdec'])]).slice(0, ri(4, 5));
+          kinds.forEach(function (k) {
+            var d = pick([2, 3, 4, 5]), p;
+            if (k === 'negint') vals.push(R(-ri(1, 4)));
+            else if (k === 'negfr' || k === 'posfr') { do { p = ri(1, 3 * d); } while (p % d === 0 || gcd(p, d) !== 1); vals.push(R(k === 'negfr' ? -p : p, d)); }
+            else if (k === 'dec') vals.push(R(rnz(-35, 35), 10));
+            else vals.push(R(-ri(1, 35), 10));
+          });
+          var sv = vals.map(function (z) { return z.val(); }).sort(function (a, b) { return a - b; });
+          ok = sv.every(function (z, i) { return i === 0 || z - sv[i - 1] > 0.04; }) && sv[0] < 0 && sv[sv.length - 1] > 0;
+        } while (!ok);
+        var H = vals.map(function (z) { var dec = z.d === 10 || z.d === 1 || (z.d === 2 && K.coin()); return [z, dec ? m(n(z.val())) : m(z.html()), dec]; });
+        var asc = K.coin(), byV = function (s) { return function (a, b) { return s * (a[0].val() - b[0].val()); }; };
+        var list = function (arr) { return arr.map(function (t) { return t[1]; }).join(', '); };
+        var sorted = H.slice().sort(byV(asc ? 1 : -1)), rev = sorted.slice().reverse();
+        var byAbs = H.slice().sort(function (a, b) { return (asc ? 1 : -1) * (Math.abs(a[0].val()) - Math.abs(b[0].val())); });
+        var negFlip = H.slice().sort(function (a, b) { var x = a[0].val(), y = b[0].val(); var kx = x < 0 ? -x - 100 : x, ky = y < 0 ? -y - 100 : y; return (asc ? 1 : -1) * (kx - ky); });
+        var sw = sorted.slice(), j = ri(0, sw.length - 2), tmp = sw[j]; sw[j] = sw[j + 1]; sw[j + 1] = tmp;
+        var cor = list(sorted), wr = [list(negFlip), list(byAbs), list(sw), list(rev)];
+        var dir = asc ? 'least to greatest' : 'greatest to least';
+        return attach(Q({ q: 'Which list is in order from ' + dir + '?', mc: mc(cor, wr, function () { return list(K.shuffle(H)); }),
+          why: ['Write each number as a decimal: ' + sorted.map(function (t) { return t[1] + (t[2] ? '' : (t[0].d === 3 ? ' ≈ ' : ' = ') + m(n(K.round(t[0].val(), 3)))); }).join(', ') + '.',
+            'On the number line, a &lt; b means a is to the <b>left</b> of b. Among negative numbers, the one with the larger absolute value is farther left, so it is smaller.',
+            'From ' + dir + ': ' + cor + '.'] }), { t: 'order', asc: asc });
       }
     ],
     [ // Level 2
@@ -963,6 +1027,24 @@
         var c = mk(co, res);
         var w = [mk(co, e1.add(e2).add(e3)), mk(R(c1 + c2, c3), res), mk(co, e1.mul(e2).sub(e3)), mk(co, res.neg())];
         return attach(Q({ q: 'Simplify ' + m(eh) + '. Write the answer with only positive exponents; assume ' + m(X + ' &gt; 0') + '.', mc: mcF(c, w, function () { return mk(co.add(rnz(1, 3)), res); }, TPOS), why: ['Coefficients: ' + m(fr(c1 + ' · ' + c2, c3) + ' = ' + co.html()) + '.', 'Exponents of ' + X + ': add for the product, subtract for the quotient: ' + m(expS(e1) + ' + ' + expS(e2) + ' ' + M + ' ' + (e3.n < 0 ? '(' + expS(e3) + ')' : expS(e3)) + ' = ' + expS(res)) + ' (use a common denominator).', 'Answer with a positive exponent: ' + c[0] + '.'] }), { t: 'expr', eh: eh, pos: 1 });
+      },
+      function () { // complex fraction with negative exponents
+        var a, b, c, d;
+        do { a = rnz(-5, 5); b = rnz(-5, 5); c = rnz(-5, 5); d = rnz(-5, 5); } while (gcd(a, b) !== 1 || gcd(c, d) !== 1 || a * d === b * c || (a === c && b === d) || a + b === 0 || c + d === 0);
+        var xm = X + '<sup>' + M + '1</sup>', ym = Y + '<sup>' + M + '1</sup>';
+        var eh = fr(P([[a, xm], [b, ym]]), P([[c, xm], [d, ym]]));
+        var yy = function (x) { return 0.53 * x + 1.9; };
+        var mk = function (nh, dh, f) { return [m(fr(nh, dh)), f]; };
+        var cor = mk(P([[a, Y], [b, X]]), P([[c, Y], [d, X]]), function (x) { var y = yy(x); return (a * y + b * x) / (c * y + d * x); });
+        var w = [mk(P([[a, X], [b, Y]]), P([[c, X], [d, Y]]), function (x) { var y = yy(x); return (a * x + b * y) / (c * x + d * y); }),
+          mk(P([[a, Y], [b, X]]), X + Y, function (x) { var y = yy(x); return (a * y + b * x) / (x * y); }),
+          mk(P([[c, Y], [d, X]]), P([[a, Y], [b, X]]), function (x) { var y = yy(x); return (c * y + d * x) / (a * y + b * x); }),
+          [m(R(a + b, c + d).html()), function () { return (a + b) / (c + d); }]];
+        return attach(Q({ q: 'Simplify ' + m(eh) + '. Assume ' + m(X + ' &gt; 0') + ', ' + m(Y + ' &gt; 0') + ', and that no denominator is 0.',
+          mc: mcF(cor, w, function (i) { var bb = b + i; return mk(P([[a, Y], [bb, X]]), P([[c, Y], [d, X]]), function (x) { var y = yy(x); return (a * y + bb * x) / (c * y + d * x); }); }, TPOS),
+          why: ['Rewrite each negative exponent: ' + m(xm + ' = ' + fr('1', X)) + ' and ' + m(ym + ' = ' + fr('1', Y)) + '. A negative exponent moves a <b>factor</b>, not a term of a sum, so the terms cannot just be moved across the fraction bar.',
+            'Multiply the numerator and the denominator by the LCD, ' + m(X + Y) + ': the numerator becomes ' + m(P([[a, Y], [b, X]])) + ' and the denominator becomes ' + m(P([[c, Y], [d, X]])) + '.',
+            'Result: ' + cor[0] + '.'] }), { t: 'expr', eh: eh });
       }
     ]
   ];

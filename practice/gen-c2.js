@@ -735,6 +735,35 @@
         if (t === 'stretch') { gH = n(c) + fI(X); ans = K.pt(a, c * b); wr = [K.pt(c * a, b), K.pt(a, b + c), K.pt(a, R(b, c))]; why = ['A factor in front multiplies the outputs: every ' + Y + '-coordinate is multiplied by ' + n(c) + '.', 'The ' + X + '-coordinate does not change.', K.pt(a, b) + ' moves to ' + ans + '.']; }
         return attach(Q({ q: 'The point ' + K.pt(a, b) + ' is on the graph of ' + m(I('y') + ' = ' + I('f') + '(' + I('x') + ')') + '. Which point must be on the graph of ' + m(I('y') + ' = ' + gH) + '?', mc: mc(ans, wr, function () { return K.pt(a + rnz(-3, 3), b + rnz(-3, 3)); }), why: why }), { kind: 'ptImage', a: a, b: b, t: t, h: h, kk: k, c: c });
       }
+      ,
+      function () { // horizontal stretch or shrink: image of a point under y = f(cx)
+        var c = pick([2, 3, 4, R(1, 2), R(1, 3)]), cR = R(c), b = rnz(-6, 6), a, ans;
+        if (cR.d === 1) { var t = rnz(-4, 4); a = cR.n * t; ans = [t, b]; } else { a = rnz(-4, 4); ans = [a * cR.d, b]; }
+        var gH = I('f') + '(' + (cR.d === 1 ? n(cR.n) : cR.html()) + I('x') + ')';
+        var wr = [K.pt(cR.mul(a), b), K.pt(a, cR.mul(b)), K.pt(a, R(b).div(cR))];
+        return attach(Q({ q: 'The point ' + K.pt(a, b) + ' is on the graph of ' + m(I('y') + ' = ' + I('f') + '(' + I('x') + ')') + '. Which point must be on the graph of ' + m(I('y') + ' = ' + gH) + '?', mc: mc(K.pt(ans[0], ans[1]), wr, function () { return K.pt(ans[0] + rnz(-3, 3), b + rnz(-3, 3)); }), why: ['A number multiplying ' + X + ' <em>inside</em> the function changes the graph horizontally, and it works backward: each ' + X + '-coordinate is divided by ' + (cR.d === 1 ? n(cR.n) : cR.html()) + '.', 'The ' + Y + '-coordinate (the height) does not change.', m(n(a) + ' ÷ ' + (cR.d === 1 ? n(cR.n) : cR.html()) + ' = ' + n(ans[0])) + ', so ' + K.pt(a, b) + ' moves to ' + K.pt(ans[0], ans[1]) + '. The graph is ' + (cR.d === 1 ? 'shrunk horizontally (pulled toward the ' + Y + '-axis).' : 'stretched horizontally (pushed away from the ' + Y + '-axis).')] }), { kind: 'ptImage', a: a, b: b, t: 'hstretch' });
+      },
+      function () { // symmetry of an equation: x-axis, y-axis, origin
+        var T = pick(['xq', 'xl', 'yq', 'ya', 'circ', 'ell', 'cub', 'xy']), a = rnz(-4, 4), c = rnz(-6, 6), eq, lab;
+        var Y2 = Y + '<sup>2</sup>', lead = function (k) { return k === 1 ? '' : k === -1 ? M : n(k); };
+        if (T === 'xq') { eq = X + ' = ' + P([[a, Y2], [c, '']]); lab = 'x'; }
+        if (T === 'xl') { eq = Y2 + ' = ' + P([[a, X], [c, '']]); lab = 'x'; }
+        if (T === 'yq') { eq = Y + ' = ' + P([[a, K.xp(2)], [c, '']]); lab = 'y'; }
+        if (T === 'ya') { eq = Y + ' = ' + lead(a) + '|' + X + '|' + K.plusK(c); lab = 'y'; }
+        if (T === 'circ') { eq = K.xp(2) + ' + ' + Y2 + ' = ' + n(ri(2, 7) * ri(2, 7)); lab = 'all'; }
+        if (T === 'ell') { var u = ri(2, 5); eq = n(u) + K.xp(2) + ' + ' + Y2 + ' = ' + n(u * ri(2, 9)); lab = 'all'; }
+        if (T === 'cub') { eq = Y + ' = ' + P([[a, K.xp(3)], [K.coin() ? rnz(-5, 5) : 0, X]]); lab = 'o'; }
+        if (T === 'xy') { eq = X + Y + ' = ' + n(rnz(-9, 9)); lab = 'o'; }
+        var L = { x: 'The ' + X + '-axis only', y: 'The ' + Y + '-axis only', o: 'The origin only', all: 'The ' + X + '-axis, the ' + Y + '-axis, and the origin' };
+        var right = L[lab];
+        var why = ['Test each symmetry on ' + m(eq) + ': replace ' + Y + ' with ' + m(M + I('y')) + ' (' + X + '-axis), replace ' + X + ' with ' + m(M + I('x')) + ' (' + Y + '-axis), or replace both (origin). Symmetry means the new equation is equivalent to the original.'];
+        why.push(lab === 'x' ? 'Only ' + Y + ' is squared, and ' + m('(' + M + I('y') + ')<sup>2</sup> = ' + Y2) + ', so replacing ' + Y + ' with ' + m(M + I('y')) + ' changes nothing; replacing ' + X + ' with ' + m(M + I('x')) + ' changes the ' + X + '-term.'
+          : lab === 'y' ? 'Every ' + X + ' appears as ' + (T === 'ya' ? m('|' + I('x') + '|') : K.xp(2)) + ', and ' + (T === 'ya' ? m('|' + M + I('x') + '| = |' + I('x') + '|') : m('(' + M + I('x') + ')<sup>2</sup> = ' + K.xp(2))) + ', so replacing ' + X + ' with ' + m(M + I('x')) + ' changes nothing; replacing ' + Y + ' with ' + m(M + I('y')) + ' does change the equation.'
+          : lab === 'all' ? 'Both variables appear only squared, so every replacement gives the same equation.'
+          : 'Replacing only one variable changes the sign of one side, but replacing both gives ' + (T === 'xy' ? m('(' + M + I('x') + ')(' + M + I('y') + ') = ' + X + Y) : m(M + I('y') + ' = ' + M + '(' + eq.split(' = ')[1] + ')')) + ', which is equivalent to the original.');
+        why.push('So the graph is symmetric about ' + (lab === 'all' ? 'the ' + X + '-axis, the ' + Y + '-axis, and the origin.' : right.replace(' only', '').replace('The ', 'the ') + ' only.'));
+        return attach(Q({ q: 'Which symmetry does the graph of ' + m(eq) + ' have?', mc: mc(right, Object.keys(L).filter(function (k) { return k !== lab; }).map(function (k) { return L[k]; })), why: why }), { kind: 'symEq', T: T });
+      }
     ],
     [
       function () { // x-intercepts of a|x − h| + k
@@ -835,6 +864,19 @@
         var S = [-2, -1, 0, 1, 2, 3], fv = S.map(function () { return pick(S); }), gv = S.map(function () { return pick(S); }), a = pick(S);
         var F = function (x) { return fv[S.indexOf(x)]; }, G = function (x) { return gv[S.indexOf(x)]; }, ans = F(G(a)), alt = G(F(a));
         return attach(Q({ q: 'Use the tables to find ' + m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ')') + '.<div class="center">' + tight(K.xyTable(S, fv, X, m(I('f') + '(' + I('x') + ')'))) + '</div><div class="center">' + tight(K.xyTable(S, gv, X, m(I('g') + '(' + I('x') + ')'))) + '</div>', mc: mcV(n(ans), ans, [[n(alt), alt], [n(G(a)), G(a)], [n(F(a)), F(a)], [n(F(a) * G(a)), F(a) * G(a)]], nx(ans)), why: [m('(' + I('f') + ' ∘ ' + I('g') + ')(' + n(a) + ') = ' + I('f') + '(' + I('g') + '(' + n(a) + '))') + ': start with ' + I('g') + '.', 'From the ' + I('g') + ' table: ' + m(I('g') + '(' + n(a) + ') = ' + n(G(a))) + '.', 'From the ' + I('f') + ' table: ' + m(I('f') + '(' + n(G(a)) + ') = ' + n(ans)) + '.'] }), { kind: 'tableComp', S: S, fv: fv, gv: gv, a: a });
+      }
+      ,
+      function () { // decompose H(x) = f(g(x))
+        var T = pick(['pow', 'sqrt', 'recip', 'abs']), a = pick([2, 3, 4, 5, 6, -2, -3]), b = rnz(-9, 9), pw = pick([2, 3, 4]);
+        if (T === 'sqrt' && a < 0) b = ri(1, 9); // keep part of the domain on the visible number line
+        var inner = lin(a, b), ax = lin(a, 0), outer, outerOn, Hh, wrong;
+        if (T === 'pow') { outer = K.xp(pw); outerOn = function (u) { return '(' + u + ')<sup>' + pw + '</sup>'; }; wrong = [[inner, K.xp(pw)], [K.xp(pw), ax], [P([[1, K.xp(pw)], [b, '']]), ax]]; }
+        if (T === 'sqrt') { outer = K.sqrt(X); outerOn = function (u) { return K.sqrt(u); }; wrong = [[inner, K.sqrt(X)], [K.sqrt(X), ax], [K.sqrt(X) + K.plusK(b), ax]]; }
+        if (T === 'recip') { outer = K.frx('1', X); outerOn = function (u) { return K.frx('1', u); }; wrong = [[inner, K.frx('1', X)], [K.frx('1', X), ax], [K.frx('1', X) + K.plusK(b), ax]]; }
+        if (T === 'abs') { outer = '|' + X + '|'; outerOn = function (u) { return '|' + u + '|'; }; wrong = [[inner, '|' + X + '|'], ['|' + X + '|', ax], ['|' + X + '|' + K.plusK(b), ax]]; }
+        Hh = outerOn(inner);
+        var ch = function (fH, gH) { return m(I('f') + '(' + I('x') + ') = ' + fH) + ', ' + m(I('g') + '(' + I('x') + ') = ' + gH); };
+        return attach(Q({ q: 'Find functions ' + I('f') + ' and ' + I('g') + ' so that ' + m(I('H') + '(' + I('x') + ') = ' + Hh) + ' equals ' + m(I('f') + '(' + I('g') + '(' + I('x') + '))') + '.', mc: mc(ch(outer, inner), wrong.map(function (w) { return ch(w[0], w[1]); })), why: ['Ask what is calculated first: ' + m(inner) + '. That inside expression is ' + m(I('g') + '(' + I('x') + ')') + '.', 'The last step ' + (T === 'pow' ? 'raises it to the power ' + pw : T === 'sqrt' ? 'takes the square root' : T === 'recip' ? 'takes the reciprocal' : 'takes the absolute value') + ', so ' + m(I('f') + '(' + I('x') + ') = ' + outer) + '.', 'Check: ' + m(I('f') + '(' + I('g') + '(' + I('x') + ')) = ' + I('f') + '(' + inner + ') = ' + Hh) + '. (Other correct pairs exist, but only this choice works.)'] }), { kind: 'decomp', T: T });
       }
     ],
     [

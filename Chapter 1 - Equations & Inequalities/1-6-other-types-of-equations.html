@@ -105,13 +105,13 @@ svg.icon{display:block;}
 <div class="app">
 <div class="masthead"><div class="mast-row"><div class="brand"><div class="kc"><span class="inner">KC</span></div><div><div class="wordmark">KingCretot Experience</div><div class="course-tag">College Algebra &middot; Chapter 1: Equations and Inequalities</div></div></div><div class="lesson-tag">Lesson 1.6 &middot; Other Equations</div></div></div>
 <div class="tricolor"><div class="tri-b"></div><div class="tri-g"></div><div class="tri-r"></div></div>
-<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 10</div></div>
+<div class="progress-wrap"><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div><div class="progress-label" id="progressLabel">Slide 1 of 12</div></div>
 <div class="stage">
 <section class="slide active" data-slide="1"><p class="eyebrow">Let's Begin</p><h1 class="slide-title">Equations that can fool you</h1>
 <div class="card warm"><p style="margin-bottom:0;">Some equations produce answers that look right but don't actually work. Clearing denominators or squaring both sides can create these <em>extraneous solutions</em>. In this lesson, checking your answers is part of solving the equation.</p></div>
 <p>Today you'll solve rational, radical, rational-exponent, and quadratic-in-form equations, plus work-rate problems.</p>
 <h2 class="sub-title" style="margin-top:22px;">By the end of today, you will be able to:</h2>
-<ul class="obj-list"><li><span class="num">1</span><span>Solve rational equations and identify excluded values</span></li><li><span class="num">2</span><span>Solve radical equations and equations with rational exponents, checking for extraneous solutions</span></li><li><span class="num">3</span><span>Solve equations quadratic in form and work-rate problems</span></li></ul>
+<ul class="obj-list"><li><span class="num">1</span><span>Solve rational equations and identify excluded values</span></li><li><span class="num">2</span><span>Solve radical equations (including two square roots and cube roots) and equations with rational exponents, checking for extraneous solutions</span></li><li><span class="num">3</span><span>Solve equations quadratic in form and work-rate problems</span></li></ul>
   <div class="name-field-wrap">
         <label for="studentName">Your name (so your tutor can see your progress)</label>
         <input type="text" id="studentName" placeholder="Type your first and last name">
@@ -148,24 +148,34 @@ svg.icon{display:block;}
 <div class="step"><div class="badge">3</div><div class="content"><div class="label">Solve</div>(x − 9)(x − 2) = 0 → x = 9 or 2</div></div>
 <div class="step"><div class="badge">4</div><div class="content"><div class="label">Check</div>x = 9: √16 + 5 = 9 ✓. x = 2: √9 + 5 = 8 ≠ 2 ✗. Solution set {9}.</div></div>
 </section>
-<section class="slide" data-slide="7"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
+<section class="slide" data-slide="7"><p class="eyebrow">Worked Example &middot; Two Radicals</p><h1 class="slide-title">√(2x + 3) − √(x + 1) = 1</h1>
+<div class="card blue"><p style="margin-bottom:0;"><strong>Goal:</strong> Solve when there are two square roots. You will square twice.</p></div>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Isolate one radical</div>√(2x + 3) = 1 + √(x + 1)</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Square both sides</div>2x + 3 = 1 + 2√(x + 1) + (x + 1). Simplify and isolate the remaining radical: x + 1 = 2√(x + 1)</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Square again and solve</div>x² + 2x + 1 = 4(x + 1) → x² − 2x − 3 = 0 → (x − 3)(x + 1) = 0 → x = 3 or x = −1</div></div><div class="step"><div class="badge">4</div><div class="content"><div class="label">Check both in the original</div>x = 3: √9 − √4 = 3 − 2 = 1 ✓. x = −1: √1 − √0 = 1 − 0 = 1 ✓. Solution set <strong>{−1, 3}</strong>.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Common slip:</strong> (1 + √(x + 1))² is not 1 + (x + 1). Square a binomial with the pattern a² + 2ab + b², which keeps the middle term 2√(x + 1).</p></div>
+</section>
+<section class="slide" data-slide="8"><p class="eyebrow">Worked Example &middot; Cube Roots</p><h1 class="slide-title">∛(4x² − 4x + 1) − ∛x = 0</h1>
+<div class="card blue"><p style="margin-bottom:0;"><strong>Goal:</strong> Solve an equation with cube roots.</p></div>
+<div class="step"><div class="badge">1</div><div class="content"><div class="label">Isolate the radicals</div>∛(4x² − 4x + 1) = ∛x</div></div><div class="step"><div class="badge">2</div><div class="content"><div class="label">Cube both sides</div>4x² − 4x + 1 = x → 4x² − 5x + 1 = 0</div></div><div class="step"><div class="badge">3</div><div class="content"><div class="label">Solve</div>(4x − 1)(x − 1) = 0 → x = 1/4 or x = 1</div></div><div class="step"><div class="badge">4</div><div class="content"><div class="label">Check</div>x = 1/4: 4(1/16) − 1 + 1 = 1/4, so both sides are ∛(1/4) ✓. x = 1: 4 − 4 + 1 = 1, so both sides are ∛1 ✓. Solution set <strong>{1/4, 1}</strong>.</div></div><div class="card think"><p style="margin-bottom:0;"><strong>&#128173; Notice:</strong> Raise both sides to the power that matches the index: square for square roots, cube for cube roots. Cube roots of negative numbers are real, so cubing does not create extraneous solutions the way squaring can, but checking is still good practice.</p></div>
+</section>
+<section class="slide" data-slide="9"><p class="eyebrow">Your Turn &mdash; Guided Practice</p><h1 class="slide-title">Now you try, with me right here</h1>
 <div class="gp-box"><p class="gp-prompt"><strong>Solve.</strong></p>
-<p style="font-weight:600;font-size:15px;">Question 1 &mdash; x<sup>2/3</sup> = 4</p>
-<div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="false">x = 8 only</button><button class="choice-btn" data-correct="true">x = ±8</button></div><p class="feedback" id="fb-gp1"></p>
-<div class="explain-box" id="ex-gp1"><b>Here's why:</b> Rewrite as (x<sup>1/3</sup>)² = 4, so x<sup>1/3</sup> = ±2. Cubing gives x = ±8. Check: (−8)<sup>2/3</sup> = (−2)² = 4 ✓</div>
-<p style="font-weight:600;font-size:15px;margin-top:18px;">Question 2 &mdash; Jada paints a room in 4 hours and Malik in 6 hours. How long together?</p>
+<p style="font-weight:600;font-size:15px;">Question 1: x<sup>2/3</sup> = 4</p>
+<div class="choice-row" data-q="gp1"><button class="choice-btn" data-correct="false">{8}</button><button class="choice-btn" data-correct="true">{±8}</button></div><p class="feedback" id="fb-gp1"></p>
+<div class="explain-box" id="ex-gp1"><b>Here's why:</b> Rewrite as (x<sup>1/3</sup>)² = 4, so x<sup>1/3</sup> = ±2. Cubing gives x = ±8, so the solution set is {±8}. Check: (−8)<sup>2/3</sup> = (−2)² = 4 ✓ {8} forgets the ± from the square root property.</div>
+<p style="font-weight:600;font-size:15px;margin-top:18px;">Question 2: Jada paints a room in 4 hours and Malik in 6 hours. How long together?</p>
 <div class="choice-row" data-q="gp2"><button class="choice-btn" data-correct="true">2.4 hours</button><button class="choice-btn" data-correct="false">5 hours</button></div><p class="feedback" id="fb-gp2"></p>
 <div class="explain-box" id="ex-gp2"><b>Here's why:</b> 1/4 + 1/6 = 5/12 of the room per hour, so the time is 12/5 = 2.4 hours. Averaging the times (5 hours) is the classic mistake.</div>
+<p style="font-weight:600;font-size:15px; margin-top:18px;">Question 3: Solve ∛(x² + 3x) = ∛(x + 8).</p><div class="choice-row" data-q="gp3"><button class="choice-btn" data-correct="false">{2}</button><button class="choice-btn" data-correct="true">{−4, 2}</button></div><p class="feedback" id="fb-gp3"></p>
+<div class="explain-box" id="ex-gp3"><b>Here's why:</b> Cube both sides: x² + 3x = x + 8, so x² + 2x − 8 = 0 and (x + 4)(x − 2) = 0. Check x = −4: ∛(16 − 12) = ∛4 and ∛(−4 + 8) = ∛4 ✓. Check x = 2: ∛10 = ∛10 ✓. Both work, so the solution set is {−4, 2}. Rejecting −4 just because it is negative is the slip.</div>
 </div></section>
-<section class="slide" data-slide="8"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">Checking is part of solving</h1>
+<section class="slide" data-slide="10"><p class="eyebrow">Why This Matters</p><h1 class="slide-title">Checking is part of solving</h1>
 <p>These equation types return in rational and radical functions later in the course, and the habit of checking for extraneous solutions carries over.</p>
 <h2 class="sub-title" style="margin-top:20px;">This shows up everywhere</h2>
 <ul><li>Rational functions (Chapter 3).</li><li>Exponential and logarithmic equations (Chapter 4).</li><li>Work and rate problems.</li></ul>
 <p style="font-size:14px;color:#555;">Next lesson: linear, three-part, quadratic, and rational inequalities.</p>
 </section>
-<section class="slide" data-slide="9"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know &mdash; 5 quick questions</h1>
-<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Solve 2/x + 1/3 = 1.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">x = 1/3</button><button class="quiz-opt" data-correct="false">x = −3</button><button class="quiz-opt" data-correct="true">x = 3</button><button class="quiz-opt" data-correct="false">x = 6</button></div>
-        <div class="explain-box" id="ex-q1"><b>Here's why:</b> Multiply by 3x: 6 + x = 3x → 6 = 2x → x = 3. Check: 2/3 + 1/3 = 1 ✓</div>
+<section class="slide" data-slide="11"><p class="eyebrow">Mini Knowledge Test</p><h1 class="slide-title">Show what you know: 7 quick questions</h1>
+<div class="quiz-q" data-quiz="q1"><div class="qnum">Question 1</div><div class="qtext">Solve 2/x + 1/3 = 1.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">{1/3}</button><button class="quiz-opt" data-correct="false">{−3}</button><button class="quiz-opt" data-correct="true">{3}</button><button class="quiz-opt" data-correct="false">{6}</button></div>
+        <div class="explain-box" id="ex-q1"><b>Here's why:</b> Multiply by 3x: 6 + x = 3x → 6 = 2x → x = 3. Check: 2/3 + 1/3 = 1 ✓ The solution set is {3}.</div>
       </div>
 <div class="quiz-q" data-quiz="q2"><div class="qnum">Question 2</div><div class="qtext">Solve √(2x + 3) = x.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">{−1}</button><button class="quiz-opt" data-correct="false">{−1, 3}</button><button class="quiz-opt" data-correct="false">∅</button><button class="quiz-opt" data-correct="true">{3}</button></div>
         <div class="explain-box" id="ex-q2"><b>Here's why:</b> Square: 2x + 3 = x² → x² − 2x − 3 = 0 → x = 3 or −1. Check −1: √1 = 1, not −1, so it's extraneous. Only 3 works.</div>
@@ -176,15 +186,21 @@ svg.icon{display:block;}
 <div class="quiz-q" data-quiz="q4"><div class="qnum">Question 4</div><div class="qtext">One printer finishes a job in 3 hours and another in 6 hours. How long working together?</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">4.5 hours</button><button class="quiz-opt" data-correct="true">2 hours</button><button class="quiz-opt" data-correct="false">3 hours</button><button class="quiz-opt" data-correct="false">9 hours</button></div>
         <div class="explain-box" id="ex-q4"><b>Here's why:</b> Rates add: 1/3 + 1/6 = 1/2 job per hour, so the job takes 2 hours. It must be faster than the faster printer alone.</div>
       </div>
-<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Solve (x + 1)/(x − 2) = 3/(x − 2).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">x = 3</button><button class="quiz-opt" data-correct="false">x = −1</button><button class="quiz-opt" data-correct="false">x = 2</button><button class="quiz-opt" data-correct="true">No solution — x = 2 makes a denominator zero</button></div>
+<div class="quiz-q" data-quiz="q5"><div class="qnum">Question 5</div><div class="qtext">Solve (x + 1)/(x − 2) = 3/(x − 2).</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">{3}</button><button class="quiz-opt" data-correct="false">{−1}</button><button class="quiz-opt" data-correct="false">{2}</button><button class="quiz-opt" data-correct="true">∅, because x = 2 makes a denominator zero</button></div>
         <div class="explain-box" id="ex-q5"><b>Here's why:</b> Multiplying by (x − 2) gives x + 1 = 3, so x = 2. But 2 is excluded, so the solution set is ∅.</div>
       </div>
-<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 5</span></div>
+<div class="quiz-q" data-quiz="q6"><div class="qnum">Question 6</div><div class="qtext">Solve (x − 3)<sup>2/5</sup> = 4.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">{35}</button><button class="quiz-opt" data-correct="true">{−29, 35}</button><button class="quiz-opt" data-correct="false">{19}</button><button class="quiz-opt" data-correct="false">{−13, 19}</button></div>
+        <div class="explain-box" id="ex-q6"><b>Here's why:</b> Raise both sides to the 5/2 power, using ± because the exponent has an even numerator: x − 3 = ±4<sup>5/2</sup> = ±(√4)<sup>5</sup> = ±32. So x = 35 or x = −29. Check: 32<sup>2/5</sup> = 2² = 4 ✓ and (−32)<sup>2/5</sup> = (−2)² = 4 ✓. {35} drops the ±, and {19} and {−13, 19} use 4² = 16 instead of 4<sup>5/2</sup> = 32.</div>
+      </div>
+<div class="quiz-q" data-quiz="q7"><div class="qnum">Question 7</div><div class="qtext">Solve √(2x + 6) − √(x + 4) = 1.</div><div class="quiz-opts"><button class="quiz-opt" data-correct="false">{−3, 5}</button><button class="quiz-opt" data-correct="false">{−3}</button><button class="quiz-opt" data-correct="true">{5}</button><button class="quiz-opt" data-correct="false">∅</button></div>
+        <div class="explain-box" id="ex-q7"><b>Here's why:</b> Isolate: √(2x + 6) = 1 + √(x + 4). Square: 2x + 6 = 1 + 2√(x + 4) + x + 4, so x + 1 = 2√(x + 4). Square again: x² + 2x + 1 = 4x + 16, so x² − 2x − 15 = 0 and x = 5 or x = −3. Check x = 5: √16 − √9 = 1 ✓. Check x = −3: √0 − √1 = −1 ≠ 1, so −3 is extraneous. The solution set is {5}.</div>
+      </div>
+<div class="quiz-score" id="quizScore">Score: <span class="gold" id="scoreText">0 / 7</span></div>
       <div class="submit-status" id="submitStatus"></div>
 </section>
-<section class="slide" data-slide="10"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
+<section class="slide" data-slide="12"><p class="eyebrow">Debrief</p><h1 class="slide-title">What we learned today</h1>
 <div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve rational equations and reject excluded values.</div>
-<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve radical and rational-exponent equations and check for extraneous solutions.</div>
+<div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve radical equations with one or two square roots or with cube roots, and rational-exponent equations, checking for extraneous solutions.</div>
 <div class="recap-check"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#1a7a3c"/><path d="M5 9.5 L8 12.5 L13 6" stroke="#fff" stroke-width="2" fill="none"/></svg> You can solve quadratic-in-form equations and work-rate problems.</div>
 <h2 class="sub-title" style="margin-top:22px;">Vocabulary from today</h2>
 <div><span class="term-pill">Rational Equation</span><span class="term-pill">Excluded Value</span><span class="term-pill">Extraneous Solution</span><span class="term-pill">Radical Equation</span><span class="term-pill">Quadratic in Form</span><span class="term-pill">Work Rate</span></div>

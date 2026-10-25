@@ -172,6 +172,16 @@
         else { do { rhsA = rnz(-6, 6); } while (rhsA === k); rhsB = (k - rhsA) * ri(-6, 6) + k * p; }
         var eq = m(cpar(k) + '(' + lin(1, p) + ') = ' + lin(rhsA, rhsB));
         return classifyQ(eq, k, k * p, rhsA, rhsB, 'Distribute on the left: ' + m(lin(k, k * p) + ' = ' + lin(rhsA, rhsB)) + '.');
+      },
+      function () { // equivalent equations: addition and multiplication properties of equality
+        var a = pick([2, 3, 4, 5, 6, -2, -3, -4]), s = rnz(-8, 8), b = rnz(-9, 9), c = a * s + b, k = pick([2, 3, -1, -2]);
+        var e = m(lin(a, b) + ' = ' + n(c)), v = ri(0, 2), cor, how;
+        if (v === 0) { cor = m(P([[a, X]]) + ' = ' + n(c - b)); how = (b > 0 ? 'Subtracting ' + n(b) + ' from' : 'Adding ' + n(-b) + ' to') + ' both sides (addition property of equality) gives ' + cor + '.'; }
+        else if (v === 1) { cor = m(lin(k * a, k * b) + ' = ' + n(k * c)); how = 'Multiplying both sides by ' + n(k) + ' (multiplication property of equality) gives ' + cor + '. Every term is multiplied.'; }
+        else { cor = xeq(s); how = 'Solving completely gives ' + cor + ', which is also an equivalent equation.'; }
+        var w = [[m(P([[a, X]]) + ' = ' + n(c + b)), [R(c + b, a).val()]], [m(lin(1, b) + ' = ' + rh(R(c, a))), [R(c, a).sub(b).val()]], [m('<i>x</i> = ' + n(c - b - a)), [c - b - a]], [m(lin(k * a, b) + ' = ' + n(k * c)), [R(k * c - b, k * a).val()]]];
+        return withP(Q({ q: 'Which equation is equivalent to ' + e + '?', mc: mcV([cor, [s]], K.shuffle(w), function () { var z = s + rnz(-4, 4); return [xeq(z), [z]]; }),
+          why: ['Equivalent equations have the same solution set. Solve the original: ' + m(P([[a, X]]) + ' = ' + n(c - b)) + ', so ' + xeq(s) + ' and the solution set is ' + setH([s])[0] + '.', how, 'Each other choice breaks a property: adding or subtracting on only one side, or dividing or multiplying only some of the terms. Its solution is not ' + n(s) + '.'] }), { k: 'equiv', e: e });
       }
     ],
     [
@@ -489,6 +499,17 @@
         var t = pickDisc(ri(0, 3), 5), a = t[0], b = t[1], c = t[2];
         var eqH = m(P([[a, X2]]) + ' = ' + lin(-b, -c));
         return discQ(a, b, c, eqH, 'First write the equation in standard form: ' + m(quad(a, b, c) + ' = 0') + '.');
+      },
+      function () { // completing the square with a ≠ 1
+        var a, h, N, D;
+        do { a = pick([2, 3, 4, 5]); h = rnz(-4, 4); N = ri(1, 12); D = N * a; } while (sqf(D)[1] === 1);
+        var B = -2 * a * h, C = a * h * h - N, e = m(quad(a, B, C) + ' = 0'), cor = pmGen(a * h, D, a);
+        var cA = R(C, a);
+        return withP(Q({ q: 'Solve ' + e + ' by completing the square.', mc: mcV(cor, [pmGen(-a * h, D, a), pmGen(2 * h, 4 * (h * h - C), 2), pmGen(a * h, a * N - a * a * h * h, a)], function () { return pmGen(a * h, (N + ri(1, 4)) * a, a); }),
+          why: ['Divide every term by ' + a + ' so the coefficient of ' + X2 + ' is 1: ' + m(P([[1, X2], [-2 * h, X], [cA, '']]) + ' = 0') + '.',
+            'Move the constant to the right: ' + m(P([[1, X2], [-2 * h, X]]) + ' = ' + cA.neg().html()) + '.',
+            'Add ' + m('(' + fr(n(-2 * h), 2) + ')<sup>2</sup> = ' + h * h) + ' to both sides: ' + m('(' + lin(1, -h) + ')<sup>2</sup> = ' + R(N, a).html()) + '.',
+            'Square root property: ' + m(lin(1, -h) + ' = ±' + sqrtF(R(N, a).html())) + '. Simplify and rationalize: the solution set is ' + cor[0] + '.'] }), { k: 'solve', e: e, dom: 'C' });
       }
     ],
     [
@@ -681,6 +702,21 @@
           steps = ['Excluded value: ' + m('<i>x</i> ≠ ' + n(a)) + '. Multiply every term by ' + m(lin(1, -a)) + ': ' + m('<i>x</i> = ' + n(a) + ' + ' + k + '(' + lin(1, -a) + ')') + '.', 'Solve: ' + m('<i>x</i> = ' + lin(k, a - k * a)) + ', so ' + m(P([[1 - k, X]]) + ' = ' + n(a - k * a)) + ' and ' + xeq(a) + '.', n(a) + ' is excluded, so there is no solution: ∅.'];
         }
         return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(cor, w, function () { return setH([a + rnz(-5, 5)]); }), why: steps }), { k: 'solve', e: e });
+      },
+      function () { // cube-root equations
+        if (K.coin()) {
+          var a = ri(1, 5), cc = rnz(-4, 4), x0 = rnz(-6, 9), b = cc * cc * cc - a * x0, e = m(K.cbrt(lin(a, b)) + ' = ' + n(cc)), xs = R(x0);
+          var w = [setH([R(cc * cc - b, a)]), setH([R(cc - b, a)]), setH([R(-cc * cc * cc - b, a)])]; if (cc < 0) w.unshift(EMPTY);
+          return withP(Q({ q: 'Solve ' + e + '.', mc: mcV(setH([xs]), w, function () { return setH([xs.add(rnz(-3, 3))]); }),
+            why: ['Cube both sides: ' + m(lin(a, b) + ' = (' + n(cc) + ')<sup>3</sup> = ' + n(cc * cc * cc)) + '.', (a === 1 ? 'Solve: ' : 'Solve: ' + m(P([[a, X]]) + ' = ' + n(cc * cc * cc - b)) + ', so ') + xeq(x0) + '.',
+              'Check: ' + m(K.cbrt(n(a * x0 + b)) + ' = ' + n(cc)) + ' ✓. ' + (cc < 0 ? 'A cube root of a negative number is real, so a negative right side is fine. ' : '') + 'Solution set ' + setH([xs])[0] + '.'] }), { k: 'cbrt', e: e });
+        }
+        var r1, r2; do { r1 = rnz(-6, 6); r2 = rnz(-6, 6); } while (r1 === r2 || (r1 < 0) === (r2 < 0));
+        var p = 1 - (r1 + r2), q = -r1 * r2, lhs = P([[1, X2], [p, X]]), rhs = lin(1, q), e2 = m(K.cbrt(lhs) + ' = ' + K.cbrt(rhs));
+        var pos = r1 > 0 ? r1 : r2, neg = r1 > 0 ? r2 : r1, cor = setH([r1, r2]);
+        return withP(Q({ q: 'Solve ' + e2 + '.', mc: mcV(cor, [setH([pos]), setH([-r1, -r2]), EMPTY, setH([neg])]),
+          why: ['Cube both sides: ' + m(lhs + ' = ' + rhs) + '.', 'Collect terms: ' + m(quad(1, p - 1, -q) + ' = 0') + ', so ' + m('(' + lin(1, -r1) + ')(' + lin(1, -r2) + ') = 0') + ' and ' + m('<i>x</i> = ' + n(r1)) + ' or ' + m('<i>x</i> = ' + n(r2)) + '.',
+            'Check both: ' + m(K.cbrt(n(r1 * r1 + p * r1)) + ' = ' + K.cbrt(n(r1 + q))) + ' ✓ and ' + m(K.cbrt(n(r2 * r2 + p * r2)) + ' = ' + K.cbrt(n(r2 + q))) + ' ✓. Cubing both sides does not create extraneous solutions the way squaring can, and both values check. Solution set ' + cor[0] + '.'] }), { k: 'cbrt', e: e2 });
       }
     ],
     [

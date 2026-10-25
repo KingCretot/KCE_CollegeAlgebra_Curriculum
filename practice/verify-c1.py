@@ -385,6 +385,29 @@ def check_word(rec):
     return None
 
 
+def real_cbrt(v):
+    v = complex(v).real
+    return -((-v) ** (1.0 / 3)) if v < 0 else v ** (1.0 / 3)
+
+
+CB = sp.Function('CB')
+
+
+def cbrt_sides(h):
+    s = re.sub(r'<span class="rad"><sup class="ri">3</sup>√<span class="rc">(.*?)</span></span>', r' CB(\1) ', h)
+    l, r = to_text(s).split('=', 1)
+    return P(l, extra={'CB': CB}), P(r, extra={'CB': CB})
+
+
+def solve_cbrt(h):
+    """Independent: cube both sides symbolically, solve the polynomial, keep real roots that satisfy the original."""
+    L, R = cbrt_sides(h)
+    cube = lambda e: e.args[0] if isinstance(e, CB) else e ** 3
+    cand = sp.solveset(sp.expand(cube(L) - cube(R)), x, sp.S.Reals)
+    ev = lambda e, v: real_cbrt(num(e.args[0].subs(x, v))) if isinstance(e, CB) else num(e.subs(x, v)).real
+    return dedupe([num(v) for v in cand if abs(ev(L, v) - ev(R, v)) < 1e-9])
+
+
 def check(rec):
     p, ch, a = rec['p'], rec['ch'], rec['a']
     if p is None:
@@ -401,6 +424,23 @@ def check(rec):
             return 'answer %s vs solveset %s' % (got, exp)
         for i, c in enumerate(ch):
             if i != a and same_vals(parse_set(c, cx), exp):
+                return 'distractor equals answer: ' + c
+        return None
+    if kind == 'equiv':
+        exp, _, _ = solve_eq(p['e'], 'R')
+        good = []
+        for c in ch:
+            got, _, _ = solve_eq(c, 'R')
+            good.append(same_vals(got, exp))
+        if not good[a] or sum(good) != 1:
+            return 'equiv %s' % good
+        return None
+    if kind == 'cbrt':
+        exp = solve_cbrt(p['e'])
+        if not same_vals(parse_set(ch[a]), exp):
+            return 'cbrt answer %s vs %s' % (parse_set(ch[a]), exp)
+        for i, c in enumerate(ch):
+            if i != a and same_vals(parse_set(c), exp):
                 return 'distractor equals answer: ' + c
         return None
     if kind == 'cx':

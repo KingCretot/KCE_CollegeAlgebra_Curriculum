@@ -420,6 +420,34 @@ def ncls(v):
     return '?'
 
 # ---------------------------------------------------------------- main
+def count_in_window(desc, W):
+    """Number of elements of a described set lying in [-W, W] (independent enumeration)."""
+    d = desc.strip()
+    mo = re.match(r'^\{x \| x is a natural number greater than (-?\d+)\}$', d)
+    if mo: return sum(1 for k in range(1, W + 1) if k > int(mo.group(1)))
+    mo = re.match(r'^\{x \| x is a natural number less than (-?\d+)\}$', d)
+    if mo: return sum(1 for k in range(1, W + 1) if k < int(mo.group(1)))
+    mo = re.match(r'^\{x \| x is an integer less than (-?\d+)\}$', d)
+    if mo: return sum(1 for k in range(-W, W + 1) if k < int(mo.group(1)))
+    mo = re.match(r'^\{x \| x is an integer between (-?\d+) and (-?\d+)\}$', d)
+    if mo: return sum(1 for k in range(-W, W + 1) if int(mo.group(1)) < k < int(mo.group(2)))
+    mo = re.match(r'^\{(-?\d+), (-?\d+), (-?\d+), …\}$', d)
+    if mo:
+        a0, step = int(mo.group(1)), int(mo.group(2)) - int(mo.group(1))
+        assert int(mo.group(3)) - int(mo.group(2)) == step and step > 0
+        return len(range(a0, W + 1, step))
+    mo = re.match(r'^\{(-?\d+), (-?\d+), (-?\d+), …, (-?\d+)\}$', d)
+    if mo:
+        a0, step = int(mo.group(1)), int(mo.group(2)) - int(mo.group(1))
+        return len([k for k in range(a0, int(mo.group(4)) + 1, step) if -W <= k <= W])
+    raise ValueError('unknown set description: ' + d)
+
+def is_infinite(desc):
+    return count_in_window(desc, 20000) > count_in_window(desc, 10000)
+
+def order_vals(h):
+    return [P(part) for part in h.split(', ')]
+
 def main():
     res = subprocess.run(['node', '-e', DUMP, str(RUNS)], cwd=HERE, capture_output=True, text=True, check=True)
     data = json.loads(res.stdout)
@@ -589,6 +617,31 @@ def main():
                 if sum(eq(v, exp) for v in vals) != 1: F(d, 'diag dup')
                 err = check_rad(ch[A].replace(' ft', ''))
                 if err: F(d, err)
+            elif t == 'svocab':
+                mode = p['mode']
+                if mode == 'fin':
+                    ask_inf = 'infinite' in qt
+                    good = [is_infinite(text(c)) == ask_inf for c in ch]
+                elif mode == 'eq':
+                    S = sets_from_q(qt)['A']
+                    good = [parse_set(text(c)) == S for c in ch]
+                else:
+                    good = []
+                    for c in ch:
+                        s1, s2 = text(c).split(' and ')
+                        good.append(len(parse_set(s1) & parse_set(s2)) == 0)
+                if not good[A] or sum(good) != 1: F(d, 'svocab %s %s' % (mode, good))
+            elif t == 'order':
+                asc = 'least to greatest' in qt
+                if asc != p['asc']: F(d, 'direction text mismatch')
+                lists = [order_vals(c) for c in ch]
+                ref = sorted(sp.nsimplify(v) for v in lists[A])
+                for L_ in lists:
+                    if sorted(sp.nsimplify(v) for v in L_) != ref: F(d, 'choices are not permutations of the same numbers')
+                def mono(L_):
+                    return all((L_[i] < L_[i + 1]) if asc else (L_[i] > L_[i + 1]) for i in range(len(L_) - 1))
+                good = [mono(L_) for L_ in lists]
+                if not good[A] or sum(good) != 1: F(d, 'order %s' % good)
             else:
                 F(d, 'no verifier for type %s' % t)
         except Exception as ex:

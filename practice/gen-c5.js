@@ -617,6 +617,24 @@
       mc: mcR(imp, K.shuffle(props), fmt),
       why: ['An expression is proper when the degree of the numerator is less than the degree of the denominator.', 'In ' + fmt(imp) + ', the numerator has degree ' + (imp[0].length - 1) + ' and the denominator has degree 2, so it is improper: divide first.', 'In each of the other choices the numerator has a lower degree than the denominator.'] }, { t: 'improper' });
   }
+  // L2: form with a repeated irreducible quadratic factor
+  function g541d() {
+    var k = pick([1, 2, 3, 4, 5, 9]), r = ri(-5, 5), facs = [[lf(r), 1], [qf(k), 2]], num;
+    var den = pmul(lf(r), pmul(qf(k), qf(k)));
+    do { num = [ri(-4, 4), ri(-6, 6), ri(-6, 6), rnz(-9, 9)]; } while (pev(num, r) === 0 || (num[2] - k * num[0] === 0 && num[3] - k * num[1] === 0));
+    var L5 = ['A', 'B', 'C', 'D', 'E'];
+    var fmt = function (form) {
+      var li = 0;
+      return m(form.map(function (t) { var top = t[2] === 0 ? iv(L5[li++]) : iv(L5[li++] + 'x') + ' + ' + iv(L5[li++]); return K.frx(top, powH(facs[t[0]][0], t[1])); }).join(' + '));
+    };
+    var cor = [[0, 1, 0], [1, 1, 1], [1, 2, 1]];
+    var w = [[[0, 1, 0], [1, 2, 1]], [[0, 1, 0], [1, 1, 0], [1, 2, 0]], [[0, 1, 0], [1, 1, 1], [1, 1, 1]]];
+    return QQ({ q: 'Which is the correct form of the partial fraction decomposition?' + bigFrac(num, facProd(facs)), mc: mcR(cor, w, fmt),
+      why: [m(facH(lf(r))) + ' is a distinct linear factor, so it gets one term with a constant numerator.',
+        m(facH(qf(k))) + ' is irreducible (it has no real zeros) and appears to the second power, so it needs a term for each power, 1 and 2.',
+        'Each of those terms gets a linear numerator, so the form is ' + fmt(cor) + '.'] },
+      { t: 'pform', num: num, den: den, facs: facs.map(function (f) { return [f[0], f[1]]; }) });
+  }
   function decEx(c, k) { return function () { var d = JSON.parse(JSON.stringify(c)); var t = d.t[ri(0, d.t.length - 1)]; var j = ri(0, t[0].length - 1); t[0][j] += rnz(-2, 2); if (t[0].every(function (v) { return v === 0; })) t[0][t[0].length - 1] = 1; return d; }; }
   // L2: distinct linear factors, denominator not factored
   function g542a() {
@@ -691,7 +709,7 @@
         'Match the ' + m(X + '<sup>2</sup>') + '-coefficients: ' + m('<i>A</i> + <i>C</i> = ' + n(num[0])) + ', so ' + m('<i>A</i> = ' + n(A)) + '.',
         'The decomposition is ' + decF(cor)(cor) + '.'] }, { t: 'pfd', num: num, den: den });
   }
-  K.lesson('5.4', { title: 'Partial Fractions', std: 'Lial 12e · Section 5.4', levels: [[g541a, g541b, g541c], [g542a, g542b, g542c], [g543a, g543b, g543c]] });
+  K.lesson('5.4', { title: 'Partial Fractions', std: 'Lial 12e · Section 5.4', levels: [[g541a, g541b, g541c], [g542a, g542b, g542c, g541d], [g543a, g543b, g543c]] });
 
   /* ================= 5.5 Nonlinear Systems of Equations ================= */
   function sortPts(pts) { return pts.slice().sort(function (u, v) { var a = R(u[0]).sub(v[0]).val(); if (a !== 0) return a; return R(u[1]).sub(v[1]).val(); }); }   // increasing x, then y
@@ -943,6 +961,31 @@
       mc: mcR(L.cor, L.w, fOpt), why: ['Evaluate ' + iv(nm) + ' at every corner: ' + valList(nm, rg.c, L.v) + '.', 'The ' + (goal === 'max' ? 'largest' : 'smallest') + ' value is ' + n(L.cor[0]) + ', at ' + K.pt(L.cor[1], L.cor[2]) + '.'] },
       { t: 'lpc', corners: rg.c, obj: o, goal: goal });
   }
+  // L2: which point satisfies a system with a parabola and a circle
+  function g561d() {
+    var a, c, op1, r2, op2, good, bad1, bad2, x, y;
+    var sat1 = function (px, py) { return holds(py, op1, a * px * px + c); };
+    var sat2 = function (px, py) { return holds(px * px + py * py, op2, r2); };
+    do {
+      a = pick([1, -1]); c = a > 0 ? ri(-5, -1) : ri(1, 5); op1 = pick(['<', '<=', '>', '>=']);
+      r2 = pick([9, 16, 25]); op2 = pick(['<', '<=', '>', '>=']);
+      good = []; bad1 = []; bad2 = [];
+      for (x = -5; x <= 5; x++) for (y = -5; y <= 5; y++) {
+        var s1 = sat1(x, y), s2 = sat2(x, y);
+        if (s1 && s2) good.push([x, y]); else if (s2) bad1.push([x, y]); else if (s1) bad2.push([x, y]);
+      }
+    } while (good.length < 3 || bad1.length < 2 || bad2.length < 2);
+    var cor = pick(good), w = [pick(bad1), pick(bad2), pick(bad1.concat(bad2))];
+    var e1 = m(Y + ' ' + SYM[op1] + ' ' + P([[a, K.xp(2)], [c, '']])), e2c = m(X + '<sup>2</sup> + ' + Y + '<sup>2</sup> ' + SYM[op2] + ' ' + n(r2));
+    var t1 = function (p) { var v = a * p[0] * p[0] + c; return 'the right side is ' + m(P([[a, '(' + n(p[0]) + ')<sup>2</sup>'], [c, '']]) + ' = ' + n(v)) + ', and ' + m(n(p[1]) + ' ' + SYM[op1] + ' ' + n(v)) + ' is ' + (sat1(p[0], p[1]) ? 'true' : 'false'); };
+    var t2 = function (p) { var v = p[0] * p[0] + p[1] * p[1]; return m(n(p[0] * p[0]) + ' + ' + n(p[1] * p[1]) + ' = ' + n(v)) + ', and ' + m(n(v) + ' ' + SYM[op2] + ' ' + n(r2)) + ' is ' + (sat2(p[0], p[1]) ? 'true' : 'false'); };
+    var b0 = w[0], b1 = w[1];
+    return QQ({ q: 'Which point is a solution of the system?' + sys([e1, e2c]), mc: mcR(cor, w, fPt, function () { return pick(bad1.concat(bad2)); }),
+      why: ['A solution must make both inequalities true. Substitute the point into each one.',
+        'For ' + fPt(cor) + ': in the first, ' + t1(cor) + '; in the second, ' + t2(cor) + '.',
+        fPt(b0) + ' fails the first inequality (' + t1(b0) + '), and ' + fPt(b1) + ' fails the second (' + t2(b1) + ').'] },
+      { t: 'nlineqpt', par: [a, c, op1], circ: [r2, op2] });
+  }
   // L2: graph with labeled corners, optimize
   function g562a() {
     var rg = region4(), o = uniqObj(rg.c, 1, 8, false), L = lpChoices(rg.c, o, 'max');
@@ -1039,7 +1082,7 @@
       why: ['Read the corners from the graph: ' + rg.c.map(function (p) { return K.pt(p[0], p[1]); }).join(', ') + '.', 'Evaluate ' + iv(nm) + ' at each: ' + valList(nm, rg.c, L.v) + '.', 'The ' + (goal === 'max' ? 'maximum' : 'minimum') + ' is ' + n(L.cor[0]) + ', at ' + K.pt(L.cor[1], L.cor[2]) + '. (With a negative coefficient, the best corner is not always the one farthest from the origin.)'] },
       { t: 'lp', cons: rg.cons, obj: o, goal: goal });
   }
-  K.lesson('5.6', { title: 'Systems of Inequalities and Linear Programming', std: 'Lial 12e · Section 5.6', levels: [[g561a, g561b, g561c], [g562a, g562b, g562c], [g563a, g563b, g563c]] });
+  K.lesson('5.6', { title: 'Systems of Inequalities and Linear Programming', std: 'Lial 12e · Section 5.6', levels: [[g561a, g561b, g561c], [g562a, g562b, g562c, g561d], [g563a, g563b, g563c]] });
 
   /* ================= 5.7 Properties of Matrices ================= */
   function rmat(r, c, lo, hi) { var A = [], i, j; for (i = 0; i < r; i++) { A.push([]); for (j = 0; j < c; j++) A[i].push(ri(lo, hi)); } return A; }
